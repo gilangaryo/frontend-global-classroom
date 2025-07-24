@@ -5,17 +5,17 @@ import localFont from "next/font/local";
 const avenir = localFont({
   src: [
     {
-      path: 'fonts/Avenir-Next-LT-PRO/AvenirNextLTPro-Regular.otf',
+      path: './fonts/Avenir-Next-LT-PRO/AvenirNextLTPro-Regular.otf',
       weight: '400',
       style: 'normal',
     },
     {
-      path: 'fonts/Avenir-Next-LT-PRO/AvenirNextLTPro-Mediumcn.otf',
+      path: './fonts/Avenir-Next-LT-PRO/AvenirNextLTPro-Mediumcn.otf',
       weight: '500',
       style: 'normal',
     },
     {
-      path: 'fonts/Avenir-Next-LT-PRO/AvenirNextLTPro-Bold.otf',
+      path: './fonts/Avenir-Next-LT-PRO/AvenirNextLTPro-Bold.otf',
       weight: '700',
       style: 'normal',
     },
@@ -25,7 +25,7 @@ const avenir = localFont({
 });
 
 const hertical = localFont({
-  src: 'fonts/Hertical-Sans/Hertical-Sans.ttf',
+  src: './fonts/Hertical-Sans/Hertical-Sans.ttf',
   variable: '--font-heading',
   display: 'swap',
 });
