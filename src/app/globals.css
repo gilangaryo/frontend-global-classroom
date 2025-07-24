@@ -2,25 +2,66 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #191919;
+  --font-body: var(--font-body);
+  --font-heading: var(--font-heading);
 }
 
-@theme inline {
+@theme {
+  --color-heading: #363F36;
+  --color-text: #8E8E8E;
+  --color-primary: #363F36;
+  --color-secondary: #4E3D34;
+  --color-tertiary: #D9C7BF;
+  --color-black: #191919;
+  --color-white: #FDFDFD;
+
+  --color-card: #F8F8F8;
+
+  --color-navbar: #3E724A;
+  --color-alt: #D9C7BF;
+  --color-alt2: #EFE9E9;
+  --color-green-hover: #244a2e;
+  --color-green-active: #3E724A;
+
+  --color-button: #3E724A;
+  --color-button2: rgba(62, 114, 74, 0.1);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: light) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
 }
 
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 40px;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+}
+
+p,
+span,
+a,
+li,
+button {
+  font-family: var(--font-body);
 }
