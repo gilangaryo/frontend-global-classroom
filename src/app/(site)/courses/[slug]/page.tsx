@@ -13,7 +13,7 @@ const courses = [
         id: 'foundations',
         slug: 'foundations-of-global-politics',
         title: 'Foundations of Global Politics',
-        description: 'Foundations of Global Politics is a complete digital curriculum, with over 50 ready-to-go, editable lessons that explore the roles and influence of global actors (state and non-state) in shaping international governance and power dynamics on the global stage. The lessons introduce students to some of the foundational concepts in Global Politics: power, sovereignty, and legitimacy through real-world case studies and critical inquiry.',
+        description: 'Foundations of Global Politics is a complete digital curriculum, with over 50 ready-to-go, editable lessons that explore the roles and influence of global actors (state and non-state) in shaping international governance and power dynamics on the global stage. The lessons introduce students to some of the foundational concepts in Global Politics: power, sovereignty, and legitimacy through real- world case studies and critical inquiry.',
         heroImage: 'https://res.cloudinary.com/dla5fna8n/image/upload/v1753368277/course_u3alrf.jpg',
         units: [
             {
@@ -21,7 +21,21 @@ const courses = [
                 image: 'https://res.cloudinary.com/dla5fna8n/image/upload/v1753368090/unit-1_sedafz.jpg',
                 title: '01. Power and Global Order',
             },
-            // dst...
+            {
+                id: 2,
+                image: 'https://res.cloudinary.com/dla5fna8n/image/upload/v1753368090/unit-2_u6bzl0.jpg',
+                title: '02. Foreign Policy in Action',
+            },
+            {
+                id: 3,
+                image: 'https://res.cloudinary.com/dla5fna8n/image/upload/v1753368090/unit-3_opgxcm.jpg',
+                title: '03. Sovereignty and Global Challenges',
+            },
+            {
+                id: 4,
+                image: 'https://res.cloudinary.com/dla5fna8n/image/upload/v1753368090/unit-4_e78jvh.jpg',
+                title: '04. Legitimacy, Fragility, and State Power',
+            },
         ],
         freeResources: [
             {

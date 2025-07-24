@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import logo_navbar from '../../../../public/logo_navbar.png'
@@ -24,10 +24,14 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
+  useEffect(() => {
+    setCartOpen(false);
+  }, [pathname]);
+
   return (
     <nav className="w-full bg-white text-black shadow-sm border-b border-gray-200">
       {/* Desktop Navbar */}
-      <div className="hidden md:flex items-center justify-between px-15 py-4">
+      <div className="hidden md:flex items-center justify-between px-16 py-4">
         {/* Left: Logo */}
         <div className="flex items-center space-x-2">
           <Link href="/">
@@ -76,7 +80,6 @@ export default function Navbar() {
           <button onClick={() => setMenuOpen(true)} className="focus:outline-none" aria-label="Open menu">
             <Image src={menu_icon} alt="Menu" width={26} height={26} />
           </button>
-
         </div>
         {/* RIGHT: Cart */}
         <div className="flex items-center gap-x-3">
