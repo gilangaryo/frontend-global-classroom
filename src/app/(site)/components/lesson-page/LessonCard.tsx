@@ -5,7 +5,7 @@ export default function LessonCard({ lesson }: { lesson: Lesson }) {
         <div className="border border-[#EFE9E9] rounded-lg overflow-hidden flex flex-col bg-white shadow-sm transition hover:shadow-lg">
             <div className="relative h-50 w-full bg-[#EFE9E9]">
                 <Image
-                    src={lesson.imageUrl || '/dummy/sample-product.png'}
+                    src={lesson.imageUrl || 'https://res.cloudinary.com/dla5fna8n/image/upload/v1753368278/lesson_ighmqy.jpg'}
                     alt={lesson.title}
                     width={400}
                     height={500}

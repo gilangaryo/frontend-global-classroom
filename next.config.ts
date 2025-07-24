@@ -6,12 +6,19 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'example.com',
+        hostname: 'res.cloudinary.com',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.w3.org',
+        port: '',
+        pathname: '/TR/pdf/**',
       },
     ],
   },
 };
 
 export default nextConfig;
+

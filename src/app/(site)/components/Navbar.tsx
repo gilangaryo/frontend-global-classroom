@@ -25,7 +25,7 @@ export default function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
 
   return (
-    <nav className="w-full bg-white text-black border-b">
+    <nav className="w-full bg-white text-black shadow-sm border-b border-gray-200">
       {/* Desktop Navbar */}
       <div className="hidden md:flex items-center justify-between px-15 py-4">
         {/* Left: Logo */}

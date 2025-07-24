@@ -80,7 +80,7 @@ export default function ConsultingPage() {
 
 
             {/* Why Work With Us */}
-            <section className="py-16 bg-alt2">
+            <section className="py-16 bg-[#FDFDFD]">
                 <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-12 items-center">
                     <div className='col-span-2'>
                         <h2 className="text-7xl font-bold text-[#363F36] mb-6">WHY WORK WITH US?</h2>

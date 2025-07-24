@@ -2,8 +2,6 @@
 import { useState, useEffect } from 'react';
 import LessonSidebar from './LessonSidebar';
 import LessonCard from './LessonCard';
-import FreeLessonsSection from './FreeLessonsSection';
-import WhyTeachersLoveSection from './WhyTeachersLoveSection';
 import LessonSearchBar from './LessonSearchBar';
 
 export type Lesson = {
@@ -55,41 +53,6 @@ export default function LessonList({
 
     return (
         <main className="font-body max-w-full mx-auto pb-10 ">
-
-            {/* Heading */}
-            <div className="mb-10 bg-alt2 px-4 md:px-25 py-10">
-                <h1 className="text-4xl md:text-5xl font-extrabold text-[#363F36] leading-tight mb-2">
-                    EXPLORE <br className="block md:hidden" /> LESSONS
-                </h1>
-                <div className="flex flex-col md:flex-row md:justify-between gap-4">
-                    <div className="max-w-lg text-sm text-[#8E8E8E] mt-2">
-                        <p className="mb-2 italic">Critical thinking. Real-world relevance. Ready-to-teach.</p>
-                        <ul className="list-disc list-inside pl-2 space-y-1">
-                            <li>
-                                Each lesson is fully digital and delivered as an editable Google Doc, designed for immediate use in your classroom or online learning platform.
-                            </li>
-                            <li>
-                                You can <b>purchase lessons individually</b> or as part of a unit or course bundle.
-                            </li>
-                            <li>
-                                All lessons are part of a carefully sequenced unit.
-                            </li>
-                        </ul>
-                    </div>
-                    <div className="text-xs text-[#363F36] mt-2 max-w-sm">
-                        <b>All lessons include:</b>
-                        <ul className="list-disc list-inside pl-2 space-y-1 mt-1">
-                            <li>
-                                <b>5-7 Learning Activities per Lesson</b> — case studies, guided discussions, collaborative activities, quizzes, etc.
-                            </li>
-                            <li>
-                                <b>Writing Practice</b> — structured paragraphs, essays, policy memos, source analysis, etc.
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
             {/* Search bar */}
             <LessonSearchBar search={search} setSearch={setSearch} />
 
@@ -156,8 +119,6 @@ export default function LessonList({
                 </div>
             </div>
 
-            <FreeLessonsSection />
-            <WhyTeachersLoveSection />
         </main>
     );
 }

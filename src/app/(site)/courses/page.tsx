@@ -6,6 +6,7 @@ import Link from 'next/link';
 interface Course {
     id: string;
     title: string;
+    slug: string;
     description: string;
     image: string;
 }
@@ -13,6 +14,7 @@ interface Course {
 const courses: Course[] = [
     {
         id: 'foundations',
+        slug: 'foundations-of-global-politics',
         title: 'Foundations of Global Politics',
         description:
             'This course introduces students to core concepts, actors, and power dynamics that shape global governance and international relations today.',
@@ -20,6 +22,7 @@ const courses: Course[] = [
     },
     {
         id: 'theories',
+        slug: 'theories-of-global-politics',
         title: 'Theories of International Relations',
         description:
             'Students explore major theories of international relations (Realism, Liberalism, Neo-Marxism, and Feminism) through contemporary case studies and critical perspectives on global order.',
@@ -27,6 +30,7 @@ const courses: Course[] = [
     },
     {
         id: 'human-rights',
+        slug: 'human-rights',
         title: 'Human Rights',
         description:
             'Students investigate the international human rights system, key treaties, and the tension between ideals and enforcement across a range of global issues and case studies.',
@@ -34,6 +38,7 @@ const courses: Course[] = [
     },
     {
         id: 'atrocity-crimes',
+        slug: 'atrocity-crimes-and-international-justice',
         title: 'Atrocity Crimes and International Justice',
         description:
             'This course explores the causes, consequences, and legal responses to atrocity crimes through case studies and debates on justice and accountability.',
@@ -41,6 +46,7 @@ const courses: Course[] = [
     },
     {
         id: 'peace-conflict',
+        slug: 'peace-and-conflict',
         title: 'Peace and Conflict',
         description:
             'Explore the principles and practices of peacebuilding, conflict resolution, and advocating for human rights globally.',
@@ -48,6 +54,7 @@ const courses: Course[] = [
     },
     {
         id: 'development-disparities',
+        slug: 'development-and-global-disparities',
         title: 'Development and Global Disparities',
         description:
             'Analyze development theory, global inequalities, and strategies for addressing poverty, health, and education in a rapidly changing world.',
@@ -65,12 +72,13 @@ const headerIncludes = [
     'Podcast summaries for select lessons, created with NotebookLM – useful for teacher prep or student review',
 ];
 
+
 export default function CoursePage() {
     return (
         <main className="font-body">
             {/* Header */}
-            <section className="bg-alt2 py-16 text-black">
-                <div className="px-4 md:px-25 max-w-full mx-auto mb-16">
+            <section className="bg-alt2 py-16 text-primary">
+                <div className="px-4 md:px-25 max-w-full mx-auto ">
                     <h1 className="text-5xl md:text-7xl font-bold  mb-8 leading-normal tracking-wider">
                         EXPLORE <br /> COURSES
                     </h1>
@@ -111,7 +119,7 @@ export default function CoursePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {courses.map((c) => (
                         <div
-                            key={c.id}
+                            key={c.slug}
                             className="bg-card rounded-lg overflow-hidden flex flex-col "
                         >
                             <div className="relative h-90 w-full">
@@ -132,11 +140,12 @@ export default function CoursePage() {
                                 </div>
 
                                 <Link
-                                    href={`#`}
+                                    href={`/courses/${c.slug}`}
                                     className="mt-auto block text-center py-2 bg-alt text-[#363F36] font-semibold rounded"
                                 >
                                     Explore Course
                                 </Link>
+
                             </div>
                         </div>
                     ))}
