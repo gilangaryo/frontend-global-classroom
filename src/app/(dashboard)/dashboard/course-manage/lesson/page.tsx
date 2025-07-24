@@ -17,6 +17,15 @@ type Subunit = {
   unitId: number;
 };
 
+type LessonPayload = {
+  title: string;
+  unitId: number | string;
+  description: string;
+  price: number;
+  digitalUrl: string;
+  imageUrl: string;
+  subunitId?: number | null;
+};
 export default function AddLessonPage() {
   const router = useRouter();
 
@@ -71,7 +80,7 @@ export default function AddLessonPage() {
     try {
       const token = localStorage.getItem("token");
       // build payload, include subunitId only if chosen
-      const payload: any = {
+      const payload: LessonPayload = {
         title,
         unitId,
         description,
