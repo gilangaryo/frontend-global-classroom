@@ -27,14 +27,16 @@
   --color-button: #3E724A;
   --color-button2: rgba(62, 114, 74, 0.1);
 
+  --color-tag: #8D4A26;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 }
 
 @media (prefers-color-scheme: light) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #FDFDFD;
+    --foreground: #191919;
   }
 }
 

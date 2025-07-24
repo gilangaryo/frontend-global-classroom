@@ -7,8 +7,8 @@ type TestimonialCardProps = {
 function TestimonialCard({ quote, author }: TestimonialCardProps) {
   return (
     <div className="bg-alt2 p-6 rounded-lg shadow flex flex-col justify-between h-full">
-      <p className="text-text italic mb-4">“{quote}”</p>
-      <span className="block text-xl font-semibold text-secondary self-start">{author}</span>
+      <p className="text-black  mb-6">“{quote}”</p>
+      <span className="block text-xl font-semibold text-secondary self-start uppercase">{author}</span>
     </div>
   );
 }
@@ -17,8 +17,8 @@ export default function TestimonialSection() {
   return (
     <section className="py-16 px-15 my-20 bg-white">
       <div className="max-w-full mx-auto">
-        <h2 className="text-7xl font-bold text-primary text-center mb-15">
-          What Teachers Are Saying
+        <h2 className="text-7xl font-bold text-primary text-left mb-15 leading-snug">
+          What <br /> Teachers Are Saying
         </h2>
         <div className="grid md:grid-cols-3 gap-8">
           <TestimonialCard

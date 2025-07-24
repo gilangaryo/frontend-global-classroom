@@ -55,30 +55,20 @@ export default function OfferSection() {
                             ))}
                         </div>
                         <div className="mt-8 flex items-center justify-center gap-4 w-full">
-                            <button className="
-                                    w-full px-6 py-2 rounded 
-                                    bg-primary text-white 
-                                    group-hover:bg-alt group-hover:text-primary 
-                                    transition-colors duration-200 font-semibold
-                                ">
+                            <CardButton variant="primary" href="/lessons">
                                 Explore Lessons
-                            </button>
-                            <button className="
-                                    w-full px-6 py-2 rounded border-2 
-                                    bg-white text-primary border-primary
-                                    group-hover:bg-primary group-hover:text-alt group-hover:border-alt
-                                    transition-colors duration-200 font-semibold
-                                ">
+                            </CardButton>
+                            <CardButton variant="secondary" href="/courses">
                                 Explore Courses
-                            </button>
+                            </CardButton>
                         </div>
                     </div>
 
                     <div className="
-  bg-white p-6 rounded-lg shadow flex flex-col justify-between border-2 border-primary
-  group transition-colors duration-200
-  hover:bg-primary hover:text-alt hover:border-transparent
-">
+                        bg-white p-6 rounded-lg shadow flex flex-col justify-between border-2 border-primary
+                        group transition-colors duration-200
+                        hover:bg-primary hover:text-alt hover:border-transparent
+                        ">
                         <div>
                             <h3 className="text-2xl font-semibold text-secondary mb-4 group-hover:text-alt transition-colors duration-200">
                                 Beyond the Classroom
@@ -94,7 +84,9 @@ export default function OfferSection() {
                             </ul>
                         </div>
                         <div className="mt-auto flex items-center justify-center gap-4 w-full">
-                            <CardButton variant="primary">Learn More</CardButton>
+                            <CardButton variant="primary" href="/consulting">
+                                Learn More
+                            </CardButton>
                         </div>
                     </div>
 
