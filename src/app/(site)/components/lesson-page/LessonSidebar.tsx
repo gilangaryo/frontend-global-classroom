@@ -35,15 +35,16 @@ export default function LessonSidebar({
                     {initialUnits.map((u) => (
                         <li key={u.id}>
                             <button
-                                onClick={() => setUnit(u.id)}
+                                onClick={() => setUnit(unit === u.id ? '' : u.id)}
                                 className={`block w-full text-left py-2 transition
-                                    ${unit === u.id
+                                        ${unit === u.id
                                         ? 'text-green-active font-bold border-b-2 border-green-active  bg-transparent'
                                         : 'text-[#8E8E8E] hover:text-green-active '
                                     }`}
                             >
                                 {u.title}
                             </button>
+
                         </li>
                     ))}
                 </ul>

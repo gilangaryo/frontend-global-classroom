@@ -70,11 +70,11 @@ export default function CoursePage() {
         <main className="font-body">
             {/* Header */}
             <section className="bg-alt2 py-16 text-black">
-                <div className="max-w-7xl mx-auto px-6">
-                    <h1 className="text-5xl md:text-7xl font-bold  mb-8">
-                        EXPLORE COURSES
+                <div className="px-4 md:px-25 max-w-full mx-auto mb-16">
+                    <h1 className="text-5xl md:text-7xl font-bold  mb-8 leading-normal tracking-wider">
+                        EXPLORE <br /> COURSES
                     </h1>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 leading-relaxed">
                         {/* Left text */}
                         <div className="space-y-4 ">
                             <p>
@@ -95,7 +95,7 @@ export default function CoursePage() {
 
                         {/* Right bullets */}
                         <div>
-                            <h3 className="mb-4 font-semibold ">All courses include:</h3>
+                            <h3 className="mb-4  ">All courses include:</h3>
                             <ul className="list-disc list-inside space-y-2  text-sm">
                                 {headerIncludes.map((item) => (
                                     <li key={item}>{item}</li>
@@ -107,18 +107,18 @@ export default function CoursePage() {
             </section>
 
             {/* Courses grid */}
-            <section className="py-20 px-6 max-w-7xl mx-auto">
+            <section className="py-20 md:px-25 px-4 max-w-full mx-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {courses.map((c) => (
                         <div
                             key={c.id}
                             className="bg-card rounded-lg overflow-hidden flex flex-col "
                         >
-                            <div className="relative h-64 w-full">
+                            <div className="relative h-90 w-full">
                                 <Image src={c.image} alt={c.title} fill className="object-cover" />
                             </div>
                             <div className="p-6 flex flex-col flex-1">
-                                <h3 className="text-2xl font-semibold text-[#363F36] mb-2">{c.title}</h3>
+                                <h3 className="text-4xl font-semibold text-[#363F36] mb-2">{c.title}</h3>
                                 <p className="text-[#8E8E8E] text-sm mb-4 flex-1">{c.description}</p>
 
                                 <div className="mb-6">
@@ -133,7 +133,7 @@ export default function CoursePage() {
 
                                 <Link
                                     href={`#`}
-                                    className="mt-auto block text-center py-2 bg-[#D9C7BF] text-[#363F36] font-semibold rounded"
+                                    className="mt-auto block text-center py-2 bg-alt text-[#363F36] font-semibold rounded"
                                 >
                                     Explore Course
                                 </Link>

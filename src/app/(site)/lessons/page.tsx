@@ -22,7 +22,6 @@ export default function LessonsPage() {
         fetchData();
     }, []);
 
-    // Tetap kirim loading ke LessonList agar hanya grid lesson yang loading, bukan seluruh halaman
     return (
         <LessonList initialCourses={courses} initialUnits={units} loading={loading} />
     );

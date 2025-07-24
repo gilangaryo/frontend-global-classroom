@@ -31,7 +31,7 @@ export default function CartModal({ open, onClose }: CartModalProps) {
 
     return (
 
-        <div className="absolute inset-0 z-40 flex items-start justify-end bg-transparent bg-opacity-90">
+        <div className="absolute inset-0 z-40 flex items-start justify-end bg-transparent bg-opacity-90 mx-4">
 
             <div
                 ref={modalRef}

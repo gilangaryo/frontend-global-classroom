@@ -18,7 +18,7 @@ function ResourceCard({
     badgeColor = "bg-green-active",
 }: ResourceCardProps) {
     return (
-        <div className="space-y-2 w-full max-w-[340px]">
+        <div className="space-y-2 w-full max-w-[340px] ">
             <div className="w-full relative rounded-lg overflow-hidden aspect-3/2">
                 <Image src={img} alt={title} fill className="object-cover" />
                 {badge && (
@@ -44,15 +44,15 @@ function ResourceCard({
 
 export default function FeaturedResourcesSection() {
     return (
-        <section className="py-8 px-2 md:py-14 md:px-15 bg-white">
+        <section className="py-8 md:py-14 px-4 md:px-25 bg-white">
             <div className="mx-auto">
-                <div className="grid md:grid-cols-3 gap-8 items-stretch min-h-[520px]">
+                <div className="grid  grid-cols-1 md:grid-cols-3 md:gap-8 items-stretch min-h-[520px]">
                     {/* Kiri: Judul dan dua card di bawah */}
                     <div className='col-span-2 flex flex-col h-full'>
                         <h2 className="text-4xl md:text-7xl font-bold text-primary mb-8 leading-tight">
                             FEATURED <br />  RESOURCES
                         </h2>
-                        <div className="flex gap-6 mt-auto">
+                        <div className="flex gap-6 mt-auto mb-6">
                             <ResourceCard
                                 img="/landing-page/card.jpg"
                                 title="Power and Global Order"
@@ -73,15 +73,16 @@ export default function FeaturedResourcesSection() {
                     </div>
                     {/* Kanan: Gambar besar */}
                     <div className="flex justify-center">
-                        <div className="w-full max-w-md aspect-[3/4] relative">
+                        <div className="w-full max-w-full md:max-w-md aspect-[3/4] relative items-center">
                             <Image
                                 src="/landing-page/cover-featured.jpg"
                                 alt="War Crimes in Ukraine"
                                 fill
-                                className="object-cover rounded-lg"
+                                className="object-cover"
                             />
                         </div>
                     </div>
+
                 </div>
             </div>
         </section>

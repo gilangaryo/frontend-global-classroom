@@ -27,7 +27,7 @@ const products = [
 
 export default function FreeLessonsSlider() {
   return (
-    <section className="py-16 px-2 md:px-15 bg-alt2">
+    <section className="py-16 px-4 md:px-25 bg-alt2">
       <h2 className="text-5xl md:text-8xl font-bold text-primary text-center mb-16">
         Explore Free Lessons
       </h2>

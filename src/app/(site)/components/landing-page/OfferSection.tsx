@@ -18,10 +18,10 @@ export default function OfferSection() {
     ];
 
     return (
-        <section id="offer" className="py-16 px-15 bg-alt2">
+        <section id="offer" className="py-16 px-4 md:px-25 bg-alt2">
             <div className="max-w-full mx-auto">
 
-                <h2 className="text-8xl font-bold text-primary text-center mb-16">What We Offer</h2>
+                <h2 className="text-5xl md:text-8xl font-bold text-primary text-center mb-16">What We Offer</h2>
                 <div className="grid md:grid-cols-2 gap-8">
 
 

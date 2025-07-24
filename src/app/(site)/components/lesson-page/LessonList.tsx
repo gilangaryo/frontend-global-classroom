@@ -127,8 +127,7 @@ export default function LessonList({
             </div>
 
 
-            <div className="grid grid-cols-1 md:grid-cols-4 px-4 md:px-25 gap-8 bg-white">
-                {/* Sidebar tanpa course tab */}
+            <div className="grid grid-cols-1 md:grid-cols-4 px-4 md:px-25 gap-20 bg-white">
                 <LessonSidebar
                     initialUnits={initialUnits}
                     unit={unit}
@@ -142,7 +141,6 @@ export default function LessonList({
                     support={support}
                     setSupport={setSupport}
                 />
-                {/* Lesson Grid */}
                 <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
                     {loading ? (
                         <>

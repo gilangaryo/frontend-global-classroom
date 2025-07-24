@@ -1,10 +1,10 @@
 import Image from 'next/image';
 export default function TransformativeSection() {
   return (
-    <section className="py-20 px-15 bg-white">
+    <section className="py-20 px-4 md:px-25 bg-white">
       <div className="max-w-full mx-auto grid lg:grid-cols-5 gap-2 items-center">
         <div className='col-span-3'>
-          <h2 className="text-5xl text-primary mb-10 leading-relaxed">
+          <h2 className="text-3xl md:text-5xl text-primary mb-10 leading-relaxed">
             Transformative Learning Through Justice, Story, and Collaboration
           </h2>
           <p className="text-lg font-semibold tracking-wider">
