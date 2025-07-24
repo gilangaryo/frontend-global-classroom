@@ -23,17 +23,18 @@ export type Unit = { id: string; title: string; };
 export default function LessonList({
     initialCourses = [],
     initialUnits = [],
+    loading: initialLoading = false,
 }: {
     initialCourses: Course[];
     initialUnits: Unit[];
+    loading?: boolean;
 }) {
     const [search, setSearch] = useState('');
     const [course, setCourse] = useState('');
     const [unit, setUnit] = useState('');
     const [lessons, setLessons] = useState<Lesson[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(initialLoading);
 
-    // Dummy filter state
     const [grade, setGrade] = useState('');
     const [curriculum, setCurriculum] = useState('');
     const [activity, setActivity] = useState('');
@@ -94,16 +95,15 @@ export default function LessonList({
 
             {/* --- Course Tab Horizontal --- */}
             <div className="flex items-center gap-2 border-b border-[#EFE9E9] bg-white px-4 md:px-25 pt-8 pb-2 mb-6 overflow-x-auto">
-                {/* All Courses Button */}
                 <button
                     onClick={() => setCourse('')}
                     className={`
-            px-3 py-1 rounded border transition text-sm
-            ${!course
+                        px-3 py-1 rounded border transition text-sm
+                        ${!course
                             ? 'bg-button2 text-[#3E724A] font-bold border-[#3E724A]'
                             : 'bg-transparent text-[#3E724A] border-transparent hover:border-[#3E724A]'
                         }
-        `}
+                    `}
                     style={{ boxShadow: !course ? '0 0 0 2px #3E724A22' : undefined }}
                 >
                     ALL COURSES
@@ -113,12 +113,12 @@ export default function LessonList({
                         key={c.id}
                         onClick={() => setCourse(c.id)}
                         className={`
-                px-3 py-1 rounded border transition text-sm
-                ${course === c.id
+                            px-3 py-1 rounded border transition text-sm
+                            ${course === c.id
                                 ? 'bg-button2 text-[#3E724A] font-bold border-[#3E724A]'
                                 : 'bg-transparent text-[#3E724A] border-transparent hover:border-[#3E724A]'
                             }
-            `}
+                        `}
                         style={{ boxShadow: course === c.id ? '0 0 0 2px #3E724A22' : undefined }}
                     >
                         {c.title}
@@ -145,7 +145,11 @@ export default function LessonList({
                 {/* Lesson Grid */}
                 <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
                     {loading ? (
-                        <div>Loading...</div>
+                        <>
+                            {[...Array(4)].map((_, idx) => (
+                                <div key={idx} className="rounded-lg bg-gray-100 animate-pulse h-40" />
+                            ))}
+                        </>
                     ) : lessons.length === 0 ? (
                         <div className="col-span-3 text-[#888]">No lessons found.</div>
                     ) : (
@@ -155,7 +159,6 @@ export default function LessonList({
             </div>
 
             <FreeLessonsSection />
-
             <WhyTeachersLoveSection />
         </main>
     );

@@ -1,23 +1,29 @@
-import LessonList from '../components/lesson-page/LessonList';
+'use client';
 
-async function getCourses() {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/courses`, { cache: 'no-store' });
-    if (!res.ok) throw new Error('Failed to fetch courses');
-    const json = await res.json();
-    return json.data || [];
-}
+import { useEffect, useState } from "react";
+import LessonList, { Course, Unit } from '../components/lesson-page/LessonList';
 
-async function getUnits() {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/units`, { cache: 'no-store' });
-    if (!res.ok) throw new Error('Failed to fetch units');
-    const json = await res.json();
-    return json.data || [];
-}
+export default function LessonsPage() {
+    const [courses, setCourses] = useState<Course[]>([]);
+    const [units, setUnits] = useState<Unit[]>([]);
+    const [loading, setLoading] = useState(true);
 
-export default async function LessonsPage() {
-    // Fetch data server-side (SSR)
-    const initialCourses = await getCourses();
-    const initialUnits = await getUnits();
+    useEffect(() => {
+        setLoading(true);
+        const fetchData = async () => {
+            const [cRes, uRes] = await Promise.all([
+                fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/courses`).then(r => r.json()),
+                fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/units`).then(r => r.json()),
+            ]);
+            setCourses(cRes.data || []);
+            setUnits(uRes.data || []);
+            setLoading(false);
+        };
+        fetchData();
+    }, []);
 
-    return <LessonList initialCourses={initialCourses} initialUnits={initialUnits} />;
+    // Tetap kirim loading ke LessonList agar hanya grid lesson yang loading, bukan seluruh halaman
+    return (
+        <LessonList initialCourses={courses} initialUnits={units} loading={loading} />
+    );
 }
