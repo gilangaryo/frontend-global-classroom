@@ -141,7 +141,11 @@ export default function UnitPage() {
                 <div className="flex gap-4">
                     <select
                         value={priceSort}
-                        onChange={(e) => setPriceSort(e.target.value as any)}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === "asc" || val === "desc" || val === "") setPriceSort(val);
+                        }}
+
                         className="px-4 py-2 border rounded"
                     >
                         <option value="">Price</option>
