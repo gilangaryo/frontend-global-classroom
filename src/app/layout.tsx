@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import localFont from "next/font/local";
-
+import { LoadingProvider } from "./LoadingContext"
 const avenir = localFont({
   src: [
     {
@@ -79,8 +79,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${avenir.variable} ${hertical.variable} antialiased`}>
-
-        {children}
+        <LoadingProvider>
+          {children}
+        </LoadingProvider>
       </body>
 
     </html>

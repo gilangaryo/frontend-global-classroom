@@ -51,7 +51,7 @@ export default function CartModal({ open, onClose }: CartModalProps) {
                     </p>
                     <Link
                         href="/cart"
-                        onClick={onClose} // tidak perlu param e
+                        onClick={onClose}
                         className="px-5 py-2 rounded bg-green-active text-white font-semibold"
                     >
                         View Cart
