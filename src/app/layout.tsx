@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import localFont from "next/font/local";
-import { LoadingProvider } from "./LoadingContext"
+
+import ClientReduxProvider from "../components/ClientReduxProvider";
+
 const avenir = localFont({
   src: [
     {
@@ -29,7 +31,6 @@ const hertical = localFont({
   variable: '--font-heading',
   display: 'swap',
 });
-
 
 export const metadata: Metadata = {
   title: "Global Classroom",
@@ -79,9 +80,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${avenir.variable} ${hertical.variable} antialiased`}>
-        <LoadingProvider>
+        <ClientReduxProvider>
           {children}
-        </LoadingProvider>
+        </ClientReduxProvider>
+
       </body>
 
     </html>

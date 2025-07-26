@@ -1,50 +1,93 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 
 export default function CheckoutPage() {
+    const cartItems = useSelector((state: RootState) => state.cart.items);
     const [form, setForm] = useState({ email: '', firstName: '', lastName: '', country: '' });
-    const [method, setMethod] = useState<'midtrans' | 'stripe' | null>(null);
     const [loading, setLoading] = useState(false);
+    const [hasMounted, setHasMounted] = useState(false);
 
-    useEffect(() => {
-        fetch('https://ipapi.co/json/')
-            .then((res) => res.json())
-            .then((data) => {
-                setForm((prev) => ({ ...prev, country: data.country_name || 'Indonesia' }));
-            });
-    }, []);
+    useEffect(() => setHasMounted(true), []);
+    if (!hasMounted) return null;
+
+    const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     const handleCheckout = async () => {
-        if (!method) return alert('Pilih metode pembayaran!');
-        setLoading(true);
-
-        const res = await fetch(`/api/payment/${method}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ amount: 15000000 }),
-        });
-
-        const data = await res.json();
-
-        if (method === 'midtrans') {
-            window.location.href = data.redirect_url;
-        } else if (method === 'stripe') {
-            const stripe = await (await import('@stripe/stripe-js')).loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
-            await stripe?.redirectToCheckout({ sessionId: data.sessionId });
+        if (!form.email || !form.firstName || !form.lastName || !form.country) {
+            return alert('Please fill all fields');
         }
 
-        setLoading(false);
+        if (cartItems.length === 0) {
+            return alert('Your cart is empty');
+        }
+
+        const items = cartItems
+            .filter(item => item.id && item.productType)
+            .map(item => ({
+                itemId: item.id,
+                itemType: item.productType,
+            }));
+
+        if (items.length === 0) {
+            return alert('Cart items are invalid or missing ID/type');
+        }
+
+        const payload = {
+            email: form.email,
+            firstName: form.firstName,
+            lastName: form.lastName,
+            country: form.country,
+            items,
+        };
+
+        try {
+            setLoading(true);
+            console.log('🟢 Sending checkout payload:', payload);
+
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/payment/checkout`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(`Backend error: ${res.status} – ${errorText}`);
+            }
+
+            const data = await res.json();
+            console.log("🔥 Stripe session response:", data);
+
+            if (!data.sessionId) {
+                throw new Error('Stripe sessionId not found in response');
+            }
+
+            const stripe = await (await import('@stripe/stripe-js')).loadStripe(
+                process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+            );
+            console.log('🔵 Redirecting to Stripe with sessionId:', data.sessionId);
+
+
+            await stripe?.redirectToCheckout({ sessionId: data.sessionId });
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Unknown error';
+            console.error('❌ Checkout error:', message);
+            alert('Checkout failed. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <div className="flex flex-col md:flex-row justify-between max-w-6xl mx-auto px-6 py-10">
-            {/* Left */}
+            {/* Left: Billing Form */}
             <div className="w-full md:w-[60%]">
                 <h1 className="text-3xl font-bold mb-6">CHECKOUT</h1>
-                <p className="mb-6 text-gray-600">Enter your payment information and submit your order.</p>
+                <p className="mb-6 text-gray-600">Enter your billing information to complete the order.</p>
 
-                {/* Billing Address */}
                 <div className="space-y-4 mb-8">
                     <input
                         type="email"
@@ -77,59 +120,30 @@ export default function CheckoutPage() {
                         className="w-full border rounded px-4 py-2"
                     />
                 </div>
-
-                {/* Payment Method */}
-                <div className="mb-8">
-                    <h3 className="font-bold mb-2">PAYMENT METHOD</h3>
-                    <div className="space-y-2">
-                        {form.country === 'Indonesia' && (
-                            <label className="block border rounded px-4 py-3 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="payment"
-                                    value="midtrans"
-                                    onChange={() => setMethod('midtrans')}
-                                    className="mr-2"
-                                />
-                                Midtrans (QRIS, GoPay, Bank Transfer)
-                            </label>
-                        )}
-                        <label className="block border rounded px-4 py-3 cursor-pointer">
-                            <input
-                                type="radio"
-                                name="payment"
-                                value="stripe"
-                                onChange={() => setMethod('stripe')}
-                                className="mr-2"
-                            />
-                            Stripe (Visa / Mastercard)
-                        </label>
-                    </div>
-                </div>
             </div>
 
-            {/* Right - Order Summary */}
+            {/* Right: Order Summary */}
             <div className="w-full md:w-[35%] border border-gray-200 rounded p-6 h-fit">
                 <h3 className="text-xl font-semibold mb-4">ORDER SUMMARY</h3>
-                <div className="flex justify-between text-gray-700">
-                    <span>Subtotal (1 item):</span>
-                    <span>Rp150.000</span>
+                <div className="flex justify-between text-gray-700 mb-2">
+                    <span>Subtotal ({cartItems.length} item{cartItems.length !== 1 ? 's' : ''}):</span>
+                    <span>${total.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between mt-2 font-bold">
-                    <span>Totals:</span>
-                    <span>Rp150.000</span>
+                <div className="flex justify-between font-bold mt-2">
+                    <span>Total:</span>
+                    <span>${total.toFixed(2)}</span>
                 </div>
+
                 <button
                     onClick={handleCheckout}
                     disabled={loading}
                     className="w-full mt-6 bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
                 >
-                    {loading ? 'Memproses...' : 'Submit Order'}
+                    {loading ? 'Processing...' : 'Submit Order'}
                 </button>
+
                 <p className="text-xs text-center mt-2 text-gray-500">
-                    By submitting your order, you agree to our{' '}
-                    <a href="#" className="underline">Terms of Service</a> and{' '}
-                    <a href="#" className="underline">Privacy Policy</a>.
+                    You’ll be redirected to Stripe to complete your payment securely.
                 </p>
             </div>
         </div>
