@@ -67,13 +67,26 @@ export default function CheckoutPage() {
                 throw new Error('Stripe sessionId not found in response');
             }
 
-            const stripe = await (await import('@stripe/stripe-js')).loadStripe(
-                process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
-            );
-            console.log('🔵 Redirecting to Stripe with sessionId:', data.sessionId);
+            const stripePromise = await import('@stripe/stripe-js');
+            const stripe = await stripePromise.loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
+            if (!stripe) {
+                throw new Error('Stripe failed to load.');
+            }
 
-            await stripe?.redirectToCheckout({ sessionId: data.sessionId });
+            const sessionId = data?.sessionId;
+
+            if (!sessionId || typeof sessionId !== 'string') {
+                throw new Error('Invalid sessionId returned from backend.');
+            }
+
+            const result = await stripe.redirectToCheckout({ sessionId });
+
+            if (result.error) {
+                console.error('Stripe redirect error:', result.error.message);
+                alert(result.error.message || 'Redirect to Stripe failed.');
+            }
+
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : 'Unknown error';
             console.error('❌ Checkout error:', message);

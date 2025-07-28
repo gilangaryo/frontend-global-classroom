@@ -2,8 +2,17 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { clearCart } from '@/store/slices/cartSlice';
 
 export default function SuccessPage() {
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        dispatch(clearCart());
+    }, [dispatch]);
+
     return (
         <main className="max-w-3xl mx-auto px-6 py-16 text-center font-body text-primary">
             {/* <div className="border border-dashed rounded-lg p-6 mb-12 flex items-center justify-between">
