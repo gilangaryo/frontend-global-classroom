@@ -57,19 +57,19 @@ export default function WhyTeachersLoveSection() {
             <DividerWithPlus />
 
             <div className="grid md:grid-cols-2 gap-12">
-                <ul className="space-y-6">
+                <ul className="space-y-6 border-l-2 pl-8">
                     {teacherLove.left.map((item) => (
                         <li key={item.title}>
-                            <h3 className="font-semibold text-[#4E3D34]">{item.title}</h3>
-                            <p className="text-[#8E8E8E] text-sm">{item.desc}</p>
+                            <p className="font-bold text-black">{item.title}</p>
+                            <p className="text-black text-sm">{item.desc}</p>
                         </li>
                     ))}
                 </ul>
-                <ul className="space-y-6">
+                <ul className="space-y-6 border-l-2 pl-8">
                     {teacherLove.right.map((item) => (
                         <li key={item.title}>
-                            <h3 className="font-semibold text-[#4E3D34]">{item.title}</h3>
-                            <p className="text-[#8E8E8E] text-sm">{item.desc}</p>
+                            <p className="font-bold text-black">{item.title}</p>
+                            <p className="text-black text-sm">{item.desc}</p>
                         </li>
                     ))}
                 </ul>
