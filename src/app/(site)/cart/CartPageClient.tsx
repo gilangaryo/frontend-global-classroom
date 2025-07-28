@@ -1,62 +1,96 @@
 'use client';
 
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '@/store';
-import { removeFromCart } from '@/store/slices/cartSlice';
+import { RootState, AppDispatch } from '@/store';
+
+import { removeFromCart, revalidateCart } from '@/store/slices/cartSlice';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-
+import { useRouter } from 'next/navigation';
 export default function CartPageClient() {
-    const dispatch = useDispatch();
-    const cartItems = useSelector((state: RootState) => state.cart.items);
+    const dispatch = useDispatch<AppDispatch>();
+    const router = useRouter();
+    // ✅ Ambil items dan status revalidasi dari Redux state
+    const { items: cartItems, revalidationStatus } = useSelector((state: RootState) => state.cart);
+
     const [isClient, setIsClient] = useState(false);
 
     useEffect(() => {
         setIsClient(true);
-    }, []);
 
-    if (!isClient) return null;
+        if (cartItems.length > 0 && revalidationStatus === 'idle') {
+            dispatch(revalidateCart(cartItems));
+        }
+    }, [dispatch, cartItems, revalidationStatus]);
 
-    const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    if (!isClient) {
+        return (
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+                <h1 className="text-2xl md:text-3xl font-bold mb-8">MY CART</h1>
+                <p>Loading cart...</p>
+            </main>
+        );
+    }
+
+    const total = cartItems.reduce((sum: number, item) => sum + item.price * item.quantity, 0);
 
     return (
-        <main className="max-w-full mx-auto px-15 py-10">
-            <Link href="/courses" className="text-sm text-black flex items-center mb-6">
-                <span className="mr-2 text-xl">&larr;</span> Back to course
-            </Link>
+        <main className="max-w-11/12 mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <button
+                onClick={() => router.back()}
+                className="text-sm text-black flex items-center hover:underline mb-6"
+            >
+                <Image
+                    src="/back-button.png"
+                    alt="Back"
+                    width={20}
+                    height={20}
+                    className="mr-2"
+                />
+                Back
+            </button>
 
-            <h1 className="text-3xl font-bold mb-8">MY CART</h1>
+            <h1 className="text-2xl md:text-3xl font-bold mb-8">MY CART</h1>
 
-            <div className="grid md:grid-cols-5 gap-8">
-                {/* Left: Cart Items */}
-                <div className="md:col-span-4 space-y-6">
-                    {cartItems.length === 0 ? (
+            {revalidationStatus === 'loading' && (
+                <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
+                    <p>Verifying cart items with server...</p>
+                </div>
+            )}
+            {revalidationStatus === 'failed' && (
+                <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
+                    <p>Failed to update cart. Some prices or items might be out of date. Please try refreshing.</p>
+                </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+                <div className="md:col-span-3 space-y-6">
+                    {cartItems.length === 0 && revalidationStatus !== 'loading' ? (
                         <p>Your cart is empty.</p>
                     ) : (
                         cartItems.map((product) => (
-                            <div key={product.id} className="flex items-center justify-between border-b pb-4">
-                                <div className="flex items-center space-x-4">
-                                    <button
-                                        onClick={() => dispatch(removeFromCart(product.id))}
-                                        className="p-2 rounded hover:bg-gray-100"
-                                    >
-                                        <Image src="/trash.png" alt="Remove" width={35} height={35} />
+                            <div key={product.id} className="flex items-start justify-between gap-4 border-b pb-4">
+                                <div className="flex flex-1 items-start space-x-4">
+                                    <button onClick={() => dispatch(removeFromCart(product.id))} className="p-2 rounded hover:bg-gray-200 mt-1">
+                                        <Image src="/trash.png" alt="Remove" width={28} height={28} />
                                     </button>
-                                    <Image src={product.image} alt={product.title} width={80} height={60} className="object-cover" />
-                                    <div>
+                                    <Image src={product.image || '/placeholder.jpg'} alt={product.title} width={80} height={60} className="rounded object-cover" />
+                                    <div className="flex-1">
                                         <p className="font-semibold">{product.title}</p>
-                                        {product.subtitle && <p className="text-sm text-gray-600">{product.subtitle}</p>}
+                                        {product.subtitle && <p className="line-clamp-2 text-sm text-gray-600">{product.subtitle}</p>}
                                     </div>
                                 </div>
-                                <p className="text-lg font-semibold">${product.price.toFixed(2)}</p>
+
+                                <div className="min-w-[90px] text-right">
+                                    <h2 className="text-lg font-semibold">${(product.price || 0).toFixed(2)}</h2>
+                                </div>
                             </div>
                         ))
                     )}
                 </div>
 
-                {/* Right: Order Summary */}
-                <div className="border rounded-md p-6">
+                <div className="md:col-span-2 border rounded-md p-6 h-fit md:sticky md:top-24">
                     <h2 className="font-bold text-lg mb-4">ORDER SUMMARY</h2>
                     <div className="flex justify-between text-sm mb-2">
                         <span>Subtotal ({cartItems.length} items):</span>
@@ -67,37 +101,11 @@ export default function CartPageClient() {
                         <span>Totals:</span>
                         <span>${total.toFixed(2)}</span>
                     </div>
-                    <Link
-                        href="/checkout"
-                        className="block text-center w-full bg-primary text-white py-2 rounded hover:bg-green-hover transition"
-                    >
+                    <Link href="/checkout" className="block text-center w-full bg-green-active text-white py-2 rounded hover:bg-green-hover transition">
                         Checkout Item
                     </Link>
-
-                    <p className="text-xs text-gray-500 text-center mt-3">
-                        Your purchased resources can be instantly <br />
-                        downloaded from your account
-                    </p>
                 </div>
             </div>
-
-            {/* Footer */}
-            <footer className="mt-20 border-t pt-6 flex flex-col md:flex-row justify-between items-center text-sm text-primary">
-                <p>Copyright © 2025 Global Classroom</p>
-                <div className="flex space-x-6 mt-4 md:mt-0">
-                    <Link href="/courses">Course</Link>
-                    <Link href="/contact">Contact</Link>
-                    <Link href="#" aria-label="Instagram">
-                        <Image src="/social-icons/instagram.png" alt="Instagram" width={24} height={24} />
-                    </Link>
-                    <Link href="#" aria-label="WhatsApp">
-                        <Image src="/social-icons/whatsapp.png" alt="WhatsApp" width={24} height={24} />
-                    </Link>
-                    <Link href="#" aria-label="LinkedIn">
-                        <Image src="/social-icons/linkedin.png" alt="LinkedIn" width={24} height={24} />
-                    </Link>
-                </div>
-            </footer>
         </main>
     );
 }

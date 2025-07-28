@@ -23,8 +23,8 @@ const headerIncludes = [
 export default async function CoursePage() {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/courses`, {
         next: { revalidate: 60 },
-        cache: 'no-store',
     });
+
 
     const json = await res.json();
     const courses: Course[] = json.data;

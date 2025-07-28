@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
+import Image from 'next/image';
+import Link from 'next/link';
 
 export default function CheckoutPage() {
     const cartItems = useSelector((state: RootState) => state.cart.items);
@@ -83,8 +85,19 @@ export default function CheckoutPage() {
 
     return (
         <div className="flex flex-col md:flex-row justify-between max-w-6xl mx-auto px-6 py-10">
-            {/* Left: Billing Form */}
             <div className="w-full md:w-[60%]">
+                <div className="mb-4">
+                    <Link href="/cart" className="flex items-center text-sm text-black hover:underline">
+                        <Image
+                            src="/back-button.png"
+                            alt="Back"
+                            width={20}
+                            height={20}
+                            className="mr-2"
+                        />
+                        Back to Cart
+                    </Link>
+                </div>
                 <h1 className="text-3xl font-bold mb-6">CHECKOUT</h1>
                 <p className="mb-6 text-gray-600">Enter your billing information to complete the order.</p>
 
@@ -137,7 +150,7 @@ export default function CheckoutPage() {
                 <button
                     onClick={handleCheckout}
                     disabled={loading}
-                    className="w-full mt-6 bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
+                    className="w-full mt-6 bg-green-active text-white py-2 rounded hover:bg-green-hover transition"
                 >
                     {loading ? 'Processing...' : 'Submit Order'}
                 </button>

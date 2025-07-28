@@ -10,13 +10,14 @@ export default function ConsultingPage() {
             title: 'Curriculum & Toolkit Development',
             desc: 'We design engaging, community-based learning tools that center authentic voices, real-world issues, and critical thinking—tailored to your audience and objectives.',
         },
-        {
-            title: 'Educator & Facilitator Training',
-            desc: 'We lead virtual and in-person training for educators, staff, and facilitators—equipping them to confidently deliver justice-focused and story-driven educational content.',
-        },
+
         {
             title: 'Multimedia Storytelling',
             desc: 'Using platforms like Esri Story Maps and custom video guides, we help you turn research, narratives, and program goals into dynamic, interactive learning experiences.',
+        },
+        {
+            title: 'Educator & Facilitator Training',
+            desc: 'We lead virtual and in-person training for educators, staff, and facilitators—equipping them to confidently deliver justice-focused and story-driven educational content.',
         },
         {
             title: 'Workshop & Experiential Learning Design',
@@ -32,10 +33,10 @@ export default function ConsultingPage() {
 
     return (
         <main className="font-body">
-            <section className="bg-white py-16 px-4">
-                <div className="max-w-6xl mx-auto">
+            <section className="bg-white py-16 px-4 max-w-full">
+                <div className="max-w-11/12 mx-auto">
                     {/* HERO JUDUL */}
-                    <h1 className="text-[2.8rem] md:text-[5rem] font-bold text-[#222] leading-[1.1] mb-8">
+                    <h1 className="text-[2.8rem] md:text-[5rem] font-bold text-[#222] leading-normal mb-8">
                         BEYOND<br />
                         THE CLASSROOM
                     </h1>
@@ -62,13 +63,13 @@ export default function ConsultingPage() {
 
 
             {/* What We Offer */}
-            <section className="bg-alt2 py-16">
-                <div className="max-w-7xl mx-auto px-6">
-                    <h2 className="text-7xl font-bold text-primary mb-8">WHAT WE OFFER</h2>
+            <section className="bg-alt2 py-16 max-w-full">
+                <div className="max-w-11/12 mx-auto px-6">
+                    <h2 className="text-4xl md:text-7xl font-bold text-primary mb-8 py-10">WHAT WE OFFER</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {offerItems.map((item) => (
                             <div key={item.title} className='border-l-4 border-primary px-4'>
-                                <h3 className="text-lg font-semibold text-[#4E3D34] mb-2">{item.title}</h3>
+                                <h3 className="text-lg font-semibold text-primary mb-2">{item.title}</h3>
                                 <p className="text-[#8E8E8E] text-sm">{item.desc}</p>
                             </div>
                         ))}
@@ -80,25 +81,30 @@ export default function ConsultingPage() {
 
 
             {/* Why Work With Us */}
-            <section className="py-16 bg-[#FDFDFD]">
-                <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-12 items-center">
+            <section className="py-20 bg-alt2 max-w-full">
+                <div className="max-w-11/12 mx-auto px-6 grid md:grid-cols-3 gap-12 items-center">
                     <div className='col-span-2'>
-                        <h2 className="text-7xl font-bold text-[#363F36] mb-6">WHY WORK WITH US?</h2>
-                        <ul className="list-disc list-inside space-y-2 text-[#8E8E8E] border-l-4 border-primary px-4">
+                        <h2 className="text-4xl md:text-7xl  font-bold text-primary mb-8">
+                            WHY WORK
+                        </h2>
+                        <h2 className="text-4xl md:text-7xl  font-bold text-primary mb-18">
+                            WITH US
+                        </h2>
+                        <ul className="list-disc list-inside space-y-6 text-primary border-l-4 border-primary px-4 font-semibold">
                             <li>20+ years of classroom and curriculum design experience</li>
                             <li>Deep expertise in human rights, global politics, and climate justice</li>
                             <li>Focused on relevance, clarity, and impact</li>
                             <li>Committed to education that centers real voices and real issues</li>
                         </ul>
                     </div>
-                    <div className="h-100 aspect-square bg-gray-200 " />
+                    <div className="h-100 aspect-square bg-gray-100 " />
                 </div>
             </section>
 
             {/* Featured Projects */}
-            <section className="py-16 bg-white ">
-                <div className="max-w-7xl mx-auto px-6">
-                    <h2 className="text-4xl font-bold text-[#363F36] text-center mb-8">FEATURED PROJECTS</h2>
+            <section className="py-16 bg-white max-w-full">
+                <div className="max-w-11/12 mx-auto px-6">
+                    <h2 className="text-4xl md:text-7xl  font-bold text-primary text-center mb-8">FEATURED PROJECTS</h2>
                     <div className="relative">
                         <div className="flex items-center gap-6 overflow-x-auto snap-x pb-4">
                             {featured.map((f) => (
@@ -110,7 +116,7 @@ export default function ConsultingPage() {
                                         <Image src={f.image} alt={f.title} fill className="object-cover" />
                                     </div>
                                     <div className="p-4">
-                                        <h3 className="font-semibold text-[#363F36] mb-2">{f.title}</h3>
+                                        <h3 className="font-semibold text-primary mb-2">{f.title}</h3>
                                         <p className="text-[#8E8E8E] text-sm">
                                             Examine war crimes and crimes against humanity in the Russia-Ukraine conflict.
                                         </p>
@@ -119,20 +125,20 @@ export default function ConsultingPage() {
                             ))}
                         </div>
                         <button className="absolute left-0 top-1/2 -translate-y-1/2 bg-white bg-opacity-90 p-2 rounded-full shadow">
-                            <ChevronLeft size={20} className="text-[#363F36]" />
+                            <ChevronLeft size={20} className="text-primary" />
                         </button>
                         <button className="absolute right-0 top-1/2 -translate-y-1/2 bg-white bg-opacity-90 p-2 rounded-full shadow">
-                            <ChevronRight size={20} className="text-[#363F36]" />
+                            <ChevronRight size={20} className="text-primary" />
                         </button>
                     </div>
                 </div>
             </section>
 
             {/* Let's Collaborate */}
-            <section className=" py-16 bg-alt2">
-                <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-start">
+            <section className=" py-16 bg-alt2 max-w-full">
+                <div className="max-w-11/12 mx-auto px-6 grid md:grid-cols-2 gap-12 items-start">
                     <div>
-                        <h2 className="text-4xl font-bold text-black mb-4">LET’S COLLABORATE</h2>
+                        <h2 className="text-4xl md:text-7xl font-bold text-black mb-4 leading-normal">LET’S COLLABORATE</h2>
                         <p className="text-[#8E8E8E] mb-2">
                             Ready to bring your project to life through story-rich, justice-centered learning?{' '}
 
@@ -143,11 +149,12 @@ export default function ConsultingPage() {
                             </Link>{' '}
                             to discuss your goals and how we can help.
                         </p>
-                        <p className="text-[#8E8E8E] text-sm flex items-center gap-2">
-                            <span>📧</span> aglobalclass@gmail.com
+                        <p className="text-[#8E8E8E] text-sm flex items-center gap-2 mt-3">
+                            <Image src="/consulting/email-icon.png" alt="Email" width={20} height={20} />
+                            aglobalclass@gmail.com
                         </p>
                     </div>
-                    <form className="space-y-4 bg-white  p-5 rounded-lg ">
+                    <form className="space-y-4 bg-white/80 p-5 rounded-lg ">
                         <div className="flex gap-4">
                             <input
                                 type="text"
@@ -172,7 +179,7 @@ export default function ConsultingPage() {
                         />
                         <button
                             type="submit"
-                            className="w-full py-3 bg-[#363F36] text-[#FDFDFD] rounded-lg font-semibold"
+                            className="w-full py-3 bg-primary text-[#FDFDFD] rounded-lg font-semibold"
                         >
                             Submit
                         </button>

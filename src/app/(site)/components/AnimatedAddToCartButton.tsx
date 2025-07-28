@@ -14,7 +14,7 @@ export default function AnimatedAddToCartButton({
     itemImg,
     itemDesc,
     itemPrice,
-    size = 'base', // ✅ support sm or base
+    size = 'base',
 }: {
     productId: string;
     productType: 'COURSE' | 'UNIT' | 'SUBUNIT' | 'LESSON';

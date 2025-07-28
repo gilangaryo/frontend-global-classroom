@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Divider from "../Divider";
 
 const cardList = [
     {
@@ -25,13 +26,15 @@ const cardList = [
 
 export default function WhoWeWorkWithSection() {
     return (
-        <section className="py-16 bg-white">
-            <div className="max-w-7xl mx-auto px-6 text-center">
-                <h2 className="text-6xl font-bold text-primary mb-8 tracking-tight">
+        <section className="py-16 bg-white max-w-full">
+            <div className="max-w-11/12 mx-auto px-6 ">
+                <h2 className="text-4xl md:text-7xl font-bold text-primary mb-8 tracking-tight md:text-left">
                     WHO WE WORK WITH
                 </h2>
+
+
                 <div className="relative mb-12">
-                    <hr className="border-[#D9C7BF]" />
+                    <Divider />
                     <div className="absolute left-1/2 top-1/2 bg-white text-[#363F36] font-bold px-2 -translate-x-1/2 -translate-y-1/2 select-none">
                         +
                     </div>
@@ -40,9 +43,9 @@ export default function WhoWeWorkWithSection() {
                     {cardList.map((item) => (
                         <div
                             key={item.alt}
-                            className="bg-alt2 rounded-lg px-6 py-8 w-56 flex flex-col items-center "
+                            className="bg-alt2 rounded-lg px-6 py-8 flex flex-col items-center w-full max-w-[270px] shadow-lg hover:shadow-xl transition-shadow duration-300"
                         >
-                            <div className="h-9 w-9 rounded-full flex items-center justify-center mb-4 bg-[#EFE9E9]">
+                            <div className="h-9 w-full rounded-full flex items-center justify-center mb-4 bg-[#EFE9E9]">
                                 <Image
                                     src={item.img}
                                     alt={item.alt}
@@ -51,7 +54,7 @@ export default function WhoWeWorkWithSection() {
                                     className="opacity-70"
                                 />
                             </div>
-                            <p className="text-[#363F36] text-[15px] text-center">
+                            <p className="text-primary text-[14px] text-center font-semibold ">
                                 {item.text}
                             </p>
                         </div>

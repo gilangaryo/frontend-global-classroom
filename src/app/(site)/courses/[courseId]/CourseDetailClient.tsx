@@ -54,10 +54,10 @@ export default function CourseDetailClient() {
     const [openThumbnail, setOpenThumbnail] = useState(false);
 
 
-    const id = typeof params.id === "string"
-        ? params.id
-        : Array.isArray(params.id)
-            ? params.id[0]
+    const id = typeof params.courseId === "string"
+        ? params.courseId
+        : Array.isArray(params.courseId)
+            ? params.courseId[0]
             : "";
 
     useEffect(() => {
@@ -166,7 +166,11 @@ export default function CourseDetailClient() {
                     <DividerWithPlus />
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-15">
                         {course.units.map((unit) => (
-                            <div key={unit.id} className="overflow-hidden flex flex-col">
+                            <Link
+                                key={unit.id}
+                                href={`/courses/${course.id}/unit/${unit.id}`}
+                                className="overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300"
+                            >
                                 <div className="relative w-full h-90">
                                     <Image
                                         src={unit.imageUrl ?? '/dummy/sample-unit.jpg'}
@@ -178,9 +182,10 @@ export default function CourseDetailClient() {
                                 <div className="mt-6 text-primary font-bold text-4xl">
                                     <h2>{unit.title}</h2>
                                 </div>
-                            </div>
+                            </Link>
                         ))}
                     </div>
+
                 </div>
             </section>
 
