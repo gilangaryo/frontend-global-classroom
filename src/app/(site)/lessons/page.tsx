@@ -32,10 +32,11 @@ export default function LessonsPage() {
                     <h1 className="text-5xl md:text-7xl font-extrabold text-[#363F36] leading-normal tracking-wider ">
                         EXPLORE <br /> LESSONS
                     </h1>
-                    <div className="flex flex-col md:flex-row md:justify-between gap-4">
-                        <div className="max-w-lg text-sm text-[#8E8E8E] mt-2">
-                            <p className="mb-2 italic">Critical thinking. Real-world relevance. Ready-to-teach.</p>
-                            <ul className="list-disc list-inside pl-2 space-y-1">
+                    <div className="flex flex-col md:flex-row md:justify-between gap-4 leading-relaxed mt-4">
+                        <div className="max-w-xl text-md text-black mt-2">
+                            <p className="mb-6 italic">Critical thinking. Real-world relevance. Ready-to-teach.</p>
+
+                            <ul className="list-disc list-inside pl-2 space-y-4">
                                 <li>
                                     Each lesson is fully digital and delivered as an editable Google Doc, designed for immediate use in your classroom or online learning platform.
                                 </li>
@@ -47,14 +48,14 @@ export default function LessonsPage() {
                                 </li>
                             </ul>
                         </div>
-                        <div className="text-xs text-[#363F36] mt-2 max-w-sm">
-                            <b>All lessons include:</b>
-                            <ul className="list-disc list-inside pl-2 space-y-1 mt-1">
+                        <div className=" max-w-2xl text-md text-black mt-2 ">
+                            <p className="mb-4 font-semibold">All lessons include:</p>
+                            <ul className="list-disc list-inside pl-2 space-y-4 mt-1">
                                 <li>
-                                    <b>5-7 Learning Activities per Lesson</b> — case studies, guided discussions, collaborative activities, quizzes, etc.
+                                    <b>5-7 Learning Activities per Lesson</b> including Canva presentations, source-based questions, readings, explainers, case studies, guided discussions, collaborative activities, investigations, inquiry-based tasks, videos, multimedia and Nearpod activities, graphic organizers, writing scaffolds, quizzes, role plays and podcasts
                                 </li>
                                 <li>
-                                    <b>Writing Practice</b> — structured paragraphs, essays, policy memos, source analysis, etc.
+                                    <b>Writing Practice</b> including short responses, structured paragraphs, define and apply concepts, justify and evaluate claims, compare and contrast writing, essays, policy memos, source analysis and position papers
                                 </li>
                             </ul>
                         </div>

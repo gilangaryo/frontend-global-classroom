@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import AnimatedAddToCartButton from '../../components/AnimatedAddToCartButton';
 import LessonPdfThumbnailModal from '../../components/LessonPdfThumbnailModal';
 import ModalPreviewPdf from '../../components/ModalPreviewPdf';
+import LessonBundleSection from '../../components/lesson-page/LessonBundleSection';
 
 interface Lesson {
     id: string;
@@ -114,70 +115,10 @@ export default function LessonDetailClient() {
                     </div>
 
                     {/* Bundles */}
-                    <div>
-                        <h3 className="font-bold text-lg mb-4">Save even more with bundles</h3>
-                        <div className="space-y-4">
-                            {/* UNIT Bundle */}
-                            <div className="border border-dashed p-4 rounded-md flex items-center gap-4">
-                                <div className="w-16 h-16 relative flex-shrink-0">
-                                    <Image
-                                        src={lesson.unit.imageUrl ?? '/dummy/sample-unit.jpg'}
-                                        alt="Unit"
-                                        fill
-                                        className="object-cover rounded-md"
-                                    />
-                                </div>
-                                <div className="flex-grow">
-                                    <p className="text-sm font-semibold">Purchase the entire unit</p>
-                                    <p className="text-xs text-gray-500">This unit introduces students to...</p>
-                                    <p className="text-sm mt-1 font-bold">${parseFloat(lesson.unit.price).toFixed(2)}</p>
-                                </div>
-                                <AnimatedAddToCartButton
-                                    productId={lesson.unit.id}
-                                    productType="UNIT"
-                                    itemTitle={lesson.unit.title}
-                                    itemImg={lesson.unit.imageUrl}
-                                    itemDesc=""
-                                    itemPrice={parseFloat(lesson.unit.price)}
-                                    size="sm"
-                                />
-                            </div>
-
-                            {/* COURSE Bundle (optional, tampilkan hanya jika ada course) */}
-                            {lesson && (
-                                <div className="border border-dashed p-4 rounded-md flex items-center gap-4">
-                                    <div className="w-16 h-16 relative flex-shrink-0">
-                                        <Image
-                                            src={lesson.imageUrl ?? '/dummy/sample-course.jpg'}
-                                            alt="Course"
-                                            fill
-                                            className="object-cover rounded-md"
-                                        />
-                                    </div>
-                                    <div className="flex-grow">
-                                        <p className="text-sm font-semibold">Purchase the entire course</p>
-                                        <p className="text-xs text-gray-500">
-                                            Foundations of Global Politics is a complete...
-                                        </p>
-                                        <p className="text-sm mt-1 font-bold">${parseFloat(lesson.price).toFixed(2)}</p>
-                                    </div>
-                                    <AnimatedAddToCartButton
-                                        productId={lesson.id}
-                                        productType="COURSE"
-                                        itemTitle={lesson.title}
-                                        itemImg={lesson.imageUrl}
-                                        itemDesc=""
-                                        itemPrice={parseFloat(lesson.price)}
-                                        size="sm"
-                                    />
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                    <LessonBundleSection lessonId={lesson.id} />
                 </div>
             </div>
 
-            {/* Modals */}
             <LessonPdfThumbnailModal
                 open={openThumbnail}
                 onClose={() => setOpenThumbnail(false)}

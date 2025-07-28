@@ -165,27 +165,29 @@ export default function CourseDetailClient() {
 
                     <DividerWithPlus />
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-15">
-                        {course.units.map((unit) => (
-                            <Link
-                                key={unit.id}
-                                href={`/courses/${course.id}/unit/${unit.id}`}
-                                className="overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300"
-                            >
-                                <div className="relative w-full h-90">
-                                    <Image
-                                        src={unit.imageUrl ?? '/dummy/sample-unit.jpg'}
-                                        alt={unit.title}
-                                        fill
-                                        className="object-cover"
-                                    />
-                                </div>
-                                <div className="mt-6 text-primary font-bold text-4xl">
-                                    <h2>{unit.title}</h2>
-                                </div>
-                            </Link>
-                        ))}
+                        {course.units.map((unit, index) => {
+                            const unitNumber = String(index + 1).padStart(2, '0'); // 👉 01, 02, 03
+                            return (
+                                <Link
+                                    key={unit.id}
+                                    href={`/courses/${course.id}/unit/${unit.id}`}
+                                    className="overflow-hidden flex flex-col"
+                                >
+                                    <div className="relative w-full h-90">
+                                        <Image
+                                            src={unit.imageUrl ?? '/dummy/sample-unit.jpg'}
+                                            alt={unit.title}
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    </div>
+                                    <div className="mt-6 text-primary font-bold text-4xl">
+                                        <h2>{unitNumber}. {unit.title}</h2>
+                                    </div>
+                                </Link>
+                            );
+                        })}
                     </div>
-
                 </div>
             </section>
 

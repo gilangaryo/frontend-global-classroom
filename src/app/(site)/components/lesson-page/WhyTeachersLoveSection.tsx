@@ -1,3 +1,5 @@
+import DividerWithPlus from "../../components/Divider";
+
 const teacherLove = {
     left: [
         {
@@ -51,12 +53,9 @@ export default function WhyTeachersLoveSection() {
             <h2 className="text-4xl font-bold text-[#363F36] mb-8 text-center">
                 WHY TEACHERS LOVE OUR MATERIALS
             </h2>
-            <div className="relative mb-12">
-                <hr className="border-gray-200" />
-                <div className="absolute left-1/2 top-1/2 bg-[#D9C7BF] text-[#363F36] px-2 font-bold -translate-x-1/2 -translate-y-1/2">
-                    +
-                </div>
-            </div>
+
+            <DividerWithPlus />
+
             <div className="grid md:grid-cols-2 gap-12">
                 <ul className="space-y-6">
                     {teacherLove.left.map((item) => (

@@ -38,7 +38,7 @@ export default function LessonSidebar({
                                 onClick={() => setUnit(unit === u.id ? '' : u.id)}
                                 className={`block w-full text-left py-2 transition
                                         ${unit === u.id
-                                        ? 'text-green-active font-bold border-b-2 border-green-active  bg-transparent'
+                                        ? 'text-green-active font-bold border-b-3 border-green-active  bg-transparent'
                                         : 'text-[#8E8E8E] hover:text-green-active '
                                     }`}
                             >
@@ -50,6 +50,9 @@ export default function LessonSidebar({
                 </ul>
             </div>
             <div className="space-y-3 pt-4 border-t border-[#EFE9E9]">
+                <h2>
+                    FILTERS
+                </h2>
                 <div>
                     <label className="block text-xs text-[#8E8E8E] mb-1">Grade</label>
                     <select className="w-full border rounded px-2 py-1 text-sm text-[#363F36] bg-[#EFE9E9]" value={grade} onChange={e => setGrade(e.target.value)}>
@@ -62,7 +65,7 @@ export default function LessonSidebar({
                 </div>
                 <div>
                     <label className="block text-xs text-[#8E8E8E] mb-1">Curriculum</label>
-                    <select className="w-full border rounded px-2 py-1 text-sm text-[#363F36] bg-[#EFE9E9]" value={curriculum} onChange={e => setCurriculum(e.target.value)}>
+                    <select className="w-full border rounded px-2 py-1 text-sm text-[#363F36] bg-gray-200" value={curriculum} onChange={e => setCurriculum(e.target.value)}>
                         <option value="">All</option>
                         <option value="IB">IB</option>
                         <option value="AP">AP</option>
