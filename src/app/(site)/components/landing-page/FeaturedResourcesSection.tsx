@@ -71,12 +71,12 @@ export default function FeaturedResourcesSection() {
     }, []);
 
     return (
-        <section className="py-8 md:py-14 px-4 md:px-25 bg-white">
+        <section className="py-8 md:py-40 px-4 md:px-20 bg-white">
             <div className="mx-auto">
                 <div className="grid grid-cols-1 md:grid-cols-3 md:gap-8 items-stretch min-h-[520px]">
                     {/* Kiri: Judul dan dua card di bawah */}
                     <div className='col-span-2 flex flex-col h-full'>
-                        <h2 className="text-4xl md:text-7xl font-bold text-primary mb-8 leading-tight">
+                        <h2 className="text-4xl md:text-7xl font-bold text-primary mb-8 leading-normal">
                             FEATURED <br /> RESOURCES
                         </h2>
                         <div className="flex gap-6 mt-auto mb-6 flex-wrap">

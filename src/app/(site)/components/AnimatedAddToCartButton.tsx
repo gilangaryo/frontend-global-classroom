@@ -23,7 +23,7 @@ export default function AnimatedAddToCartButton({
     itemImg: string;
     itemDesc: string;
     itemPrice: number;
-    size?: 'base' | 'sm';
+    size?: 'base' | 'sm' | 'course';
     buttonText?: string;
 }) {
     const dispatch = useDispatch();
@@ -60,7 +60,9 @@ export default function AnimatedAddToCartButton({
         'w-full rounded transition-colors font-semibold text-center h-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed';
     const sizeClass = size === 'sm'
         ? 'text-sm px-3 py-3 max-w-[120px]'
-        : 'text-sm px-4 py-2';
+        : size === 'course'
+            ? 'text-sm px-8 py-4 mb-4'
+            : 'text-sm px-4 py-2';
     const stateClass = inCart
         ? 'bg-primary text-white cursor-not-allowed'
         : 'bg-primary text-white hover:bg-primary/90';

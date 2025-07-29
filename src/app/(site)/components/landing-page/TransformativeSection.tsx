@@ -1,10 +1,10 @@
 import Image from 'next/image';
 export default function TransformativeSection() {
   return (
-    <section className="py-20 px-4 md:px-25 bg-white">
-      <div className="max-w-full mx-auto grid lg:grid-cols-5 gap-2 items-center">
-        <div className='col-span-3'>
-          <h2 className="text-3xl md:text-5xl text-primary mb-10 leading-relaxed">
+    <section className="py-40 px-4 md:px-20 bg-white">
+      <div className="max-w-full mx-auto grid lg:grid-cols-5 gap-20 items-center">
+        <div className='col-span-3 max-w-full'>
+          <h2 className="text-3xl md:text-5xl text-primary mb-10 leading-normal tracking-wider">
             Transformative Learning Through Justice, Story, and Collaboration
           </h2>
           <p className="text-lg font-semibold tracking-wider">
@@ -17,7 +17,7 @@ export default function TransformativeSection() {
             We also partner with schools, NGOs, and frontline communities to create field-based learning programs that connect students and educators directly to global struggles for human rights and climate justice.
           </p>
         </div>
-        <div className="relative w-full col-span-2 aspect-square overflow-hidden">
+        <div className="relative w-full col-span-2  aspect-square overflow-hidden">
           <Image
             src="/landing-page/transformative.png"
             alt="Transformative learning"

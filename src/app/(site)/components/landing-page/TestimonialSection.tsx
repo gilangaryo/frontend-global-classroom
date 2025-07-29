@@ -15,7 +15,7 @@ function TestimonialCard({ quote, author }: TestimonialCardProps) {
 
 export default function TestimonialSection() {
   return (
-    <section className="py-16 px-4 md:px-25 my-20 bg-white">
+    <section className="py-16 px-4 md:px-20 my-20 bg-white">
       <div className="max-w-full mx-auto">
         <h2 className="text-7xl font-bold text-primary text-left mb-15 leading-snug">
           What <br /> Teachers Are Saying

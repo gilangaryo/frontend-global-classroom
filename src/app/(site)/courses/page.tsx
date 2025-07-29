@@ -74,7 +74,9 @@ export default async function CoursePage() {
                                 <Image src={c.imageUrl} alt={c.title} fill className="object-cover" />
                             </div>
                             <div className="p-6 flex flex-col flex-1">
-                                <h3 className="text-4xl font-semibold text-[#363F36] mb-2">{c.title}</h3>
+                                <div className='mb-4 h-12/12'>
+                                    <h3 className="text-4xl font-semibold text-primary mb-2 leading-normal ">{c.title}</h3>
+                                </div>
                                 <p className="text-[#8E8E8E] text-sm mb-4 flex-1">{c.description}</p>
 
                                 <div className="mb-6">

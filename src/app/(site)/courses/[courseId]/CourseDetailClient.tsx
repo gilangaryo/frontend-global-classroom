@@ -88,11 +88,11 @@ export default function CourseDetailClient() {
     return (
         <main className="font-body">
             {/* Hero Section */}
-            <section className="bg-white px-4 md:px-25 pt-0 pb-20">
-                <h1 className="text-4xl md:text-7xl text-center font-extrabold text-[#363F36] mb-12 leading-tight mt-6 md:mt-12">
+            <section className="bg-white px-4 md:px-20 pt-0 pb-20">
+                <h1 className="text-4xl md:text-9xl text-left font-semibold text-black mb-20 leading-tight mt-6 md:mt-12">
                     {course.title}
                 </h1>
-                <div className="max-w-full mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-20 items-start">
+                <div className="max-w-full mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-40 items-start">
                     <div className="order-1 md:order-2 col-span-2 flex justify-center md:justify-end">
                         <div className="relative w-[320px] md:w-[800px] aspect-[5/6] overflow-hidden shadow-md">
                             <Image
@@ -105,21 +105,27 @@ export default function CourseDetailClient() {
                         </div>
                     </div>
                     <div className="order-2 md:order-1 flex flex-col items-start mt-6 md:mt-0">
-                        <p className="mb-6 text-sm md:text-lg text-[#363F36] max-w-md leading-relaxed">
+                        <p className="mb-6 text-sm md:text-[18px] text-black max-w-md leading-loose ">
                             {course.description}
                         </p>
-                        <div className="flex flex-col gap-3 w-full md:flex-row md:gap-4">
+                        <div className="flex flex-col gap-3 w-full md:flex-col md:gap-4">
                             <button
-                                className="px-6 py-3 rounded-lg bg-alt text-primary font-bold text-base shadow hover:bg-primary hover:text-white transition-colors w-full md:w-auto"
-                                onClick={() => setOpenThumbnail(true)}
+                                onClick={() => {
+                                    const section = document.getElementById("units");
+                                    if (section) {
+                                        section.scrollIntoView({ behavior: "smooth" });
+                                    }
+                                }}
+                                className="px-6 py-3 rounded-lg bg-alt text-primary font-bold text-base shadow hover:bg-primary hover:text-white transition-colors w-full md:w-50"
                             >
-                                Preview Lesson Overview
+                                Explore Core Units
                             </button>
+
                             <button
                                 onClick={() => setOpenPreviewPdf(true)}
-                                className="px-6 py-3 rounded-lg border border-[#363F36] text-[#363F36] font-bold text-base bg-white hover:bg-primary hover:text-white transition-colors w-full md:w-auto"
+                                className="px-6 py-3 rounded-lg border border-[#363F36] text-[#363F36] font-bold text-base bg-white hover:bg-primary hover:text-white transition-colors w-full md:w-50"
                             >
-                                Preview Full PDF
+                                Preview Unit
                             </button>
                         </div>
                     </div>
@@ -146,12 +152,12 @@ export default function CourseDetailClient() {
             />
 
             {/* Units Section */}
-            <section className="bg-alt2 py-16 px-4 md:px-25">
+            <section className="bg-alt2 py-40 px-4 md:px-20 " id="units">
                 <div className="max-w-full mx-auto">
-                    <h2 className="text-3xl md:text-4xl font-bold text-primary mb-8 text-center">
+                    <h2 className="text-3xl md:text-6xl font-bold text-primary mb-16 text-center">
                         EXPLORE THE CORE UNITS
                     </h2>
-                    <div className="text-center mb-6 w-2/3 md:w-1/6 mx-auto text-lg text-[#363F36]">
+                    <div className=" text-center mb-6  md:w-1/6 mx-auto text-lg text-black">
                         <AnimatedAddToCartButton
                             productId={course.id}
                             productType="COURSE"
@@ -159,7 +165,7 @@ export default function CourseDetailClient() {
                             itemImg={course.imageUrl}
                             itemDesc={course.units?.[0]?.title || ''}
                             itemPrice={parseFloat(course.price)}
-                            size="base"
+                            size="course"
                             buttonText="Buy All Units"
                         />
                     </div>
@@ -167,7 +173,7 @@ export default function CourseDetailClient() {
                     <DividerWithPlus />
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-15">
                         {course.units.map((unit, index) => {
-                            const unitNumber = String(index + 1).padStart(2, '0'); // 👉 01, 02, 03
+                            const unitNumber = String(index + 1).padStart(2, '0');
                             return (
                                 <Link
                                     key={unit.id}
@@ -192,15 +198,15 @@ export default function CourseDetailClient() {
                 </div>
             </section>
 
-            <section className="py-20 px-4 md:px-25 bg-white">
-                <div className="max-w-7xl mx-auto">
+            <section className="py-40 px-4 md:px-20 bg-white">
+                <div className="max-w-full mx-auto">
                     <h2 className="text-3xl md:text-7xl font-bold text-[#363F36] mb-8">FREE RESOURCE</h2>
-                    <div className="mb-4 text-[#363F36] text-lg">
+                    <div className="mb-4 text-primary text-lg">
                         Curious about this course? Checkout this free resource
                     </div>
                     <DividerWithPlus />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="relative max-w-full aspect-video">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8  items-end ">
+                        <div className="relative max-w-full aspect-video ">
                             <Image
                                 src={course.freeResources?.[0]?.image ?? '/dummy/sample-product.png'}
                                 alt={course.freeResources?.[0]?.title ?? 'Free Resource'}
@@ -208,15 +214,17 @@ export default function CourseDetailClient() {
                                 className="object-cover"
                             />
                         </div>
-                        <div className="p-6 flex flex-col justify-center">
-                            <div className="font-bold text-[#363F36] text-4xl mb-4 leading-normal">
-                                <h2>{course.freeResources?.[0]?.title ?? 'Free Resource'}</h2>
+                        <div className="p-6 flex flex-col justify-center text-primary">
+                            <div className="font-bold  text-4xl mb-4 leading-normal">
+                                <h2>{course.freeResources?.[0]?.title ?? 'foundation of a Global Politics'}</h2>
                             </div>
                             <Link
                                 href={course.freeResources?.[0]?.link ?? '#'}
-                                className="text-[#346046] font-medium text-base flex items-center gap-1 hover:underline"
+                                className=" font-semibold text-base flex items-center gap-1 hover:underline "
                             >
-                                Click Here →
+                                <p >
+                                    Click Here
+                                </p>
                             </Link>
                         </div>
                     </div>

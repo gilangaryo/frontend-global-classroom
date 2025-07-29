@@ -27,7 +27,6 @@ export default function LessonsPage() {
     return (
         <main className="font-body">
             <section>
-                {/* Heading */}
                 <div className="mb-10 bg-alt2 px-4 md:px-25 py-16">
                     <h1 className="text-5xl md:text-7xl font-extrabold text-[#363F36] leading-normal tracking-wider ">
                         EXPLORE <br /> LESSONS
@@ -61,8 +60,8 @@ export default function LessonsPage() {
                         </div>
                     </div>
                 </div>
-                <LessonList initialCourses={courses} initialUnits={units} loading={loading} />
             </section>
+            <LessonList initialCourses={courses} initialUnits={units} loading={loading} />
 
             <FreeLessonsSection />
             <WhyTeachersLoveSection />

@@ -27,7 +27,7 @@ const products = [
 
 export default function FreeLessonsSlider() {
   return (
-    <section className="py-16 px-4 md:px-25 bg-alt2">
+    <section className="py-8 md:py-40 px-4 md:px-20 bg-alt2">
       <h2 className="text-5xl md:text-7xl font-bold text-primary text-center mb-16">
         Explore Free Lessons
       </h2>
@@ -45,7 +45,7 @@ export default function FreeLessonsSlider() {
         >
           {products.map((product) => (
             <SwiperSlide key={product.id}>
-              <div className="grid md:grid-cols-2 gap-10 items-center">
+              <div className="grid md:grid-cols-2 gap-10 items-end">
                 {/* Image */}
                 <div className="relative w-full aspect-[16/9] rounded-lg overflow-hidden">
                   <Image
@@ -56,14 +56,14 @@ export default function FreeLessonsSlider() {
                   />
                 </div>
                 {/* Content */}
-                <div>
-                  <h3 className="text-3xl md:text-5xl font-bold text-primary tracking-wide mb-4">
+                <div className="flex flex-col items-start justify-end">
+                  <h3 className="text-3xl md:text-4xl font-bold text-primary tracking-wide mb-4 bottom-0">
                     {product.title}
                   </h3>
                   <p className="text-lg text-text mb-6">
                     {product.description}
                   </p>
-                  <button className="px-6 py-2 bg-primary text-white rounded">
+                  <button className="py-2  text-primary font-semibold rounded">
                     Explore Curriculum →
                   </button>
                 </div>
