@@ -1,4 +1,3 @@
-// src/app/(dashboard)/dashboard/layout.tsx
 'use client'
 
 import React, { useState } from 'react'
@@ -57,30 +56,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         },
     ]
 
-    // Sidebar width & main margin classes
     const sidebarClasses = collapsed ? 'w-16 px-2' : 'w-64 px-4'
     const mainMarginClass = collapsed ? 'ml-16' : 'ml-64'
 
     return (
         <div>
-            {/* Fixed Sidebar */}
             <aside
                 className={`
           fixed inset-y-0 left-0 top-0 bg-white border-r flex flex-col
           transition-all duration-300 shadow-sm ${sidebarClasses} py-4
         `}
             >
-                {/* SIDEBAR ATAS */}
                 {collapsed ? (
                     <>
-                        {/* Chevron di atas */}
                         <button
                             onClick={() => setCollapsed(false)}
                             className="mx-auto mt-2 mb-3 p-2 rounded hover:bg-gray-100"
                         >
                             <ChevronRight size={20} />
                         </button>
-                        {/* Logo di bawah chevron */}
                         <div className="flex justify-center ">
                             <Image
                                 src="/dashboard/logo-tumbuhin.png"
@@ -91,7 +85,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         </div>
                     </>
                 ) : (
-                    // Logo + text + chevronLeft
                     <div className="flex items-center justify-between pt-6 ">
                         <div className="flex items-center">
                             <Image
@@ -111,24 +104,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </div>
                 )}
 
-                {/* <button
-                    onClick={() => setCollapsed(!collapsed)}
-                    className="self-end p-2 mr-2 mb-4 rounded hover:bg-gray-100"
-                >
-                    {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-                </button>
-
-                <div className={`flex items-center ${collapsed ? 'justify-center' : 'py-6'}`}>
-                    <Image
-                        src="/dashboard/logo-tumbuhin.png"
-                        alt="Logo Tumbuhin"
-                        width={32}
-                        height={32}
-                    />
-                    {!collapsed && <span className="ml-3 text-lg font-bold text-[#008DFF]">Tumbuhin</span>}
-                </div> */}
-
-                {/* Navigation */}
                 <nav className="flex-1 overflow-y-auto">
                     {navItems.map((item) => {
                         const isActive = pathname === item.href
@@ -155,7 +130,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     })}
                 </nav>
 
-                {/* Profile & Logout */}
                 <div className="mt-auto mb-4">
                     <div className={`flex items-center ${collapsed ? 'justify-center' : 'px-3 mb-2'}`}>
                         <Image
@@ -184,7 +158,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </div>
             </aside>
 
-            {/* Main Content */}
             <main
                 className={`
           ${mainMarginClass} h-screen overflow-y-auto

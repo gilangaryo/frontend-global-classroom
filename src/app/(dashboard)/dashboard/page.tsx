@@ -14,14 +14,11 @@ export default function DashboardPage() {
             return;
         }
 
-        // Fetch profile user (ganti URL ke backend-mu)
         fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/profile`, {
             headers: { Authorization: 'Bearer ' + token }
         })
             .then(res => res.json())
             .then(data => {
-                // Sesuaikan dengan struktur backend-mu:
-                // { status: 'success', data: {...} }
                 const userData = data.data || data;
                 if (userData && userData.name) setUser(userData);
                 else {
@@ -36,7 +33,6 @@ export default function DashboardPage() {
     }, [router]);
 
     function handleLogout() {
-        // Ambil refreshToken dari localStorage
         const refreshToken = localStorage.getItem('refreshToken');
         if (refreshToken) {
             fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/logout`, {
@@ -45,13 +41,11 @@ export default function DashboardPage() {
                 body: JSON.stringify({ refreshToken }),
             })
                 .finally(() => {
-                    // Apapun hasilnya, tetap hapus token di localStorage dan redirect
                     localStorage.removeItem('token');
                     localStorage.removeItem('refreshToken');
                     router.replace('/login');
                 });
         } else {
-            // Jika tidak ada refreshToken, langsung logout
             localStorage.removeItem('token');
             localStorage.removeItem('refreshToken');
             router.replace('/login');

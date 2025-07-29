@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import DashboardTabs from '../components/DashboardTabs';
+import StatusDropdown from '../components/StatusDropdown';
 
 type BaseItem = { id: number; title: string; imageUrl?: string | null };
 
@@ -104,11 +105,11 @@ export default function CourseManagePage() {
       );
     }
     return (
-      <div className="overflow-hidden rounded-lg border">
+      <div className="rounded-lg border">
         {/* header */}
-        <div className="flex bg-sky-500 text-white font-semibold text-sm">
+        <div className="flex bg-sky-500 text-white font-semibold text-sm rounded-t-lg">
           <div className="flex-1 px-4 py-2">{label}</div>
-          <div className="w-24 px-4 py-2 text-center">Status</div>
+          <div className="w-115 px-4 py-2 text-center">Status</div>
           <div className="w-32 px-4 py-2 text-center">Action</div>
         </div>
         {/* rows */}
@@ -118,12 +119,35 @@ export default function CourseManagePage() {
             className="flex items-center border-t hover:bg-gray-50"
           >
             <div className="flex-1 px-4 py-3">{item.title}</div>
-            <div className="w-24 px-4 py-3">
-              <select className="w-full border rounded px-2 py-1 text-sm">
-                <option>Active</option>
-                <option>Inactive</option>
-              </select>
+            <div className="w-80 px-4 py-3 relative">
+              <StatusDropdown
+                initialStatus={item.isActive ?? true}
+                onStatusChange={async (isActive) => {
+                  try {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/courses/status/${item.id}`, {
+                      method: 'PATCH',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                      },
+                      body: JSON.stringify({ isActive }),
+                    });
+
+                    if (!res.ok) {
+                      const errData = await res.json();
+                      alert(errData.message || 'Failed to update status.');
+                    } else {
+                      console.log(`Status updated for course ${item.id} to`, isActive);
+                    }
+                  } catch (err) {
+                    console.error('Error updating status:', err);
+                    alert('Error updating course status.');
+                  }
+                }}
+              />
+
             </div>
+
             <div className="w-32 px-4 py-3 flex justify-center space-x-2">
               <Link
                 href={`${editBase}/${item.id}/edit`}

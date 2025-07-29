@@ -20,6 +20,7 @@ export default function AddCoursePage() {
   const [digitalUrl, setDigitalUrl] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const [colorButton, setColorButton] = useState('#3E724A');
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -63,6 +64,7 @@ export default function AddCoursePage() {
           price,
           digitalUrl,
           imageUrl,
+          colorButton,
         }),
       });
 
@@ -110,7 +112,7 @@ export default function AddCoursePage() {
                 onChange={e => setCategoryId(Number(e.target.value))}
                 className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
               >
-                <option value="">-- Select Category --</option>
+                <option value="">-- Product Category --</option>
                 {categories.map(cat => (
                   <option value={cat.id} key={cat.id}>{cat.name}</option>
                 ))}
@@ -125,14 +127,27 @@ export default function AddCoursePage() {
               className="w-full resize-none rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
             />
 
+            <div className="flex items-center gap-4 border border-gray-300 rounded-lg px-4 py-2 h-12">
+              <div className="w-6 h-6 rounded-full" style={{ backgroundColor: colorButton }} />
+              <label className="text-sm text-gray-600 whitespace-nowrap">
+                Change Color Template (for button)
+              </label>
+              <input
+                type="color"
+                value={colorButton}
+                onChange={(e) => setColorButton(e.target.value)}
+                className="ml-auto h-6 w-6 border-none cursor-pointer bg-transparent"
+              />
+            </div>
+
             <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
-              <div className="flex-shrink-0 flex items-center justify-center bg-sky-400 px-4 m-2 rounded-md">
-                <span className="text-white text-sm font-medium">$</span>
+              <div className="flex-shrink-0 flex items-center justify-center border-2 border-sky-500 bg-sky-100 px-4 m-2 rounded-md">
+                <span className="text-sky-500 text-sm font-bold">$</span>
               </div>
 
               <input
                 type="number"
-                placeholder="0.00"
+                placeholder="0.00 (price all units)"
                 onChange={(e) => setPrice(parseFloat(e.target.value))}
                 className="flex-1 px-4 py-2 text-sm placeholder:text-gray-500 outline-none border-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
