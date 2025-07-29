@@ -7,7 +7,7 @@ import Link from 'next/link';
 import DashboardTabs from '../components/DashboardTabs';
 import StatusDropdown from '../components/StatusDropdown';
 
-type BaseItem = { id: number; title: string; imageUrl?: string | null };
+type BaseItem = { id: number; title: string; imageUrl?: string | null; isActive?: boolean };
 
 export default function CourseManagePage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
