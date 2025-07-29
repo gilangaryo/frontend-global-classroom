@@ -75,24 +75,26 @@ export default function LessonDetailClient() {
                     <h1 className="text-2xl md:text-3xl font-bold mb-4">{lesson.title}</h1>
                     <p className="text-sm text-[#363F36] mb-4 max-w-lg">{lesson.description}</p>
                     <div className="flex gap-4 mb-6 mt-8">
-                        <div className="flex flex-col gap-3 w-full md:flex-row md:gap-4">
-
+                        <div className="flex flex-row gap-4 w-full md:w-auto">
                             <button
                                 onClick={() => setOpenPreviewPdf(true)}
-                                className="px-6 py-3 rounded-lg border border-[#363F36] text-[#363F36] font-bold text-base bg-white hover:bg-primary hover:text-white transition-colors w-full md:w-auto"
+                                className="px-6 py-3 rounded-lg border border-[#363F36] text-[#363F36] font-bold text-base bg-white hover:bg-primary hover:text-white transition-colors"
                             >
-                                Preview Full PDF
+                                Preview
                             </button>
+
+                            <AnimatedAddToCartButton
+                                productId={lesson.id}
+                                productType="LESSON"
+                                itemTitle={lesson.title}
+                                itemImg={lesson.imageUrl}
+                                itemDesc={lesson.description}
+                                itemPrice={parseFloat(lesson.price)}
+                                size="base"
+                            />
                         </div>
-                        <AnimatedAddToCartButton
-                            productId={lesson.id}
-                            productType="LESSON"
-                            itemTitle={lesson.title}
-                            itemImg={lesson.imageUrl}
-                            itemDesc={lesson.description}
-                            itemPrice={parseFloat(lesson.price)}
-                        />
                     </div>
+
 
                     <Link
                         href="#"

@@ -57,6 +57,11 @@ export default function LessonList({
                 setLessons(json.data || []);
                 setTotalPages(json.pagination?.totalPages || 1);
             })
+            .catch((err) => {
+                if (err.name !== 'AbortError') {
+                    console.error("Fetch error:", err);
+                }
+            })
             .finally(() => {
                 clearTimeout(timeout);
                 setLoading(false);
@@ -67,6 +72,7 @@ export default function LessonList({
             clearTimeout(timeout);
         };
     }, [course, unit, search, page]);
+
 
     return (
         <main className="font-body max-w-full mx-auto pb-10">

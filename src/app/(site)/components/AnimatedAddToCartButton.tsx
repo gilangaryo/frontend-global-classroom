@@ -15,6 +15,7 @@ export default function AnimatedAddToCartButton({
     itemDesc,
     itemPrice,
     size = 'base',
+    buttonText,
 }: {
     productId: string;
     productType: 'COURSE' | 'UNIT' | 'SUBUNIT' | 'LESSON';
@@ -23,6 +24,7 @@ export default function AnimatedAddToCartButton({
     itemDesc: string;
     itemPrice: number;
     size?: 'base' | 'sm';
+    buttonText?: string;
 }) {
     const dispatch = useDispatch();
     const cartItems = useSelector((state: RootState) => state.cart.items);
@@ -55,7 +57,7 @@ export default function AnimatedAddToCartButton({
     };
 
     const baseClass =
-        'w-full rounded transition-colors font-semibold text-center';
+        'w-full rounded transition-colors font-semibold text-center h-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed';
     const sizeClass = size === 'sm'
         ? 'text-sm px-3 py-3 max-w-[120px]'
         : 'text-sm px-4 py-2';
@@ -77,7 +79,7 @@ export default function AnimatedAddToCartButton({
                         disabled={inCart}
                         className={`${baseClass} ${sizeClass} ${stateClass}`}
                     >
-                        {inCart ? '✓ In Cart' : `Buy Now $${itemPrice}`}
+                        {inCart ? '✓ In Cart' : `${buttonText || 'Buy Now'} $${itemPrice}`}
                     </motion.button>
                 </AnimatePresence>
             </div>

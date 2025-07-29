@@ -151,7 +151,7 @@ export default function CourseDetailClient() {
                     <h2 className="text-3xl md:text-4xl font-bold text-primary mb-8 text-center">
                         EXPLORE THE CORE UNITS
                     </h2>
-                    <div className="text-center mb-6">
+                    <div className="text-center mb-6 w-2/3 md:w-1/6 mx-auto text-lg text-[#363F36]">
                         <AnimatedAddToCartButton
                             productId={course.id}
                             productType="COURSE"
@@ -159,7 +159,8 @@ export default function CourseDetailClient() {
                             itemImg={course.imageUrl}
                             itemDesc={course.units?.[0]?.title || ''}
                             itemPrice={parseFloat(course.price)}
-                            size="sm"
+                            size="base"
+                            buttonText="Buy All Units"
                         />
                     </div>
 
@@ -191,7 +192,6 @@ export default function CourseDetailClient() {
                 </div>
             </section>
 
-            {/* Free Resources Section */}
             <section className="py-20 px-4 md:px-25 bg-white">
                 <div className="max-w-7xl mx-auto">
                     <h2 className="text-3xl md:text-7xl font-bold text-[#363F36] mb-8">FREE RESOURCE</h2>
