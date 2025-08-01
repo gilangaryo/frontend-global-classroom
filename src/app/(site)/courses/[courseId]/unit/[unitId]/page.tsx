@@ -39,7 +39,8 @@ async function getCourseData(courseId: string) {
         });
 
         const courseTitle = json?.data?.title || 'Course';
-        return { allUnits, courseTitle };
+        const colorCourse = json?.data?.colorButton || '#3E724A';
+        return { allUnits, courseTitle, colorCourse };
     } catch (error) {
         console.error('Error fetching course units:', error);
         return { allUnits: [], courseTitle: 'Course' };
@@ -47,10 +48,7 @@ async function getCourseData(courseId: string) {
 }
 
 
-// --- Page Component (Perubahan di sini) ---
-
 export default async function Page({ params }: { params: Promise<{ courseId: string; unitId: string }> }) {
-    // ✅ Tambahkan 'await' di sini
     const { courseId, unitId } = await params;
 
     const [unit, courseData] = await Promise.all([
@@ -73,6 +71,7 @@ export default async function Page({ params }: { params: Promise<{ courseId: str
             allUnits={courseData.allUnits}
             courseId={courseId}
             courseTitle={courseData.courseTitle}
+            courseColor={courseData.colorCourse}
         />
     );
 }

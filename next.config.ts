@@ -2,8 +2,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ['gilangaryo.online'],
     remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'link.com',
+        pathname: '/**',
+      },
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',

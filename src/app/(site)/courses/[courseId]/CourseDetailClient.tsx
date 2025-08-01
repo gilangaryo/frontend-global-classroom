@@ -167,6 +167,7 @@ export default function CourseDetailClient() {
                             itemPrice={parseFloat(course.price)}
                             size="course"
                             buttonText="Buy All Units"
+                            colorButton={course.colorButton}
                         />
                     </div>
 

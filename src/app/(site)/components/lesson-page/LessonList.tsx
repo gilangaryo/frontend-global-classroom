@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import LessonSidebar from './LessonSidebar';
 import LessonCard from './LessonCard';
 import LessonSearchBar from './LessonSearchBar';
-
 export type Lesson = {
     id: string;
     title: string;
@@ -15,8 +14,25 @@ export type Lesson = {
     description?: string;
 };
 
-export type Course = { id: string; title: string };
-export type Unit = { id: string; title: string };
+export type Course = {
+    id: string;
+    title: string
+    colorButton?: string;
+    isActive?: boolean;
+};
+export type Unit = {
+    id: string;
+    title: string
+};
+
+
+function hexToRgba(hex: string, alpha = 1): string {
+    const cleanHex = hex.replace('#', '');
+    const r = parseInt(cleanHex.slice(0, 2), 16);
+    const g = parseInt(cleanHex.slice(2, 4), 16);
+    const b = parseInt(cleanHex.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
 
 export default function LessonList({
     initialCourses = [],
@@ -35,7 +51,6 @@ export default function LessonList({
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
-    // Optional filters
     const [grade, setGrade] = useState('');
     const [curriculum, setCurriculum] = useState('');
     const [activity, setActivity] = useState('');
@@ -43,8 +58,7 @@ export default function LessonList({
 
     useEffect(() => {
         const controller = new AbortController();
-        const timeout = setTimeout(() => setLoading(true), 50); // smooth transition loading
-
+        const timeout = setTimeout(() => setLoading(true), 50);
         const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
         let url = `${baseUrl}/api/lessons?page=${page}&limit=6`;
         if (course) url += `&courseId=${course}`;
@@ -74,11 +88,13 @@ export default function LessonList({
     }, [course, unit, search, page]);
 
 
+
     return (
         <main className="font-body max-w-full mx-auto pb-10">
             <LessonSearchBar search={search} setSearch={setSearch} />
 
-            <div className="flex items-center gap-2 border-b border-[#EFE9E9] bg-white px-4 md:px-25 pt-8 pb-2 mb-6 overflow-x-auto">
+            <div className="flex items-center gap-4 border-b border-[#EFE9E9] bg-white px-4 md:px-25 pt-8 pb-2 mb-6 overflow-x-auto">
+
                 <button
                     onClick={() => {
                         setCourse('');
@@ -88,30 +104,49 @@ export default function LessonList({
                         ? 'bg-button2 text-[#3E724A] font-bold border-[#3E724A]'
                         : 'bg-transparent text-[#3E724A] border-transparent hover:border-[#3E724A]'
                         }`}
-                    style={{ boxShadow: !course ? '0 0 0 2px #3E724A22' : undefined }}
+                    style={{ boxShadow: !course ? '0 0 0 0px #3E724A22' : undefined }}
                 >
                     ALL COURSES
                 </button>
-                {initialCourses.map((c) => (
-                    <button
-                        key={c.id}
-                        onClick={() => {
-                            setCourse(c.id);
-                            setPage(1);
-                        }}
-                        className={`px-3 py-1 rounded border transition text-sm ${course === c.id
-                            ? 'bg-button2 text-[#3E724A] font-bold border-[#3E724A]'
-                            : 'bg-transparent text-[#3E724A] border-transparent hover:border-[#3E724A]'
-                            }`}
-                        style={{ boxShadow: course === c.id ? '0 0 0 2px #3E724A22' : undefined }}
-                    >
-                        {c.title}
-                    </button>
-                ))}
+                {initialCourses.map((c) => {
+                    const isSelected = course === c.id;
+                    const isInactive = c.isActive === false;
+                    const color = c.colorButton || '#3E724A';
+
+                    const backgroundColor = isSelected ? hexToRgba(color, 0.1) : 'transparent';
+                    const borderColor = isSelected ? color : 'transparent';
+
+                    let textColor = '#6b7280';
+                    if (isSelected) textColor = color;
+                    if (isInactive) textColor = '#9ca3af';
+
+                    return (
+                        <button
+                            key={c.id}
+                            onClick={() => {
+                                if (isInactive) return;
+                                setCourse(c.id);
+                                setPage(1);
+                            }}
+                            className={`px-4 py-2 rounded border transition text-sm font-semibold ${isInactive ? 'cursor-not-allowed opacity-60' : 'hover:opacity-80'
+                                }`}
+                            style={{
+                                backgroundColor,
+                                color: textColor,
+                                borderColor,
+                            }}
+                        >
+                            {c.title}
+                        </button>
+                    );
+                })}
+
+
+
             </div>
 
             {/* Content */}
-            <div className="grid grid-cols-1 md:grid-cols-4 px-4 md:px-25 gap-20 bg-white">
+            <div className="grid grid-cols-1 md:grid-cols-5 px-4 md:px-25 gap-10 bg-white">
                 <LessonSidebar
                     initialUnits={initialUnits}
                     unit={unit}
@@ -127,10 +162,13 @@ export default function LessonList({
                     setActivity={setActivity}
                     support={support}
                     setSupport={setSupport}
+                    colorClass={(initialCourses.find(c => c.id === course)?.colorButton) || '#3E724A'}
                 />
 
-                <div className="md:col-span-3 flex flex-col gap-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 relative min-h-[420px]">
+
+                {/* KANAN LIST LESSON  */}
+                <div className="md:col-span-3 md:col-start-3 flex flex-col gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-10 relative min-h-[420px]">
                         {loading && (
                             <div className="absolute inset-0 bg-white/80 z-10 flex flex-wrap gap-4 p-2">
                                 {[...Array(6)].map((_, idx) => (
@@ -143,9 +181,9 @@ export default function LessonList({
                         )}
 
                         {!loading && lessons.length === 0 ? (
-                            <div className="col-span-3 text-[#888]">No lessons found.</div>
+                            <div className="col-span-3 text-black">No lessons found.</div>
                         ) : (
-                            lessons.map((l) => <LessonCard key={l.id} lesson={l} />)
+                            lessons.map((l) => <LessonCard key={l.id} lesson={l} colorClass={(initialCourses.find(c => c.id === course)?.colorButton) || '#363F36'} />)
                         )}
                     </div>
 

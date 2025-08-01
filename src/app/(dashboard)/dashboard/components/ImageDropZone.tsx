@@ -44,7 +44,7 @@ export default function ImageDropZone({ onImageUpload }: Props) {
     };
 
     return (
-        <div className='rounded-xl border-2 p-3 border-gray-300'>
+        <div className='rounded-xl h-fit border-2 p-3 border-gray-300'>
 
             <div
                 className="flex h-60 w-full items-center justify-center rounded-lg border-2 border-dashed border-gray-300 cursor-pointer hover:border-sky-400 transition relative bg-gray-50 overflow-hidden"

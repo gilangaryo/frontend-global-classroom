@@ -2,52 +2,32 @@
 
 import DashboardTabs from "../../components/DashboardTabs";
 import ImageDropZone from "../../components/ImageDropZone";
-import { useState, useEffect } from 'react';
+import TiptapEditor from '../../components/TiptapEditor';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-type Category = {
-  id: number;
-  name: string;
-};
+function isColorDark(hex: string): boolean {
+  const cleanHex = hex.replace('#', '');
+  const r = parseInt(cleanHex.slice(0, 2), 16);
+  const g = parseInt(cleanHex.slice(2, 4), 16);
+  const b = parseInt(cleanHex.slice(4, 6), 16);
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  return brightness < 128;
+}
 
 export default function AddCoursePage() {
   const router = useRouter();
+
   const [title, setTitle] = useState('');
-  const [categoryId, setCategoryId] = useState<number | "">("");
-  const [categories, setCategories] = useState<Category[]>([]);
   const [description, setDescription] = useState('');
+  const [courseIncluded, setCourseIncluded] = useState('');
   const [price, setPrice] = useState<number>(0);
   const [digitalUrl, setDigitalUrl] = useState('');
   const [imageUrl, setImageUrl] = useState('');
-  const [loading, setLoading] = useState(false);
   const [colorButton, setColorButton] = useState('#3E724A');
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/categories`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          }
-        );
-        const data = await res.json();
-        setCategories(data.data || []);
-      } catch {
-        setCategories([]);
-      }
-    };
-    fetchCategories();
-  }, []);
-
+  const [loading, setLoading] = useState(false);
 
   const handleSave = async () => {
-    if (!categoryId) {
-      alert("Please select a category!");
-      return;
-    }
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
@@ -59,12 +39,12 @@ export default function AddCoursePage() {
         },
         body: JSON.stringify({
           title,
-          categoryId,
           description,
           price,
           digitalUrl,
           imageUrl,
           colorButton,
+          courseIncluded,
         }),
       });
 
@@ -97,34 +77,25 @@ export default function AddCoursePage() {
         <h2 className="text-lg font-semibold">Add Course</h2>
 
         <div className="grid gap-6 md:grid-cols-3">
-          <div className="md:col-span-2 space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <input
-                type="text"
-                placeholder="Name Course"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
-              />
+          <div className="md:col-span-2 space-y-5">
+            <input
+              type="text"
+              placeholder="Name Course"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
+            />
 
-              <select
-                value={categoryId}
-                onChange={e => setCategoryId(Number(e.target.value))}
-                className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
-              >
-                <option value="">-- Product Category --</option>
-                {categories.map(cat => (
-                  <option value={cat.id} key={cat.id}>{cat.name}</option>
-                ))}
-              </select>
-            </div>
+            <TiptapEditor
+              content={description}
+              onChange={setDescription}
+              placeholder="Add content..."
+            />
 
-            <textarea
-              rows={5}
-              placeholder="Description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full resize-none rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
+            <TiptapEditor
+              content={courseIncluded}
+              onChange={setCourseIncluded}
+              placeholder="Add course included..."
             />
 
             <div className="flex items-center gap-4 border border-gray-300 rounded-lg px-4 py-2 h-12">
@@ -140,11 +111,23 @@ export default function AddCoursePage() {
               />
             </div>
 
+            <div className="pt-2">
+              <label className="text-sm text-gray-600">Live Button Preview:</label>
+              <div className="mt-2">
+                <button
+                  type="button"
+                  className={`mb-4 px-8 py-3 rounded-lg font-semibold hover:opacity-90 ${isColorDark(colorButton) ? 'text-white' : 'text-black'}`}
+                  style={{ backgroundColor: colorButton }}
+                >
+                  Buy Now
+                </button>
+              </div>
+            </div>
+
             <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
               <div className="flex-shrink-0 flex items-center justify-center border-2 border-sky-500 bg-sky-100 px-4 m-2 rounded-md">
                 <span className="text-sky-500 text-sm font-bold">$</span>
               </div>
-
               <input
                 type="number"
                 placeholder="0.00 (price all units)"

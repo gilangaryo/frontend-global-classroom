@@ -28,7 +28,7 @@ export default function LessonsPage() {
         <main className="font-body">
             <section>
                 <div className="mb-10 bg-alt2 px-4 md:px-25 py-16">
-                    <h1 className="text-5xl md:text-7xl font-extrabold text-[#363F36] leading-normal tracking-wider ">
+                    <h1 className="text-5xl md:text-7xl font-extrabold text-primary leading-normal tracking-wider ">
                         EXPLORE <br /> LESSONS
                     </h1>
                     <div className="flex flex-col md:flex-row md:justify-between gap-4 leading-relaxed mt-4">
