@@ -2,8 +2,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import WhoWeWorkWithSection from "../components/consulting/WhoWeWorkWithSection";
+import FeaturedProjects from '../components/consulting/FeaturedProjects';
 export default function ConsultingPage() {
     const offerItems = [
         {
@@ -24,17 +24,10 @@ export default function ConsultingPage() {
             desc: 'We design and support the delivery of participatory learning experiences, from school-based simulations to fieldwork and community-based workshops.',
         },
     ];
-
-    const featured = [
-        { id: 'ukraine', title: 'War Crimes in Ukraine', image: '/dummy/sample-product.png' },
-        { id: 'refugees', title: 'Refugee Journeys', image: '/dummy/sample-product.png' },
-        { id: 'climate', title: 'Climate Justice Stories', image: '/dummy/sample-product.png' },
-    ];
-
     return (
         <main className="font-body">
-            <section className="bg-white py-16 px-4 max-w-full">
-                <div className="max-w-11/12 mx-auto">
+            <section className="bg-white py-4 md:py-16 px-4 md:px-25 max-w-full">
+                <div className="mx-auto">
                     {/* HERO JUDUL */}
                     <h1 className="text-[2.8rem] md:text-[5rem] font-bold text-[#222] leading-normal mb-8">
                         BEYOND<br />
@@ -63,8 +56,8 @@ export default function ConsultingPage() {
 
 
             {/* What We Offer */}
-            <section className="bg-alt2 py-16 max-w-full">
-                <div className="max-w-11/12 mx-auto px-6">
+            <section className="bg-alt2 py-4 md:py-40 px-4 md:px-25 max-w-full">
+                <div className=" mx-auto ">
                     <h2 className="text-4xl md:text-7xl font-bold text-primary mb-8 py-10">WHAT WE OFFER</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {offerItems.map((item) => (
@@ -81,8 +74,8 @@ export default function ConsultingPage() {
 
 
             {/* Why Work With Us */}
-            <section className="py-20 bg-alt2 max-w-full">
-                <div className="max-w-11/12 mx-auto px-6 grid md:grid-cols-3 gap-12 items-center">
+            <section className="py-4 md:py-40 px-4 md:px-25 bg-alt2 max-w-full">
+                <div className=" mx-auto  grid md:grid-cols-3 gap-12 items-center">
                     <div className='col-span-2'>
                         <h2 className="text-4xl md:text-7xl  font-bold text-primary mb-8">
                             WHY WORK
@@ -90,7 +83,7 @@ export default function ConsultingPage() {
                         <h2 className="text-4xl md:text-7xl  font-bold text-primary mb-18">
                             WITH US
                         </h2>
-                        <ul className="list-disc list-inside space-y-6 text-primary border-l-4 border-primary px-4 font-semibold">
+                        <ul className="list-disc list-inside space-y-8 text-primary border-l-4 border-primary px-4 font-semibold">
                             <li>20+ years of classroom and curriculum design experience</li>
                             <li>Deep expertise in human rights, global politics, and climate justice</li>
                             <li>Focused on relevance, clarity, and impact</li>
@@ -102,41 +95,11 @@ export default function ConsultingPage() {
             </section>
 
             {/* Featured Projects */}
-            <section className="py-16 bg-white max-w-full">
-                <div className="max-w-11/12 mx-auto px-6">
-                    <h2 className="text-4xl md:text-7xl  font-bold text-primary text-center mb-8">FEATURED PROJECTS</h2>
-                    <div className="relative">
-                        <div className="flex items-center gap-6 overflow-x-auto snap-x pb-4">
-                            {featured.map((f) => (
-                                <div
-                                    key={f.id}
-                                    className="snap-start flex-shrink-0 w-80 bg-[#FDFDFD] border border-[#D9C7BF] rounded-lg overflow-hidden"
-                                >
-                                    <div className="relative h-48 w-full">
-                                        <Image src={f.image} alt={f.title} fill className="object-cover" />
-                                    </div>
-                                    <div className="p-4">
-                                        <h3 className="font-semibold text-primary mb-2">{f.title}</h3>
-                                        <p className="text-[#8E8E8E] text-sm">
-                                            Examine war crimes and crimes against humanity in the Russia-Ukraine conflict.
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                        <button className="absolute left-0 top-1/2 -translate-y-1/2 bg-white bg-opacity-90 p-2 rounded-full shadow">
-                            <ChevronLeft size={20} className="text-primary" />
-                        </button>
-                        <button className="absolute right-0 top-1/2 -translate-y-1/2 bg-white bg-opacity-90 p-2 rounded-full shadow">
-                            <ChevronRight size={20} className="text-primary" />
-                        </button>
-                    </div>
-                </div>
-            </section>
+            <FeaturedProjects />
 
             {/* Let's Collaborate */}
-            <section className=" py-16 bg-alt2 max-w-full">
-                <div className="max-w-11/12 mx-auto px-6 grid md:grid-cols-2 gap-12 items-start">
+            <section className="py-4 md:py-40 px-4 md:px-25 bg-alt2 max-w-full">
+                <div className=" mx-auto  grid md:grid-cols-2 gap-12 items-start">
                     <div>
                         <h2 className="text-4xl md:text-7xl font-bold text-black mb-4 leading-normal">LET’S COLLABORATE</h2>
                         <p className="text-[#8E8E8E] mb-2">

@@ -1,6 +1,5 @@
 'use client';
 import React from "react";
-import Link from "next/link";
 
 interface ModalPreviewPdfProps {
     open: boolean;
@@ -41,11 +40,20 @@ const ModalPreviewPdf: React.FC<ModalPreviewPdfProps> = ({ open, onClose, pdfUrl
                     />
                 </div>
 
-                <div className="w-full flex justify-center mt-4 bg-primary hover:opacity-90 px-6 py-3 rounded-md">
-                    <Link href="/" className="text-white transition">
+                {/* <div className="w-full flex justify-center mt-4 bg-primary hover:opacity-90 px-6 py-3 rounded-md"> */}
+                <div className="w-full flex justify-center mt-4">
+                    <a
+                        href={pdfUrl}
+                        download
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full  bg-primary hover:opacity-90 px-6 py-3 rounded-md text-white transition text-center font-semibold"
+                    >
                         Download Preview
-                    </Link>
+                    </a>
                 </div>
+
+                {/* </div> */}
             </div>
         </div>
     );

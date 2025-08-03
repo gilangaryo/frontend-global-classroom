@@ -6,12 +6,16 @@ export default function AboutPage() {
     return (
         <main className="font-body">
             {/* About Intro */}
-            <section className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <section className="max-w-full mx-auto px-4 md:px-25 py-4 md:py-16 grid grid-cols-2 md:grid-cols-2 gap-12 items-center">
                 {/* Text */}
-                <div className="space-y-6">
-                    <h1 className="text-5xl md:text-7xl font-bold text-[#363F36]">
+                <div className='col-span-2'>
+                    <h1 className="text-5xl md:text-7xl font-semibold text-black leading-normal">
                         ABOUT A GLOBAL<br />CLASSROOM
                     </h1>
+                </div>
+
+                <div className="space-y-6 col-span-1">
+
                     <h2 className="text-[#4E3D34] font-semibold uppercase">
                         Rooted in justice. Guided by story. Grounded in practice.
                     </h2>
@@ -41,12 +45,12 @@ export default function AboutPage() {
                 </div>
 
                 {/* Image */}
-                <div className="relative h-64 md:h-96 bg-[#EFE9E9] rounded-lg overflow-hidden">
+                <div className="relative bg-[#EFE9E9] w-full h-full overflow-hidden ">
                     <Image
                         src="/about/hero.jpg"
                         alt="Classroom discussion"
                         fill
-                        className="object-cover"
+                        className="object-cover aspect-[9/16]"
                     />
                 </div>
             </section>
@@ -100,10 +104,10 @@ export default function AboutPage() {
                     </div>
 
                     {/* Naila */}
-                    <div className="grid grid-cols-1 md:grid-cols-[1fr_260px] gap-10 items-center">
+                    <div className="grid grid-cols-1 md:grid-cols-[1fr_360px] gap-10 items-center">
                         {/* Deskripsi kiri */}
                         <div className="flex flex-col justify-center">
-                            <div className="space-y-4 text-[#363F36] text-base leading-relaxed">
+                            <div className="space-y-4 text-[#363F36] text-base leading-relaxed max-w-xl">
                                 <p>
                                     Naila Madina is a communications strategist and sustainability advocate based in Indonesia.
                                     With a background in communications and a passion for environmental and cultural preservation,
@@ -123,12 +127,12 @@ export default function AboutPage() {
                         </div>
                         {/* Foto & nama kanan */}
                         <div className="flex flex-col items-center ">
-                            <div className="relative w-full h-70 ">
+                            <div className="relative w-full h-60 ">
                                 <Image
                                     src="/about/naila.jpg"
                                     alt="Naila Madina"
                                     fill
-                                    className="object-cover"
+                                    className="object-cover "
                                 />
                             </div>
                             <h3 className="text-2xl font-bold text-[#363F36] w-full text-left mt-4">NAILA MADINA</h3>

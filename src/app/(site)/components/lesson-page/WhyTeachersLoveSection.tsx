@@ -50,7 +50,7 @@ const teacherLove = {
 export default function WhyTeachersLoveSection() {
     return (
         <section className="py-20 px-6 max-w-7xl mx-auto">
-            <h2 className="text-4xl font-bold text-[#363F36] mb-8 text-center">
+            <h2 className="text-5xl md:text-7xl font-bold mb-8 text-left leading-normal">
                 WHY TEACHERS LOVE OUR MATERIALS
             </h2>
 

@@ -1,54 +1,39 @@
-// File: app/courses/[courseId]/unit/[unitId]/page.tsx
-
 import UnitDetailClient from './UnitDetailClient';
-
 
 interface SimpleUnit {
     id: string;
     title: string;
 }
-async function getUnitById(unitId: string) {
-    try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/units/${unitId}`, {
-            next: { revalidate: 60 },
-        });
-        if (!res.ok) return null;
-        const json = await res.json();
-        return json.data;
-    } catch (error) {
-        console.error('Error fetching unit:', error);
-        return null;
-    }
+
+interface Unit {
+    id: string;
+    title: string;
 }
 
+async function getUnitById(unitId: string) {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/unit/${unitId}`, {
+        next: { revalidate: 60 },
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data;
+}
 
 async function getCourseData(courseId: string) {
-    try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/courses/${courseId}`, {
-            next: { revalidate: 60 },
-        });
-
-        if (!res.ok) return { allUnits: [], courseTitle: 'Course' };
-
-        const json = await res.json();
-        const units = json?.data?.units || [];
-
-        const allUnits: SimpleUnit[] = units.map((u: unknown) => {
-            const unit = u as SimpleUnit;
-            return { id: unit.id, title: unit.title };
-        });
-
-        const courseTitle = json?.data?.title || 'Course';
-        const colorCourse = json?.data?.colorButton || '#3E724A';
-        return { allUnits, courseTitle, colorCourse };
-    } catch (error) {
-        console.error('Error fetching course units:', error);
-        return { allUnits: [], courseTitle: 'Course' };
-    }
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/${courseId}`, {
+        next: { revalidate: 60 },
+    });
+    if (!res.ok) return { allUnits: [], courseTitle: 'Course', colorCourse: '#3E724A' };
+    const json = await res.json();
+    const units = json?.data?.units || [];
+    const allUnits: SimpleUnit[] = units.map((u: Unit) => ({ id: u.id, title: u.title }));
+    const courseTitle = json?.data?.title || 'Course';
+    const colorCourse = json?.data?.colorButton || '#3E724A';
+    return { allUnits, courseTitle, colorCourse };
 }
 
-
-export default async function Page({ params }: { params: Promise<{ courseId: string; unitId: string }> }) {
+export default async function Page({ params }: { params: { courseId: string; unitId: string } }) {
+    // Await params before destructuring
     const { courseId, unitId } = await params;
 
     const [unit, courseData] = await Promise.all([

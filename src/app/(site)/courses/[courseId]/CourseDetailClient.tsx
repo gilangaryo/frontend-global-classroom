@@ -63,7 +63,7 @@ export default function CourseDetailClient() {
     useEffect(() => {
         const fetchCourse = async () => {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/courses/${id}`);
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/${id}`);
                 const json = await res.json();
                 setCourse(json.data);
             } catch (err) {
@@ -82,8 +82,8 @@ export default function CourseDetailClient() {
     if (loading) return <div className="text-center py-20">Loading...</div>;
     if (error || !course) return notFound();
 
-    const pdfUrl = "https://res.cloudinary.com/dla5fna8n/image/upload/v1753374352/data_desqhr.pdf";
-    const imgUrl = "/dummy/sample-product.png";
+    const pdfUrl = course.previewUrl;
+    const imgUrl = course.imageUrl;
 
     return (
         <main className="font-body">
@@ -143,13 +143,13 @@ export default function CourseDetailClient() {
                 }}
             />
 
-            {/* Modal PDF */}
             <ModalPreviewPdf
                 open={openPreviewPdf}
                 onClose={() => setOpenPreviewPdf(false)}
                 pdfUrl={pdfUrl}
                 title="Preview Unit"
             />
+
 
             {/* Units Section */}
             <section className="bg-alt2 py-40 px-4 md:px-20 " id="units">

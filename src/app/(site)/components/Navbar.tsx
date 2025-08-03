@@ -5,11 +5,10 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import logo_navbar from '../../../../public/logo_navbar.png'
-import search_icon from '../../../../public/search.png'
 import cart_icon from '../../../../public/cart.png'
 import menu_icon from '../../../../public/menu.png'
 import CartModal from './CartModal';
-
+import ProductSearchBar from './ProductSearchBar';
 export default function Navbar() {
   const pathname = usePathname();
   const navItems = [
@@ -52,7 +51,7 @@ export default function Navbar() {
         </div>
         {/* Right: Search & Cart */}
         <div className="flex items-center">
-          <div className="relative mr-4">
+          {/* <div className="relative mr-4">
             <input
               type="text"
               placeholder="Search"
@@ -65,11 +64,20 @@ export default function Navbar() {
               height={16}
               className="absolute left-3 top-2.5 opacity-70"
             />
+          </div> */}
+          <ProductSearchBar />
+          {/* Cart Button with Relative Positioning */}
+          <div className="relative">
+            <button
+              onClick={() => setCartOpen(!cartOpen)}
+              className="focus:outline-none p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <Image src={cart_icon} alt="Cart" height={20} />
+            </button>
+
+            {/* Cart Modal positioned relative to cart button */}
+            <CartModal open={cartOpen} onClose={() => setCartOpen(false)} />
           </div>
-          <button onClick={() => setCartOpen(true)} className="focus:outline-none">
-            <Image src={cart_icon} alt="Cart" height={20} />
-          </button>
-          <CartModal open={cartOpen} onClose={() => setCartOpen(false)} />
         </div>
       </div>
 
@@ -83,13 +91,26 @@ export default function Navbar() {
         </div>
         {/* RIGHT: Cart */}
         <div className="flex items-center gap-x-3">
-          <button onClick={() => setSearchOpen(true)} className="focus:outline-none" aria-label="Search">
-            <Image src={search_icon} alt="Search" width={22} height={22} />
-          </button>
-          <button onClick={() => setCartOpen(true)} className="focus:outline-none" aria-label="Cart">
-            <Image src={cart_icon} alt="Cart" width={22} height={22} />
-          </button>
-          <CartModal open={cartOpen} onClose={() => setCartOpen(false)} />
+          <div className="flex items-center gap-x-2">
+            <ProductSearchBar />
+            <button onClick={() => setSearchOpen(false)} aria-label="Close search" className="ml-2 text-xl">
+              ✕
+            </button>
+          </div>
+
+          {/* Mobile Cart Button with Relative Positioning */}
+          <div className="relative">
+            <button
+              onClick={() => setCartOpen(!cartOpen)}
+              className="focus:outline-none p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Cart"
+            >
+              <Image src={cart_icon} alt="Cart" width={22} height={22} />
+            </button>
+
+            {/* Cart Modal for Mobile */}
+            <CartModal open={cartOpen} onClose={() => setCartOpen(false)} />
+          </div>
         </div>
       </div>
 

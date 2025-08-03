@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Divider from '@/app/(site)/components/Divider';
 import AnimatedAddToCartButton from '@/app/(site)/components/AnimatedAddToCartButton';
 import ModalPreviewPdf from '@/app/(site)/components/ModalPreviewPdf';
@@ -15,11 +15,13 @@ interface Lesson {
     imageUrl: string;
     subunitId: string | null;
     previewUrl?: string | null;
+    tags?: string[];
 }
 
 interface Subunit {
     id: string;
     title: string;
+    lessons?: Lesson[];
 }
 
 interface Unit {
@@ -30,7 +32,7 @@ interface Unit {
     imageUrl: string;
     lessons: Lesson[];
     subunits: Subunit[];
-    tag: string;
+    tags?: string[];
     previewUrl?: string | null;
 }
 
@@ -39,6 +41,7 @@ interface UnitDetailClientProps {
     allUnits: { id: string; title: string }[];
     courseId: string;
     courseTitle: string;
+    courseColor?: string;
 }
 
 export default function UnitDetailClient({
@@ -50,6 +53,23 @@ export default function UnitDetailClient({
 }: UnitDetailClientProps) {
     const [openPreviewPdf, setOpenPreviewPdf] = useState(false);
     const [pdfUrl, setPdfUrl] = useState<string>('');
+    const [currentPage, setCurrentPage] = useState(1);
+
+    const LESSONS_PER_PAGE = 8;
+
+    const unitPrice = parseFloat(unit?.price || '0');
+
+    const displayTag = unit?.tags?.[0] || unit?.lessons?.[0]?.tags?.[0] || 'No tag';
+
+    const totalLessons = unit?.lessons?.length || 0;
+    const totalPages = Math.ceil(totalLessons / LESSONS_PER_PAGE);
+
+    const paginatedLessons = useMemo(() => {
+        if (!unit?.lessons) return [];
+        const startIndex = (currentPage - 1) * LESSONS_PER_PAGE;
+        const endIndex = startIndex + LESSONS_PER_PAGE;
+        return unit.lessons.slice(startIndex, endIndex);
+    }, [unit?.lessons, currentPage]);
 
     const handlePreview = (lesson: Lesson) => {
         if (lesson.previewUrl) {
@@ -69,7 +89,44 @@ export default function UnitDetailClient({
         );
     }
 
-    const totalPrice = unit.lessons.reduce((acc, l) => acc + parseFloat(l.price || '0'), 0).toFixed(2);
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        // Scroll to lessons section
+        document.querySelector('#lessons-section')?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    };
+
+    // Generate page numbers for pagination
+    const getPageNumbers = () => {
+        const pages = [];
+        const maxVisiblePages = 5;
+
+        if (totalPages <= maxVisiblePages) {
+            for (let i = 1; i <= totalPages; i++) {
+                pages.push(i);
+            }
+        } else {
+            if (currentPage <= 3) {
+                for (let i = 1; i <= 4; i++) pages.push(i);
+                pages.push('...');
+                pages.push(totalPages);
+            } else if (currentPage >= totalPages - 2) {
+                pages.push(1);
+                pages.push('...');
+                for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+            } else {
+                pages.push(1);
+                pages.push('...');
+                for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+                pages.push('...');
+                pages.push(totalPages);
+            }
+        }
+
+        return pages;
+    };
 
     return (
         <main className="max-w-7xl mx-auto px-6 py-10 font-body text-primary">
@@ -109,15 +166,13 @@ export default function UnitDetailClient({
 
                     <div className="mb-4">
                         <p className="font-medium mb-1">Total Lessons:</p>
-                        <div className="text-lg font-semibold text-gray-700">{unit.lessons.length} lessons</div>
+                        <div className="text-lg font-semibold text-gray-700">{totalLessons} lessons</div>
                     </div>
 
                     <div className="mb-6">
-                        <p className="font-medium mb-1">Total Price (All Lessons):</p>
-                        <div className="text-2xl font-bold text-primary">${totalPrice}</div>
+                        <p className="font-medium mb-1">Unit Price:</p>
+                        <div className="text-2xl font-bold text-primary">${unitPrice.toFixed(2)}</div>
                     </div>
-
-
 
                     <AnimatedAddToCartButton
                         productId={unit.id}
@@ -125,7 +180,7 @@ export default function UnitDetailClient({
                         itemTitle={unit.title}
                         itemDesc={unit.description}
                         itemImg={unit.imageUrl || '/placeholder.jpg'}
-                        itemPrice={parseFloat(unit.price) || 0}
+                        itemPrice={unitPrice}
                         size="course"
                         colorButton='#D9C7BF'
                     />
@@ -144,83 +199,151 @@ export default function UnitDetailClient({
                         Preview Unit
                     </button>
 
-
                     <ModalPreviewPdf
                         open={openPreviewPdf}
                         onClose={() => setOpenPreviewPdf(false)}
                         pdfUrl={pdfUrl}
                         title="Preview"
                     />
-
-
                 </aside>
 
                 {/* Lessons */}
-                <div className="flex-1">
-                    {unit.lessons.length === 0 ? (
+                <div className="flex-1" id="lessons-section">
+                    {totalLessons === 0 ? (
                         <div className="text-center py-12">
                             <div className="text-gray-400 text-lg mb-2">No lessons found</div>
                             <p className="text-gray-500 text-sm">No lessons available in this section</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {unit.lessons.map((lesson) => (
-                                <div key={lesson.id} className="rounded-lg p-4 flex flex-col">
-                                    <div className="relative w-full h-48 mb-4 rounded overflow-hidden">
-                                        <Image
-                                            src={lesson.imageUrl || '/placeholder.jpg'}
-                                            alt={lesson.title}
-                                            fill
-                                            className="object-cover z-0"
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.src = '/placeholder.jpg';
-                                            }}
-                                        />
-                                        {lesson.previewUrl && (
-                                            <div className="absolute inset-0 bg-black/75 z-10 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity ease-in duration-200">
-                                                <button
-                                                    onClick={() => handlePreview(lesson)}
-                                                    className="bg-white/20 backdrop-blur-sm text-white px-14 py-3 rounded-lg text-sm font-normal"
-                                                >
-                                                    See More
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
+                        <>
+                            {/* Pagination Info */}
+                            <div className="flex justify-between items-center mb-6">
+                                <p className="text-sm text-gray-600">
+                                    Showing {((currentPage - 1) * LESSONS_PER_PAGE) + 1} to {Math.min(currentPage * LESSONS_PER_PAGE, totalLessons)} of {totalLessons} lessons
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                    Page {currentPage} of {totalPages}
+                                </p>
+                            </div>
 
-                                    <span className="text-lg font-semibold text-primary ml-2">tag {unit.tag}</span>
-                                    <h3 className="text-lg font-bold mb-2 line-clamp-2">{lesson.title}</h3>
-                                    <p className="text-sm text-gray-500 flex-1 mb-4 line-clamp-3">{lesson.description}</p>
-
-                                    <div className="flex w-full gap-2 items-stretch mt-auto">
-                                        <button
-                                            onClick={() => handlePreview(lesson)}
-                                            disabled={!lesson.previewUrl}
-                                            className={`w-1/2 border px-4 py-2 text-sm rounded transition-colors ${lesson.previewUrl
-                                                ? 'border-gray-400 hover:border-gray-600 hover:bg-gray-50'
-                                                : 'border-gray-200 text-gray-300 cursor-not-allowed'
-                                                }`}
-                                        >
-                                            Preview
-                                        </button>
-
-                                        <div className="w-1/2 ">
-                                            <AnimatedAddToCartButton
-                                                productId={lesson.id}
-                                                productType="LESSON"
-                                                itemTitle={lesson.title}
-                                                itemDesc={lesson.description}
-                                                itemImg={lesson.imageUrl}
-                                                itemPrice={parseFloat(lesson.price)}
-                                                size="base"
-                                                colorButton={courseColor || '#aaaaaa'}
+                            {/* Lessons Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                {paginatedLessons.map((lesson) => (
+                                    <Link
+                                        key={lesson.id}
+                                        href={`/lessons/${lesson.id}`}
+                                        className="rounded-lg p-4 flex flex-col cursor-pointer transition hover:bg-gray-50"
+                                        style={{ textDecoration: 'none' }}
+                                    >
+                                        <div className="relative w-full h-48 mb-4 rounded overflow-hidden group">
+                                            <Image
+                                                src={lesson.imageUrl || '/placeholder.jpg'}
+                                                alt={lesson.title}
+                                                fill
+                                                className="object-cover z-0 group-hover:scale-105 transition-transform duration-200"
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.src = '/placeholder.jpg';
+                                                }}
                                             />
+                                            {lesson.previewUrl && (
+                                                <div className="absolute inset-0 bg-black/75 z-10 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity ease-in duration-200">
+                                                    <button
+                                                        type="button"
+                                                        onClick={e => {
+                                                            e.preventDefault();
+                                                            handlePreview(lesson);
+                                                        }}
+                                                        className="bg-white/20 backdrop-blur-sm text-white px-14 py-3 rounded-lg text-sm font-normal"
+                                                    >
+                                                        See More
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
-                                    </div>
+
+                                        <span className="text-lg font-semibold text-primary ml-2">
+                                            {lesson.tags?.[0] || displayTag}
+                                        </span>
+                                        <h3 className="text-lg font-bold mb-2 line-clamp-2">{lesson.title}</h3>
+                                        <p className="text-sm text-gray-500 flex-1 mb-4 line-clamp-3">{lesson.description}</p>
+
+                                        <div className="flex w-full gap-2 items-stretch mt-auto">
+                                            <button
+                                                type="button"
+                                                onClick={e => {
+                                                    e.preventDefault();
+                                                    handlePreview(lesson);
+                                                }}
+                                                disabled={!lesson.previewUrl}
+                                                className={`w-1/2 border px-4 py-2 text-sm rounded transition-colors ${lesson.previewUrl
+                                                    ? 'border-gray-400 hover:border-gray-600 hover:bg-gray-50'
+                                                    : 'border-gray-200 text-gray-300 cursor-not-allowed'
+                                                    }`}
+                                            >
+                                                Preview
+                                            </button>
+                                            <div className="w-1/2">
+                                                <AnimatedAddToCartButton
+                                                    productId={lesson.id}
+                                                    productType="LESSON"
+                                                    itemTitle={lesson.title}
+                                                    itemDesc={lesson.description}
+                                                    itemImg={lesson.imageUrl}
+                                                    itemPrice={parseFloat(lesson.price)}
+                                                    size="base"
+                                                    colorButton={courseColor || '#aaaaaa'}
+                                                />
+                                            </div>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+
+
+
+                            {/* Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div className="flex justify-center items-center gap-2">
+                                    {/* Previous Button */}
+                                    <button
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                        className="px-3 py-2 text-sm border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                                    >
+                                        Previous
+                                    </button>
+
+                                    {/* Page Numbers */}
+                                    {getPageNumbers().map((page, index) => (
+                                        <span key={index}>
+                                            {page === '...' ? (
+                                                <span className="px-3 py-2 text-gray-500">...</span>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handlePageChange(page as number)}
+                                                    className={`px-3 py-2 text-sm border rounded-lg transition-colors ${currentPage === page
+                                                        ? 'bg-primary text-white border-primary'
+                                                        : 'hover:bg-gray-50 border-gray-300'
+                                                        }`}
+                                                >
+                                                    {page}
+                                                </button>
+                                            )}
+                                        </span>
+                                    ))}
+
+                                    {/* Next Button */}
+                                    <button
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        disabled={currentPage === totalPages}
+                                        className="px-3 py-2 text-sm border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                                    >
+                                        Next
+                                    </button>
                                 </div>
-                            ))}
-                        </div>
+                            )}
+                        </>
                     )}
                 </div>
             </div>

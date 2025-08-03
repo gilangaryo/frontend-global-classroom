@@ -169,7 +169,10 @@ export default function AddUnitPage() {
           </div>
 
           <div className="w-full" >
-            <ImageDropZone onImageUpload={(url) => setImageUrl(url)} />
+            <ImageDropZone
+              currentImageUrl={imageUrl}
+              onImageUpload={setImageUrl}
+            />
           </div>
         </div>
 

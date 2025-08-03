@@ -1,247 +1,391 @@
-// app/(dashboard)/course-manage/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import DashboardTabs from '../components/DashboardTabs';
 import StatusDropdown from '../components/StatusDropdown';
+import DashboardTabs from '../components/DashboardTabs';
+import { useProductActions } from '../hooks/useProducts';
 
-type BaseItem = { id: number; title: string; imageUrl?: string | null; isActive?: boolean };
+// =================== Types ===================
+type Product = {
+  id: string;
+  title: string;
+  imageUrl: string | null;
+  isActive: boolean;
+  parentId?: string | null;
+  type: 'COURSE' | 'UNIT' | 'SUBUNIT' | 'LESSON';
+};
 
+type TabBarProps = {
+  items: { id: string; title: string }[];
+  activeId: string | null;
+  onTabClick: (id: string) => void;
+};
+
+// =================== TabBar ===================
+function TabBar({ items, activeId, onTabClick }: TabBarProps) {
+  return (
+    <nav className="flex border-b border-gray-300 gap-6 mb-4">
+      {items.map((item) => {
+        const isActive = item.id === activeId;
+        return (
+          <button
+            key={item.id}
+            onClick={() => onTabClick(item.id)}
+            className={`text-sm font-semibold px-2 py-1 border-b-2 focus:outline-none
+              ${isActive ? 'text-[#3E724A] border-[#3E724A]' : 'text-[#8E8E8E] border-transparent'}`}
+          >
+            {item.title}
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
+// =================== MAIN PAGE ===================
 export default function CourseManagePage() {
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [courses, setCourses] = useState<BaseItem[] | null>(null);
-  const [units, setUnits] = useState<BaseItem[] | null>(null);
-  const [subunits, setSubunits] = useState<BaseItem[] | null>(null);
-  const [lessons, setLessons] = useState<BaseItem[] | null>(null);
+  const [courses, setCourses] = useState<Product[]>([]);
+  const [units, setUnits] = useState<Product[]>([]);
+  const [lessons, setLessons] = useState<Product[]>([]);
 
-  // Fetch all 4 resources
-  useEffect(() => {
-    const fetchAll = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const base = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api`;
-        const [cRes, uRes, sRes, lRes] = await Promise.all([
-          fetch(`${base}/courses`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${base}/units`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${base}/subunits`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${base}/lessons`, { headers: { Authorization: `Bearer ${token}` } }),
-        ]);
-        const cJson = await cRes.json();
-        const uJson = await uRes.json();
-        const sJson = await sRes.json();
-        const lJson = await lRes.json();
-        setCourses(cJson.data || []);
-        setUnits(uJson.data || []);
-        setSubunits(sJson.data || []);
-        setLessons(lJson.data || []);
-      } catch (e) {
-        console.error('Failed to load', e);
-        setCourses([]); setUnits([]); setSubunits([]); setLessons([]);
-      }
-    };
-    fetchAll();
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
+  const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
+
+  const { deleteProduct } = useProductActions();
+
+  // Fetch Courses (type=COURSE)
+  const fetchCourses = useCallback(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products?type=COURSE`)
+      .then((res) => res.json())
+      .then((json) => {
+        setCourses(json.data || []);
+        if (json.data && json.data.length > 0) setSelectedCourseId(json.data[0].id);
+      });
   }, []);
 
-  // GRID VIEW
-  const renderGrid = <T extends BaseItem>(
-    items: T[] | null,
-    emptyTitle: string,
-    addLink: string
-  ) => {
-    if (items === null) return <p className="text-center text-sm text-gray-500">Loading…</p>;
-    if (items.length === 0) {
-      return (
-        <div className="text-center flex flex-col items-center py-12">
-          <div className="relative w-48 h-40 mb-4">
-            <Image src="/dashboard/empty-box.png" alt="Empty" fill className="object-contain" />
-          </div>
-          <p className="mb-4 text-gray-600">{emptyTitle}</p>
-          <Link
-            href={addLink}
-            className="inline-block bg-sky-500 text-white px-5 py-2 rounded-md text-sm"
-          >
-            Add {emptyTitle.replace(/ Added Yet/, '')}
-          </Link>
-        </div>
-      );
+  useEffect(() => {
+    fetchCourses();
+  }, [fetchCourses]);
+
+  // Fetch Units by selected course (type=UNIT, parentId=courseId)
+  useEffect(() => {
+    if (!selectedCourseId) {
+      setUnits([]);
+      setSelectedUnitId(null);
+      return;
     }
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {items.map(item => (
-          <div key={item.id} className="border rounded-lg p-4">
-            <div className="relative h-60 w-full mb-3">
-              <Image
-                src={item.imageUrl || '/dashboard/empty-box.png'}
-                alt={item.title}
-                fill
-                className="object-cover rounded-md"
-              />
-            </div>
-            <h4 className="font-medium text-lg">{item.title}</h4>
-          </div>
-        ))}
-      </div>
-    );
-  };
-  const renderList = (
-    items: BaseItem[] | null,
-    label: string,
-    editBase: string
-  ) => {
-    if (items === null) return <p className="text-center text-sm text-gray-500">Loading…</p>;
-    if (items.length === 0) {
-      return (
-        <div className="text-center py-12">
-          <p className="mb-4 text-gray-600">No {label}s added yet.</p>
-          <Link
-            href={`${editBase}/add`}
-            className="inline-block bg-sky-500 text-white px-4 py-2 rounded"
-          >
-            Add {label}
-          </Link>
-        </div>
-      );
+
+    const fetchUnits = () => {
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products?type=UNIT&parentId=${selectedCourseId}`)
+        .then((res) => res.json())
+        .then((json) => {
+          setUnits(json.data || []);
+          if (json.data && json.data.length > 0) setSelectedUnitId(json.data[0].id);
+          else setSelectedUnitId(null);
+        });
+    };
+
+    fetchUnits();
+  }, [selectedCourseId]);
+
+  // Fetch Lessons by selected unit (type=LESSON, parentId=unitId)
+  useEffect(() => {
+    if (!selectedUnitId) {
+      setLessons([]);
+      return;
     }
-    return (
-      <div className="rounded-lg border">
-        {/* header */}
-        <div className="flex bg-sky-500 text-white font-semibold text-sm rounded-t-lg">
-          <div className="flex-1 px-4 py-2">{label}</div>
-          <div className="w-115 px-4 py-2 text-center">Status</div>
-          <div className="w-32 px-4 py-2 text-center">Action</div>
-        </div>
-        {/* rows */}
-        {items.map(item => (
-          <div
-            key={item.id}
-            className="flex items-center border-t hover:bg-gray-50"
-          >
-            <div className="flex-1 px-4 py-3">{item.title}</div>
-            <div className="w-80 px-4 py-3 relative">
-              <StatusDropdown
-                initialStatus={item.isActive ?? true}
-                onStatusChange={async (isActive) => {
-                  try {
-                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/courses/status/${item.id}`, {
-                      method: 'PATCH',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                      },
-                      body: JSON.stringify({ isActive }),
-                    });
 
-                    if (!res.ok) {
-                      const errData = await res.json();
-                      alert(errData.message || 'Failed to update status.');
-                    } else {
-                      console.log(`Status updated for course ${item.id} to`, isActive);
-                    }
-                  } catch (err) {
-                    console.error('Error updating status:', err);
-                    alert('Error updating course status.');
-                  }
-                }}
-              />
+    const fetchLessons = () => {
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products?type=LESSON&parentId=${selectedUnitId}`)
+        .then((res) => res.json())
+        .then((json) => setLessons(json.data || []));
+    };
 
-            </div>
+    fetchLessons();
+  }, [selectedUnitId]);
 
-            <div className="w-32 px-4 py-3 flex justify-center space-x-2">
-              <Link
-                href={`${editBase}/${item.id}/edit`}
-                className="px-3 py-1 bg-sky-500 text-white text-sm rounded"
-              >
-                Edit
-              </Link>
-              <button
-                onClick={() => {/* TODO: delete */ }}
-                className="px-2 py-1 border rounded text-sm"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+  // Create stable references for refetch functions
+  const fetchUnits = useCallback(() => {
+    if (!selectedCourseId) return;
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products?type=UNIT&parentId=${selectedCourseId}`)
+      .then((res) => res.json())
+      .then((json) => {
+        setUnits(json.data || []);
+        if (json.data && json.data.length > 0) setSelectedUnitId(json.data[0].id);
+        else setSelectedUnitId(null);
+      });
+  }, [selectedCourseId]);
+
+  const fetchLessons = useCallback(() => {
+    if (!selectedUnitId) return;
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products?type=LESSON&parentId=${selectedUnitId}`)
+      .then((res) => res.json())
+      .then((json) => setLessons(json.data || []));
+  }, [selectedUnitId]);
+
+  // Delete handlers
+  const handleDeleteCourse = async (id: string) => {
+    const success = await deleteProduct(id, 'COURSE');
+    if (success) {
+      fetchCourses();
+    }
   };
+
+  const handleDeleteUnit = async (id: string) => {
+    const success = await deleteProduct(id, 'UNIT');
+    if (success) {
+      fetchUnits();
+    }
+  };
+
+  const handleDeleteLesson = async (id: string) => {
+    const success = await deleteProduct(id, 'LESSON');
+    if (success) {
+      fetchLessons();
+    }
+  };
+
+  // Tab Data
+  const courseTabs = courses.map(c => ({ id: c.id, title: c.title }));
+  const unitTabs = units.map(u => ({ id: u.id, title: u.title }));
 
   return (
     <div className="p-8">
       <header className="space-y-1 mb-6">
-        <h1 className="text-2xl font-semibold">Course & Content Management</h1>
+        <h1 className="text-2xl font-semibold">Course Management</h1>
         <p className="text-sm text-gray-500">
-          Organize your Courses, Units, Sub‐units, and Lessons here.
+          Add/Edit your course, unit, and lesson (all from Product table).
         </p>
       </header>
 
       <DashboardTabs />
 
-      {/* Toggle Grid/List */}
-      <div className="flex justify-end space-x-2 my-6">
-        <button
-          onClick={() => setViewMode('grid')}
-          className={`px-4 py-2 rounded ${viewMode === 'grid' ? 'bg-sky-500 text-white' : 'bg-gray-200'
-            }`}
-        >
-          Grid View
-        </button>
-        <button
-          onClick={() => setViewMode('list')}
-          className={`px-4 py-2 rounded ${viewMode === 'list' ? 'bg-sky-500 text-white' : 'bg-gray-200'
-            }`}
-        >
-          List View
-        </button>
-      </div>
+      {/* Courses */}
+      <section className="mt-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">Courses</h2>
+          <Link
+            href="/dashboard/course-manage/course"
+            className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+          >
+            Add Course
+          </Link>
+        </div>
 
-      {viewMode === 'grid' ? (
-        <>
-          <section className="mt-8">
-            <h2 className="text-xl font-semibold mb-4">Courses</h2>
-            {renderGrid(courses, 'No Courses Added Yet', '/dashboard/course-manage/add')}
-          </section>
+        {courses.length === 0 ? (
+          <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+            <p className="mb-4 text-gray-600">No Courses added yet.</p>
+            <Link href="/dashboard/course-manage/course" className="inline-block bg-sky-500 text-white px-4 py-2 rounded">
+              Add Your First Course
+            </Link>
+          </div>
+        ) : (
+          <div className="rounded-lg border ">
+            <div className="grid grid-cols-12 bg-sky-500 text-white font-semibold text-sm">
+              <div className="col-span-6 px-4 py-3">Course</div>
+              <div className="col-span-3 px-4 py-3 text-center">Status</div>
+              <div className="col-span-3 px-4 py-3 text-center">Actions</div>
+            </div>
+            {courses.map(item => (
+              <div key={item.id} className="grid grid-cols-12 items-center border-t hover:bg-gray-50">
+                <div className="col-span-6 px-4 py-3">
+                  <div className="font-medium text-gray-900">{item.title}</div>
+                </div>
+                <div className="col-span-3 px-4 py-3 flex justify-center">
+                  <StatusDropdown
+                    compact={true}
+                    initialStatus={item.isActive ?? true}
+                    onStatusChange={async (isActive) => {
+                      try {
+                        await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/${item.id}`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ isActive }),
+                        });
+                      } catch {
+                        alert('Error updating status.');
+                      }
+                    }}
+                  />
+                </div>
+                <div className="col-span-3 px-4 py-3 flex justify-center gap-2">
+                  <Link
+                    href={`/dashboard/course-manage/products/course/${item.id}/edit`}
+                    className="px-3 py-1 bg-sky-500 hover:bg-sky-600 text-white text-sm rounded transition-colors"
+                  >
+                    Edit
+                  </Link>
+                  <button
+                    className="px-3 py-1 border border-red-300 text-red-600 hover:bg-red-50 text-sm rounded transition-colors"
+                    onClick={() => handleDeleteCourse(item.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
-          <section className="mt-12">
-            <h2 className="text-xl font-semibold mb-4">Units</h2>
-            {renderGrid(units, 'No Units Added Yet', '/dashboard/unit/add')}
-          </section>
+      {/* Units */}
+      <section className="mt-12">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-xl font-semibold">Units</h2>
+          <Link
+            href={`/dashboard/course-manage/unit${selectedCourseId ? `?courseId=${selectedCourseId}` : ''}`}
+            className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+          >
+            Add Unit
+          </Link>
+        </div>
 
-          <section className="mt-12">
-            <h2 className="text-xl font-semibold mb-4">Sub-units</h2>
-            {renderGrid(subunits, 'No Sub-units Added Yet', '/dashboard/subunit/add')}
-          </section>
+        {courseTabs.length > 0 && (
+          <TabBar items={courseTabs} activeId={selectedCourseId} onTabClick={setSelectedCourseId} />
+        )}
 
-          <section className="mt-12">
-            <h2 className="text-xl font-semibold mb-4">Lessons</h2>
-            {renderGrid(lessons, 'No Lessons Added Yet', '/dashboard/lesson/add')}
-          </section>
-        </>
-      ) : (
-        <>
-          <section className="mt-8">
-            <h2 className="text-xl font-semibold mb-4">Courses</h2>
-            {renderList(courses, 'Course', '/dashboard/course-manage/products/course')}
-          </section>
+        {units.length === 0 ? (
+          <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+            <p className="mb-4 text-gray-600">
+              {selectedCourseId ? 'No Units added to this course yet.' : 'Select a course to view units.'}
+            </p>
+            {selectedCourseId && (
+              <Link
+                href={`/dashboard/course-manage/unit?courseId=${selectedCourseId}`}
+                className="inline-block bg-sky-500 text-white px-4 py-2 rounded"
+              >
+                Add Unit to Course
+              </Link>
+            )}
+          </div>
+        ) : (
+          <div className="rounded-lg border ">
+            <div className="grid grid-cols-12 bg-sky-500 text-white font-semibold text-sm">
+              <div className="col-span-6 px-4 py-3">Unit</div>
+              <div className="col-span-3 px-4 py-3 text-center">Status</div>
+              <div className="col-span-3 px-4 py-3 text-center">Actions</div>
+            </div>
+            {units.map(item => (
+              <div key={item.id} className="grid grid-cols-12 items-center border-t hover:bg-gray-50">
+                <div className="col-span-6 px-4 py-3">
+                  <div className="font-medium text-gray-900">{item.title}</div>
+                </div>
+                <div className="col-span-3 px-4 py-3 flex justify-center">
+                  <StatusDropdown
+                    compact={true}
+                    initialStatus={item.isActive ?? true}
+                    onStatusChange={async (isActive) => {
+                      try {
+                        await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/${item.id}`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ isActive }),
+                        });
+                      } catch {
+                        alert('Error updating status.');
+                      }
+                    }}
+                  />
+                </div>
+                <div className="col-span-3 px-4 py-3 flex justify-center gap-2">
+                  <Link
+                    href={`/dashboard/course-manage/products/unit/${item.id}/edit`}
+                    className="px-3 py-1 bg-sky-500 hover:bg-sky-600 text-white text-sm rounded transition-colors"
+                  >
+                    Edit
+                  </Link>
+                  <button
+                    className="px-3 py-1 border border-red-300 text-red-600 hover:bg-red-50 text-sm rounded transition-colors"
+                    onClick={() => handleDeleteUnit(item.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
-          <section className="mt-12">
-            <h2 className="text-xl font-semibold mb-4">Units</h2>
-            {renderList(units, 'Unit', '/dashboard/course-manage/products/unit')}
-          </section>
+      {/* Lessons */}
+      <section className="mt-12">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-xl font-semibold">Lessons</h2>
+          <Link
+            href="/dashboard/course-manage/lesson"
+            className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+          >
+            Add Lesson
+          </Link>
+        </div>
 
-          <section className="mt-12">
-            <h2 className="text-xl font-semibold mb-4">Sub-units</h2>
-            {renderList(subunits, 'Sub-Unit', '/dashboard/course-manage/products/sub-unit')}
-          </section>
+        {unitTabs.length > 0 && (
+          <TabBar items={unitTabs} activeId={selectedUnitId} onTabClick={setSelectedUnitId} />
+        )}
 
-          <section className="mt-12">
-            <h2 className="text-xl font-semibold mb-4">Lessons</h2>
-            {renderList(lessons, 'Lesson', '/dashboard/course-manage/products/lesson')}
-          </section>
-        </>
-      )}
+        {lessons.length === 0 ? (
+          <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+            <p className="mb-4 text-gray-600">
+              {selectedUnitId ? 'No Lessons added to this unit yet.' : 'Select a unit to view lessons.'}
+            </p>
+            {selectedUnitId && (
+              <Link
+                href="/dashboard/course-manage/lesson"
+                className="inline-block bg-sky-500 text-white px-4 py-2 rounded"
+              >
+                Add Lesson to Unit
+              </Link>
+            )}
+          </div>
+        ) : (
+          <div className="rounded-lg border ">
+            <div className="grid grid-cols-12 bg-sky-500 text-white font-semibold text-sm">
+              <div className="col-span-6 px-4 py-3">Lesson</div>
+              <div className="col-span-3 px-4 py-3 text-center">Status</div>
+              <div className="col-span-3 px-4 py-3 text-center">Actions</div>
+            </div>
+            {lessons.map(item => (
+              <div key={item.id} className="grid grid-cols-12 items-center border-t hover:bg-gray-50">
+                <div className="col-span-6 px-4 py-3">
+                  <div className="font-medium text-gray-900">{item.title}</div>
+                </div>
+                <div className="col-span-3 px-4 py-3 flex justify-center">
+                  <StatusDropdown
+                    compact={true}
+                    initialStatus={item.isActive ?? true}
+                    onStatusChange={async (isActive) => {
+                      try {
+                        await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/${item.id}`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ isActive }),
+                        });
+                      } catch {
+                        alert('Error updating status.');
+                      }
+                    }}
+                  />
+                </div>
+                <div className="col-span-3 px-4 py-3 flex justify-center gap-2">
+                  <Link
+                    href={`/dashboard/course-manage/products/lesson/${item.id}/edit`}
+                    className="px-3 py-1 bg-sky-500 hover:bg-sky-600 text-white text-sm rounded transition-colors"
+                  >
+                    Edit
+                  </Link>
+                  <button
+                    className="px-3 py-1 border border-red-300 text-red-600 hover:bg-red-50 text-sm rounded transition-colors"
+                    onClick={() => handleDeleteLesson(item.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

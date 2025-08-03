@@ -1,8 +1,28 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async rewrites() {
+    return [
+      {
+        source: '/api/uploads/:path*',
+        destination: 'http://192.168.56.1:4100/uploads/:path*',
+      },
+    ];
+  },
   images: {
     remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '4100',
+        pathname: '/uploads/**',
+      },
+      {
+        protocol: 'http',
+        hostname: '192.168.56.1',
+        port: '4100',
+        pathname: '/uploads/**',
+      },
       {
         protocol: 'http',
         hostname: 'link.com',
@@ -25,4 +45,3 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-

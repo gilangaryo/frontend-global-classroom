@@ -38,22 +38,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 active: '/dashboard/icons/page-manage-white.png',
             },
         },
-        {
-            name: 'Article',
-            href: '/dashboard/articles',
-            icon: {
-                default: '/dashboard/icons/articles-black.png',
-                active: '/dashboard/icons/articles-white.png',
-            },
-        },
-        {
-            name: 'Product',
-            href: '/dashboard/products',
-            icon: {
-                default: '/dashboard/icons/product-black.png',
-                active: '/dashboard/icons/product-white.png',
-            },
-        },
+
     ]
 
     const sidebarClasses = collapsed ? 'w-16 px-2' : 'w-64 px-4'

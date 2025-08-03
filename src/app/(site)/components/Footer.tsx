@@ -1,21 +1,32 @@
+'use client';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+interface Course {
+  id: string;
+  title: string;
+  slug?: string;
+}
+
 export default function Footer() {
-  const courses = [
-    'Foundations of Global Politics',
-    'Theories of International Relations',
-    'Human Rights',
-    'Atrocity Crimes and International Justice',
-    'Peace and Conflict',
-    'Development and Global Disparities',
-  ];
+  const [courses, setCourses] = useState<Course[]>([]);
   const navItems = [
     { label: 'Home', href: '/' },
     { label: 'About', href: '/about' },
     { label: 'Consulting', href: '/consulting' },
     { label: 'Blog', href: '/blog' },
   ];
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products?type=COURSE`)
+      .then(res => res.json())
+      .then(json => {
+        // Cek struktur response, sesuaikan jika perlu (misal: json.data)
+        setCourses(json.data || []);
+      });
+  }, []);
+
   return (
     <footer className="bg-[#363F36] text-alt">
       {/* top section */}
@@ -23,7 +34,6 @@ export default function Footer() {
         {/* brand & note */}
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            {/* logo placeholder */}
             <Image src="/logo_footer.png" width={250} height={120} alt="A Global Classroom logo" />
           </div>
           <p className="max-w-xs text-sm text-alt leading-relaxed">
@@ -36,13 +46,20 @@ export default function Footer() {
         <div>
           <h4 className="mb-4 font-semibold text-alt">Courses</h4>
           <ul className="space-y-2 text-sm">
-            {courses.map((c) => (
-              <li key={c}>
-                <Link href="#" className="hover:text-white transition-colors">
-                  {c}
-                </Link>
-              </li>
-            ))}
+            {courses.length === 0 ? (
+              <li className="text-[#D9C7BF] italic">Loading...</li>
+            ) : (
+              courses.map((c) => (
+                <li key={c.id}>
+                  <Link
+                    href={c.id ? `/courses/${c.id}` : `/courses/${c.id}`}
+                    className="hover:text-white transition-colors"
+                  >
+                    {c.title}
+                  </Link>
+                </li>
+              ))
+            )}
           </ul>
         </div>
 

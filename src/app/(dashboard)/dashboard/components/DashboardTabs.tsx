@@ -6,7 +6,7 @@ const tabs = [
     { label: 'All Product', href: '/dashboard/course-manage' },
     { label: 'Add Course', href: '/dashboard/course-manage/course' },
     { label: 'Add Unit', href: '/dashboard/course-manage/unit' },
-    { label: 'Add Sub‑Unit', href: '/dashboard/course-manage/sub-unit' },
+    // { label: 'Add Sub‑Unit', href: '/dashboard/course-manage/sub-unit' },
     { label: 'Add Lesson', href: '/dashboard/course-manage/lesson' },
 ];
 
@@ -19,9 +19,9 @@ export default function DashboardTabs() {
                 <Link
                     key={label}
                     href={href}
-                    className={`rounded-md px-4 py-1.5 text-sm ${pathname === href
-                        ? 'bg-sky-500 text-white shadow-sm'
-                        : 'text-gray-700 hover:bg-gray-100'
+                    className={`font-semibold rounded-md px-4 py-2 text-sm ${pathname === href
+                        ? 'bg-sky-100 text-sky-500 shadow-sm border-2 border-sky-500'
+                        : 'text-gray-600 hover:bg-gray-100'
                         }`}
                 >
                     {label}
