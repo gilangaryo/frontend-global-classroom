@@ -8,6 +8,19 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useProducts, useProductActions, CreateProductData } from '../../hooks/useProducts';
 import Image from "next/image";
 
+interface FormData {
+  title: string;
+  description: string;
+  price: number;
+  digitalUrl: string;
+  previewUrl: string;
+  imageUrl: string;
+  parentId: string;
+}
+
+type FormField = keyof FormData;
+type FormValue = string | number;
+
 export default function AddUnitPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -16,7 +29,7 @@ export default function AddUnitPage() {
   const { createProduct, loading } = useProductActions();
   const { products: courses, loading: coursesLoading } = useProducts({ type: 'COURSE' });
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     title: '',
     description: '',
     price: 0,
@@ -26,7 +39,7 @@ export default function AddUnitPage() {
     parentId: preselectedCourseId || '',
   });
 
-  const updateField = (field: string, value: any) => {
+  const updateField = (field: FormField, value: FormValue) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -51,6 +64,15 @@ export default function AddUnitPage() {
     if (result) {
       alert('Unit created successfully!');
       router.push('/dashboard/course-manage');
+    }
+  };
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      // Optional: Add a toast notification here
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
     }
   };
 
@@ -188,20 +210,21 @@ export default function AddUnitPage() {
                 />
               </div>
 
-              <p className="p-4 flex items-center">
-                https://res.cloudinary.com/dla5fna8n/image/upload/v1754141514/PREVIEW_bzgt9b.pdf
+              <div className="p-4 flex items-center text-sm text-gray-600 bg-gray-50 rounded-md mt-2">
+                <span className="flex-1 font-mono text-xs break-all">
+                  https://res.cloudinary.com/dla5fna8n/image/upload/v1754141514/PREVIEW_bzgt9b.pdf
+                </span>
                 <button
                   type="button"
-                  className="ml-2 text-gray-500 hover:text-gray-700 focus:outline-none"
-                  onClick={() => {
-                    navigator.clipboard.writeText('https://res.cloudinary.com/dla5fna8n/image/upload/v1754141514/PREVIEW_bzgt9b.pdf');
-                  }}
+                  className="ml-2 text-gray-500 hover:text-gray-700 focus:outline-none flex-shrink-0"
+                  onClick={() => copyToClipboard('https://res.cloudinary.com/dla5fna8n/image/upload/v1754141514/PREVIEW_bzgt9b.pdf')}
+                  title="Copy to clipboard"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002-2v1h2a2 2 0 002 2h-1V5m-1 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </button>
-              </p>
+              </div>
             </div>
 
             {/* Digital URL */}
@@ -223,20 +246,21 @@ export default function AddUnitPage() {
                   className="flex-1 h-full px-4 text-sm placeholder:text-gray-600 outline-none"
                 />
               </div>
-              <p className="p-4 flex items-center">
-                https://res.cloudinary.com/dla5fna8n/image/upload/v1754141513/ASLI_q4cik2.pdf
+              <div className="p-4 flex items-center text-sm text-gray-600 bg-gray-50 rounded-md mt-2">
+                <span className="flex-1 font-mono text-xs break-all">
+                  https://res.cloudinary.com/dla5fna8n/image/upload/v1754141513/ASLI_q4cik2.pdf
+                </span>
                 <button
                   type="button"
-                  className="ml-2 text-gray-500 hover:text-gray-700 focus:outline-none"
-                  onClick={() => {
-                    navigator.clipboard.writeText('https://res.cloudinary.com/dla5fna8n/image/upload/v1754141513/ASLI_q4cik2.pdf');
-                  }}
+                  className="ml-2 text-gray-500 hover:text-gray-700 focus:outline-none flex-shrink-0"
+                  onClick={() => copyToClipboard('https://res.cloudinary.com/dla5fna8n/image/upload/v1754141513/ASLI_q4cik2.pdf')}
+                  title="Copy to clipboard"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002-2v1h2a2 2 0 002 2h-1V5m-1 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </button>
-              </p>
+              </div>
             </div>
           </div>
 
@@ -261,16 +285,17 @@ export default function AddUnitPage() {
                 <h3 className="text-sm font-medium text-gray-700 mb-3">Preview:</h3>
                 <div className="bg-white rounded-lg border p-3 shadow-sm">
                   {formData.imageUrl && (
-                    <Image
-                      src={formData.imageUrl}
-                      alt="Unit preview"
-                      className="w-full h-32 object-cover rounded mb-3"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                      width={400}
-                      height={200}
-                    />
+                    <div className="relative w-full h-32 mb-3">
+                      <Image
+                        src={formData.imageUrl}
+                        alt="Unit preview"
+                        fill
+                        className="object-cover rounded"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
                   )}
                   <h4 className="font-medium text-gray-900 text-sm">
                     {formData.title || 'Unit Title'}

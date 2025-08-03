@@ -1,5 +1,5 @@
 // hooks/useProducts.ts
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export type ProductType = 'COURSE' | 'UNIT' | 'SUBUNIT' | 'LESSON';
 
@@ -41,6 +41,7 @@ export interface CreateProductData {
     imageUrl?: string;
     parentId?: string;
     ProductType: ProductType;
+    tags?: string[]; // Added for lesson support
 }
 
 export interface UpdateCourseData extends Partial<CreateCourseData> {
@@ -57,7 +58,7 @@ export const useProducts = (options?: { type?: ProductType; parentId?: string })
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const fetchProducts = async () => {
+    const fetchProducts = useCallback(async () => {
         try {
             setLoading(true);
             let url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products`;
@@ -87,11 +88,11 @@ export const useProducts = (options?: { type?: ProductType; parentId?: string })
         } finally {
             setLoading(false);
         }
-    };
+    }, [options?.type, options?.parentId]);
 
     useEffect(() => {
         fetchProducts();
-    }, [options?.type, options?.parentId]);
+    }, [fetchProducts]);
 
     return {
         products,
@@ -167,18 +168,19 @@ export const useCourseActions = () => {
         try {
             setLoading(true);
 
-            const requestData = {
-                ...data,
-                type: data.ProductType,
+            // Transform ProductType to type for backend compatibility
+            const { ProductType, ...requestData } = data;
+            const finalData = {
+                ...requestData,
+                type: ProductType,
             };
-            delete requestData.ProductType;
 
             const response = await fetch(
                 `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products`,
                 {
                     method: 'POST',
                     headers: getAuthHeaders(),
-                    body: JSON.stringify(requestData),
+                    body: JSON.stringify(finalData),
                 }
             );
 
@@ -287,25 +289,24 @@ export const useProductActions = () => {
             setLoading(true);
 
             // Transform ProductType to type for backend compatibility
-            const requestData = {
-                ...data,
-                type: data.ProductType,
+            const { ProductType, ...requestData } = data;
+            const finalData = {
+                ...requestData,
+                type: ProductType,
             };
-            // Remove ProductType as backend expects 'type'
-            delete requestData.ProductType;
 
             const response = await fetch(
                 `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products`,
                 {
                     method: 'POST',
                     headers: getAuthHeaders(),
-                    body: JSON.stringify(requestData),
+                    body: JSON.stringify(finalData),
                 }
             );
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || `Failed to create ${data.ProductType.toLowerCase()}`);
+                throw new Error(errorData.message || `Failed to create ${ProductType.toLowerCase()}`);
             }
 
             const result = await response.json();

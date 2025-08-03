@@ -16,7 +16,6 @@ export default function ImageDropZone({ onImageUpload, currentImageUrl }: ImageD
 
     useEffect(() => {
         setImageError(false);
-        // Remove local preview if currentImageUrl changes (after upload)
         if (currentImageUrl) setLocalPreview(null);
     }, [currentImageUrl]);
 
@@ -53,7 +52,6 @@ export default function ImageDropZone({ onImageUpload, currentImageUrl }: ImageD
             return;
         }
 
-        // Show local preview before uploading
         const reader = new FileReader();
         reader.onload = (e) => {
             setLocalPreview(e.target?.result as string);
@@ -76,7 +74,7 @@ export default function ImageDropZone({ onImageUpload, currentImageUrl }: ImageD
             let result;
             try {
                 result = await response.json();
-            } catch (e) {
+            } catch {
                 setImageError(true);
                 alert("Upload failed. Invalid server response.");
                 return;
@@ -84,17 +82,16 @@ export default function ImageDropZone({ onImageUpload, currentImageUrl }: ImageD
 
             if (response.ok && result.status === 'success') {
                 console.log('Upload success, URL:', result.url);
-                // Convert server URL to proxy URL for CORS bypass
                 const proxyUrl = result.url.replace('http://192.168.56.1:4100/uploads', '/api/uploads');
                 console.log('Proxy URL:', proxyUrl);
-                setLocalPreview(null); // remove local preview, show server image
-                onImageUpload(proxyUrl); // Use proxy URL instead
+                setLocalPreview(null);
+                onImageUpload(proxyUrl);
                 console.log('Full result:', result);
             } else {
                 alert(result.message || 'Upload failed. Please try again.');
                 setImageError(true);
             }
-        } catch (error) {
+        } catch {
             alert('Upload failed. Please check your connection and try again.');
             setImageError(true);
         } finally {

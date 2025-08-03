@@ -125,7 +125,7 @@ export default function AddCoursePage() {
             {/* Course Included */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                What's Included in This Course
+                Whats Included in This Course
               </label>
               <TiptapEditor
                 content={formData.courseIncluded}
