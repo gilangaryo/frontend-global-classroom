@@ -10,6 +10,11 @@ interface Unit {
     title: string;
 }
 
+// Update the PageProps interface to match Next.js 15 expectations
+interface PageProps {
+    params: Promise<{ courseId: string; unitId: string }>;
+}
+
 async function getUnitById(unitId: string) {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/unit/${unitId}`, {
         next: { revalidate: 60 },
@@ -32,8 +37,8 @@ async function getCourseData(courseId: string) {
     return { allUnits, courseTitle, colorCourse };
 }
 
-export default async function Page({ params }: { params: { courseId: string; unitId: string } }) {
-    // Await params before destructuring
+export default async function Page({ params }: PageProps) {
+    // Await params before destructuring (Next.js 15 requirement)
     const { courseId, unitId } = await params;
 
     const [unit, courseData] = await Promise.all([
