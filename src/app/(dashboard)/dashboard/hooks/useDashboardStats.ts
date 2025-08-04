@@ -1,7 +1,7 @@
 // hooks/useDashboardStats.ts
 import { useState, useEffect } from 'react';
 import { dashboardApi, ApiError } from '../../../utils/api';
-import type { Stats, User, Payment, Purchase, Course } from '../utils/api';
+import type { Stats, User, Payment, Purchase, Course } from '../../../utils/api';
 
 // Hook untuk stats saja
 export function useDashboardStats() {
