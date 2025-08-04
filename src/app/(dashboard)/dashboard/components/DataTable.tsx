@@ -1,38 +1,72 @@
 'use client';
-import React from 'react';
-import { DataTableProps } from '../types/dashboard';
 
-export function DataTable<T>({ data, columns, title, onViewAll }: DataTableProps<T>) {
+import React from 'react';
+import { ArrowRight } from 'lucide-react';
+
+export interface DataTableColumn<T> {
+    header: string;
+    renderCell: (item: T) => React.ReactNode;
+}
+
+export interface DataTableProps<T> {
+    title: string;
+    data: T[];
+    columns: DataTableColumn<T>[];
+    onViewAll?: () => void;
+}
+
+export function DataTable<T>({ title, data, columns, onViewAll }: DataTableProps<T>) {
+    if (!data || data.length === 0) {
+        return (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+                </div>
+                <div className="text-center py-8 text-gray-500">
+                    No data available
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
                 {onViewAll && (
-                    <button className="text-blue-600 hover:text-blue-800 text-sm font-semibold" onClick={onViewAll}>
+                    <button
+                        onClick={onViewAll}
+                        className="flex items-center text-sm text-blue-600 hover:text-blue-800 font-medium"
+                    >
                         View all
+                        <ArrowRight className="w-4 h-4 ml-1" />
                     </button>
                 )}
             </div>
+
             <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+                <table className="w-full">
                     <thead className="bg-gray-50">
                         <tr>
-                            {columns.map((col, i) => (
+                            {columns.map((column, index) => (
                                 <th
-                                    key={i}
-                                    className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
+                                    key={index}
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                                 >
-                                    {col.header}
+                                    {column.header}
                                 </th>
                             ))}
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {data.map((item, ri) => (
-                            <tr key={ri} className="hover:bg-gray-50">
-                                {columns.map((col, ci) => (
-                                    <td key={ci} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {col.renderCell(item)}
+                        {data.map((item, rowIndex) => (
+                            <tr key={rowIndex} className="hover:bg-gray-50">
+                                {columns.map((column, colIndex) => (
+                                    <td
+                                        key={colIndex}
+                                        className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                                    >
+                                        {column.renderCell(item)}
                                     </td>
                                 ))}
                             </tr>

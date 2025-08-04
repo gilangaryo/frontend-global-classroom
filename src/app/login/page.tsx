@@ -10,26 +10,53 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
     async function handleLogin(e: React.FormEvent) {
         e.preventDefault();
         setError('');
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
-        });
+        setLoading(true);
 
-        const data = await res.json();
+        try {
+            console.log('Attempting login with:', { email, password: '***' });
 
-        if (res.ok && data.data?.token && data.data?.refreshToken) {
-            localStorage.setItem('token', data.data.token);
-            localStorage.setItem('refreshToken', data.data.refreshToken);
-            localStorage.setItem('userId', data.data.user.id);
-            localStorage.setItem('userEmail', data.data.user.email);
-            router.replace('/dashboard');
-        } else {
-            setError(data.message || data.error || 'Invalid email or password');
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            console.log('Response status:', res.status);
+            console.log('Response ok:', res.ok);
+
+            const data = await res.json();
+            console.log('Response data:', data);
+
+            if (res.ok && data.status === 'success' && data.data?.token && data.data?.refreshToken) {
+                // Store tokens and user info
+                localStorage.setItem('token', data.data.token);
+                localStorage.setItem('refreshToken', data.data.refreshToken);
+                localStorage.setItem('userId', data.data.user.id);
+                localStorage.setItem('userEmail', data.data.user.email);
+                localStorage.setItem('userName', data.data.user.name || '');
+                localStorage.setItem('userRole', data.data.user.role || 'USER');
+
+                console.log('Login successful, redirecting to dashboard');
+
+                // Redirect to dashboard
+                router.replace('/dashboard');
+            } else {
+                console.error('Login failed:', data);
+                setError(data.message || 'Login failed. Please check your credentials.');
+            }
+        } catch (err) {
+            console.error('Login error:', err);
+            setError('Network error. Please check your connection and try again.');
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -47,7 +74,11 @@ export default function LoginPage() {
                         <h2 className="text-2xl font-bold text-green-active">SIGN IN</h2>
                     </div>
 
-                    {error && <p className="text-red-600 text-sm text-center">{error}</p>}
+                    {error && (
+                        <div className="w-full p-3 bg-red-50 border border-red-200 rounded-md">
+                            <p className="text-red-600 text-sm text-center">{error}</p>
+                        </div>
+                    )}
 
                     <input
                         type="email"
@@ -55,7 +86,8 @@ export default function LoginPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
-                        className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#3E724A]"
+                        disabled={loading}
+                        className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#3E724A] disabled:bg-gray-100 disabled:cursor-not-allowed"
                     />
 
                     <div className="w-full relative">
@@ -65,12 +97,14 @@ export default function LoginPage() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            className="w-full border rounded px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-[#3E724A]"
+                            disabled={loading}
+                            className="w-full border rounded px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-[#3E724A] disabled:bg-gray-100 disabled:cursor-not-allowed"
                         />
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm"
+                            disabled={loading}
+                            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm disabled:cursor-not-allowed"
                             tabIndex={-1}
                         >
                             {showPassword ? '🙈' : '👁️'}
@@ -79,17 +113,36 @@ export default function LoginPage() {
 
                     <div className="w-full flex items-center justify-start text-sm">
                         <label className="flex items-center gap-2">
-                            <input type="checkbox" className="accent-[#3E724A]" />
+                            <input
+                                type="checkbox"
+                                className="accent-[#3E724A]"
+                                disabled={loading}
+                            />
                             Remember me
                         </label>
                     </div>
 
                     <button
                         type="submit"
-                        className="w-full bg-green-active hover:bg-[#2d5d39] text-white py-2 rounded font-semibold transition"
+                        disabled={loading || !email || !password}
+                        className="w-full bg-green-active hover:bg-[#2d5d39] text-white py-2 rounded font-semibold transition disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
                     >
-                        Sign In
+                        {loading ? (
+                            <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                Signing In...
+                            </>
+                        ) : (
+                            'Sign In'
+                        )}
                     </button>
+
+                    {/* Debug info in development */}
+                    {process.env.NODE_ENV === 'development' && (
+                        <div className="w-full text-xs text-gray-500 text-center">
+                            <p>API URL: {process.env.NEXT_PUBLIC_API_BASE_URL}</p>
+                        </div>
+                    )}
                 </form>
             </div>
 

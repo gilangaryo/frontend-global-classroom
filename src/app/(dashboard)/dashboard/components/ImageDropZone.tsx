@@ -82,7 +82,7 @@ export default function ImageDropZone({ onImageUpload, currentImageUrl }: ImageD
 
             if (response.ok && result.status === 'success') {
                 console.log('Upload success, URL:', result.url);
-                const proxyUrl = result.url.replace('http://192.168.56.1:4100/uploads', '/api/uploads');
+                const proxyUrl = result.url.replace(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/uploads`, '/api/uploads');
                 console.log('Proxy URL:', proxyUrl);
                 setLocalPreview(null);
                 onImageUpload(proxyUrl);

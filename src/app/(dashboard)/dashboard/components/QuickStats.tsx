@@ -1,42 +1,61 @@
 'use client';
 
 import React from 'react';
-import { Stats } from '../types/dashboard';
+import { BookOpen, Users, Eye, Package } from 'lucide-react';
+import type { Stats } from '../types/dashboard';
 
-interface Props { stats: Stats }
+export interface QuickStatsProps {
+    stats: Stats;
+}
 
-export function QuickStats({ stats }: Props) {
-    const { units, subunits, lessons, users, revenue, courses } = stats;
-    const avg = users > 0 ? revenue / users : 0;
+export function QuickStats({ stats }: QuickStatsProps) {
+    const quickStatsData = [
+        {
+            name: 'Total Courses',
+            value: stats.courses?.toString() || '0',
+            icon: BookOpen,
+            color: 'text-blue-600'
+        },
+        {
+            name: 'Total Units',
+            value: stats.units?.toString() || '0',
+            icon: Package,
+            color: 'text-purple-600'
+        },
+        {
+            name: 'Total Lessons',
+            value: stats.lessons?.toString() || '0',
+            icon: Eye,
+            color: 'text-green-600'
+        },
+        {
+            name: 'Active Users',
+            value: stats.users?.toString() || '0',
+            icon: Users,
+            color: 'text-orange-600'
+        }
+    ];
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h3>
-            <div className="space-y-4 text-gray-600">
-                <div className="flex justify-between">
-                    <span>Units Created</span>
-                    <span className="font-semibold">{units}</span>
-                </div>
-                <div className="flex justify-between">
-                    <span>Subunits</span>
-                    <span className="font-semibold">{subunits}</span>
-                </div>
-                <div className="flex justify-between">
-                    <span>Avg. Revenue per User</span>
-                    <span className="font-semibold">
-                        {new Intl.NumberFormat('id-ID', {
-                            style: 'currency',
-                            currency: 'IDR',
-                            maximumFractionDigits: 0
-                        }).format(avg)}
-                    </span>
-                </div>
-                <div className="flex justify-between">
-                    <span>Lessons per Course</span>
-                    <span className="font-semibold">
-                        {courses > 0 ? Math.round(lessons / courses) : 0}
-                    </span>
-                </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-6">Quick Stats</h3>
+
+            <div className="space-y-4">
+                {quickStatsData.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                        <div className="flex items-center">
+                            <div className={`p-2 rounded-lg bg-gray-50 mr-3 ${item.color}`}>
+                                <item.icon className="w-5 h-5" />
+                            </div>
+                            <span className="text-sm font-medium text-gray-700">
+                                {item.name}
+                            </span>
+                        </div>
+                        <span className="text-lg font-semibold text-gray-900">
+                            {item.value}
+                        </span>
+                    </div>
+                ))}
             </div>
         </div>
     );

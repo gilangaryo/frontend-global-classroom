@@ -16,7 +16,7 @@ import type {
     User,
     Payment,
     Purchase,
-    Course as CourseType,
+    Course,
     Stats,
     TabItem
 } from './types/dashboard';
@@ -27,41 +27,82 @@ export default function DashboardPage() {
     const [stats, setStats] = useState<Stats | null>(null);
     const [recentUsers, setRecentUsers] = useState<User[]>([]);
     const [recentPayments, setRecentPayments] = useState<Payment[]>([]);
-    const [recentPurchases, setRecentPurchases] = useState<Purchase[]>([]);          // ← di-uncomment
-    const [topCourses, setTopCourses] = useState<CourseType[]>([]);                  // ← di-uncomment
+    const [recentPurchases, setRecentPurchases] = useState<Purchase[]>([]);
+    const [topCourses, setTopCourses] = useState<Course[]>([]);
     const [activeTab, setActiveTab] = useState<TabItem['key']>('overview');
+    const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
-        const token = localStorage.getItem('token');
-        if (!token) return router.replace('/login');
 
-        const headers = { Authorization: `Bearer ${token}` };
+        const token = localStorage.getItem('token');
+        if (!token) {
+            router.replace('/login');
+            return;
+        }
+
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        };
         const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-        Promise.all([
-            fetch(`${baseUrl}/api/user/profile`, { headers }).then(r => r.json()),
-            fetch(`${baseUrl}/api/dashboard/stats`, { headers }).then(r => r.json()),
-            fetch(`${baseUrl}/api/dashboard/users`, { headers }).then(r => r.json()),
-            fetch(`${baseUrl}/api/dashboard/payments`, { headers }).then(r => r.json()),
-            fetch(`${baseUrl}/api/dashboard/orders`, { headers }).then(r => r.json()),
-            fetch(`${baseUrl}/api/dashboard/products`, { headers }).then(r => r.json()),
-        ])
-            .then(([u, st, us, pays, ord, prods]) => {
-                setUser(u.data || u);
-                setStats(st.data || st);
-                setRecentUsers(us.data || []);
-                setRecentPayments(pays.data || []);
-                setRecentPurchases(ord.data || []);
-                setTopCourses(prods.data || []);
-            })
-            .catch(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+
+                const [userRes, statsRes, usersRes, paymentsRes, ordersRes, productsRes] = await Promise.all([
+                    fetch(`${baseUrl}/api/user/profile`, { headers }),
+                    fetch(`${baseUrl}/api/dashboard/stats`, { headers }),
+                    fetch(`${baseUrl}/api/dashboard/users`, { headers }),
+                    fetch(`${baseUrl}/api/dashboard/payments`, { headers }),
+                    fetch(`${baseUrl}/api/dashboard/orders`, { headers }),
+                    fetch(`${baseUrl}/api/dashboard/products`, { headers }),
+                ]);
+
+                // Check if any request failed
+                const responses = [userRes, statsRes, usersRes, paymentsRes, ordersRes, productsRes];
+                for (const response of responses) {
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            localStorage.removeItem('token');
+                            router.replace('/login');
+                            return;
+                        }
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                }
+
+                // Parse all responses
+                const [userData, statsData, usersData, paymentsData, ordersData, productsData] = await Promise.all([
+                    userRes.json(),
+                    statsRes.json(),
+                    usersRes.json(),
+                    paymentsRes.json(),
+                    ordersRes.json(),
+                    productsRes.json(),
+                ]);
+
+                setUser(userData.data || userData);
+                setStats(statsData.data || statsData);
+                setRecentUsers(usersData.data || []);
+                setRecentPayments(paymentsData.data || []);
+                setRecentPurchases(ordersData.data || []);
+                setTopCourses(productsData.data || []);
+
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
                 localStorage.removeItem('token');
                 router.replace('/login');
-            });
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
     }, [router]);
 
-    if (!user || !stats) {
+    if (loading || !user || !stats) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
@@ -121,9 +162,9 @@ export default function DashboardPage() {
                         title="Recent Users"
                         data={recentUsers}
                         columns={[
-                            { header: 'User', renderCell: u => u.name },
-                            { header: 'Email', renderCell: u => u.email },
-                            { header: 'Joined', renderCell: u => new Date(u.createdAt).toLocaleDateString('id-ID') },
+                            { header: 'User', renderCell: (u: User) => u.name || 'No Name' },
+                            { header: 'Email', renderCell: (u: User) => u.email },
+                            { header: 'Joined', renderCell: (u: User) => new Date(u.createdAt).toLocaleDateString('en-US') },
                         ]}
                         onViewAll={() => router.push('/dashboard/users')}
                     />
@@ -135,18 +176,27 @@ export default function DashboardPage() {
                         title="Recent Payments"
                         data={recentPayments}
                         columns={[
-                            { header: 'Payment ID', renderCell: p => `#${p.id.slice(0, 8)}` },
+                            { header: 'Payment ID', renderCell: (p: Payment) => `#${p.id.slice(0, 8)}` },
+                            {
+                                header: 'Customer',
+                                renderCell: (p: Payment) => {
+                                    if (p.customerFirstName && p.customerLastName) {
+                                        return `${p.customerFirstName} ${p.customerLastName}`;
+                                    }
+                                    return p.customerEmail || 'N/A';
+                                }
+                            },
                             {
                                 header: 'Amount',
-                                renderCell: p => new Intl.NumberFormat('id-ID', {
+                                renderCell: (p: Payment) => new Intl.NumberFormat('en-US', {
                                     style: 'currency',
-                                    currency: 'IDR'
+                                    currency: 'USD'
                                 }).format(p.amount)
                             },
-                            { header: 'Status', renderCell: p => <StatusBadge status={p.status} /> },
+                            { header: 'Status', renderCell: (p: Payment) => <StatusBadge status={p.status} /> },
                             {
                                 header: 'Date',
-                                renderCell: p => new Date(p.createdAt).toLocaleDateString('id-ID')
+                                renderCell: (p: Payment) => new Date(p.createdAt).toLocaleDateString('en-US')
                             },
                         ]}
                     />
@@ -158,18 +208,21 @@ export default function DashboardPage() {
                         title="Recent Orders"
                         data={recentPurchases}
                         columns={[
-                            { header: 'Order ID', renderCell: o => `#${o.id.slice(0, 8)}` },
-                            { header: 'Item Type', renderCell: o => o.itemType },
+                            { header: 'Order ID', renderCell: (o: Purchase) => `#${o.id.slice(0, 8)}` },
+                            { header: 'Product', renderCell: (o: Purchase) => o.productTitle || 'Unknown Product' },
+                            { header: 'Customer', renderCell: (o: Purchase) => o.userName || 'Unknown User' },
+                            { header: 'Type', renderCell: (o: Purchase) => o.itemType },
                             {
                                 header: 'Price',
-                                renderCell: o => new Intl.NumberFormat('id-ID', {
+                                renderCell: (o: Purchase) => new Intl.NumberFormat('en-US', {
                                     style: 'currency',
-                                    currency: 'IDR'
+                                    currency: 'USD'
                                 }).format(o.price)
                             },
+                            { header: 'Status', renderCell: (o: Purchase) => <StatusBadge status={o.status || 'PAID'} /> },
                             {
                                 header: 'Date',
-                                renderCell: o => new Date(o.createdAt).toLocaleDateString('id-ID')
+                                renderCell: (o: Purchase) => new Date(o.createdAt).toLocaleDateString('en-US')
                             },
                         ]}
                     />
@@ -181,13 +234,22 @@ export default function DashboardPage() {
                         title="Top Selling Courses"
                         data={topCourses}
                         columns={[
-                            { header: 'Course', renderCell: c => c.title },
+                            { header: 'Course', renderCell: (c: Course) => c.title },
+                            { header: 'Type', renderCell: (c: Course) => c.type || 'COURSE' },
                             {
-                                header: 'Price',
-                                renderCell: c => new Intl.NumberFormat('id-ID', {
+                                header: 'Unit Price',
+                                renderCell: (c: Course) => new Intl.NumberFormat('en-US', {
                                     style: 'currency',
-                                    currency: 'IDR'
+                                    currency: 'USD'
                                 }).format(c.price)
+                            },
+                            { header: 'Sales', renderCell: (c: Course) => c.totalSales || 0 },
+                            {
+                                header: 'Total Revenue',
+                                renderCell: (c: Course) => new Intl.NumberFormat('en-US', {
+                                    style: 'currency',
+                                    currency: 'USD'
+                                }).format(c.totalRevenue || 0)
                             },
                         ]}
                     />
