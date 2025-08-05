@@ -7,10 +7,7 @@ interface ImageDropZoneProps {
     currentImageUrl?: string;
 }
 
-export default function ImageDropZone({
-    onImageUpload,
-    currentImageUrl,
-}: ImageDropZoneProps) {
+export default function ImageDropZone({ onImageUpload, currentImageUrl }: ImageDropZoneProps) {
     const [dragActive, setDragActive] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [imageError, setImageError] = useState(false);
@@ -20,35 +17,26 @@ export default function ImageDropZone({
 
     useEffect(() => {
         setImageError(false);
-        if (currentImageUrl) {
-            setLocalPreview(null);
-        }
+        if (currentImageUrl) setLocalPreview(null);
     }, [currentImageUrl]);
 
     const handleDrag = (e: React.DragEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        if (e.type === 'dragenter' || e.type === 'dragover') {
-            setDragActive(true);
-        } else {
-            setDragActive(false);
-        }
+        if (e.type === 'dragenter' || e.type === 'dragover') setDragActive(true);
+        else setDragActive(false);
     };
 
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault();
         e.stopPropagation();
         setDragActive(false);
-        if (e.dataTransfer.files?.[0]) {
-            handleFile(e.dataTransfer.files[0]);
-        }
+        if (e.dataTransfer.files?.[0]) handleFile(e.dataTransfer.files[0]);
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
-        if (e.target.files?.[0]) {
-            handleFile(e.target.files[0]);
-        }
+        if (e.target.files?.[0]) handleFile(e.target.files[0]);
     };
 
     const handleFile = async (file: File) => {
@@ -56,16 +44,13 @@ export default function ImageDropZone({
             alert('Please upload an image file');
             return;
         }
-        if (file.size > 50 * 1024 * 1024) { // 50MB sesuai server
+        if (file.size > 50 * 1024 * 1024) {
             alert('File size should be less than 50MB');
             return;
         }
 
-        // Show local preview immediately
         const reader = new FileReader();
-        reader.onload = () => {
-            setLocalPreview(reader.result as string);
-        };
+        reader.onload = () => setLocalPreview(reader.result as string);
         reader.readAsDataURL(file);
 
         setUploading(true);
@@ -76,7 +61,7 @@ export default function ImageDropZone({
             const formData = new FormData();
             formData.append('file', file);
 
-            const res = await fetch('https://api.gilangaryo.site/upload', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_UPLOAD_URL}`, {
                 method: 'POST',
                 body: formData,
             });
@@ -84,16 +69,12 @@ export default function ImageDropZone({
             const result = await res.json();
 
             if (res.ok && result.success && result.file?.url) {
-                const serverUrl = result.file.url;
-
+                onImageUpload(result.file.url);
                 setLocalPreview(null);
-                onImageUpload(serverUrl);
                 setDebugInfo(`✅ Upload successful: ${result.file.filename}`);
             } else {
                 throw new Error(result.error || result.message || 'Upload failed');
             }
-
-
         } catch (err: unknown) {
             console.error('Upload error:', err);
             const message = err instanceof Error ? err.message : String(err);
@@ -105,7 +86,6 @@ export default function ImageDropZone({
     };
 
     const onButtonClick = () => inputRef.current?.click();
-
     const removeImage = (e: React.MouseEvent) => {
         e.stopPropagation();
         setLocalPreview(null);
@@ -118,33 +98,24 @@ export default function ImageDropZone({
 
     return (
         <div className="w-full">
-            {/* Debug panel */}
             {debugInfo && (
                 <div className="mb-2 p-2 bg-[var(--color-alt2)] rounded text-xs text-[var(--color-text)] font-mono">
                     Debug: {debugInfo}
                 </div>
             )}
-
             <div
                 className={`
           relative border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
           ${dragActive ? 'border-[var(--color-primary)] bg-[var(--color-alt2)]' : ''}
           ${srcUrl ? 'border-[var(--color-secondary)] bg-[var(--color-alt2)]' : 'hover:border-[var(--color-secondary)]'}
-          ${uploading ? 'pointer-events-none opacity-50' : ''}
-        `}
+          ${uploading ? 'pointer-events-none opacity-50' : ''}`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
                 onClick={onButtonClick}
             >
-                <input
-                    ref={inputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleChange}
-                />
+                <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleChange} />
 
                 {srcUrl ? (
                     <div className="relative group min-h-[200px] flex items-center justify-center">
@@ -155,9 +126,7 @@ export default function ImageDropZone({
                             height={240}
                             unoptimized
                             className="w-full h-full max-h-[240px] object-contain rounded-lg bg-[var(--color-white)]"
-                            onError={(e) => {
-                                const failed = (e.currentTarget as HTMLImageElement).src;
-                                console.error('Image load failed:', failed);
+                            onError={() => {
                                 setImageError(true);
                                 setDebugInfo(`❌ Load failed`);
                             }}
@@ -193,9 +162,7 @@ export default function ImageDropZone({
                         {uploading ? (
                             <div className="flex flex-col items-center">
                                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]"></div>
-                                <p className="mt-2 text-sm text-[var(--color-text)]">
-                                    Uploading to server...
-                                </p>
+                                <p className="mt-2 text-sm text-[var(--color-text)]">Uploading to server...</p>
                             </div>
                         ) : (
                             <>
@@ -206,29 +173,13 @@ export default function ImageDropZone({
                                         stroke="currentColor"
                                         viewBox="0 0 48 48"
                                     >
-                                        <path
-                                            d="M24 36V20M24 20l-6 6M24 20l6 6"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        />
-                                        <path
-                                            d="M8 38a10 10 0 0 1 2-19.8A12 12 0 0 1 34.6 9.8 10 10 0 0 1 40 38H8Z"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        />
+                                        <path d="M24 36V20M24 20l-6 6M24 20l6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path d="M8 38a10 10 0 0 1 2-19.8A12 12 0 0 1 34.6 9.8 10 10 0 0 1 40 38H8Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
                                 </div>
                                 <div>
-                                    <p className="text-lg font-medium text-[var(--color-primary)]">
-                                        Click or Drop image
-                                    </p>
-                                    <p className="text-sm text-[var(--color-text)] mt-1">
-                                        PNG, JPG, GIF up to 50MB
-                                    </p>
+                                    <p className="text-lg font-medium text-[var(--color-primary)]">Click or Drop image</p>
+                                    <p className="text-sm text-[var(--color-text)] mt-1">PNG, JPG, GIF up to 50MB</p>
                                     {imageError && (
                                         <p className="text-xs text-red-500 mt-2">
                                             Previous image failed to load. Please try again.

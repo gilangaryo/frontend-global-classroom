@@ -112,7 +112,6 @@ export default function AnimatedAddToCartButton({
                 open={modalOpen}
                 onClose={() => setModalOpen(false)}
                 title={itemTitle}
-                description={itemDesc}
                 imageUrl={itemImg}
                 price={itemPrice}
             />
