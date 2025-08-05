@@ -121,7 +121,7 @@ export default function SuccessPage() {
             )}
 
             <div className='flex flex-col items-center justify-center gap-6'>
-                {links && links.length > 1 && (
+                {links && links.length >= 1 && (
                     <button
                         onClick={handleDownloadAll}
                         disabled={isDownloading}
