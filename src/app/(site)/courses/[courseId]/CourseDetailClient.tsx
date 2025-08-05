@@ -149,15 +149,23 @@ export default function CourseDetailClient() {
                                 <Link
                                     key={unit.id}
                                     href={`/courses/${course.id}/unit/${unit.id}`}
-                                    className="overflow-hidden flex flex-col"
+                                    className="overflow-hidden flex flex-col group"
                                 >
                                     <div className="relative w-full h-90">
                                         <Image
                                             src={unit.imageUrl && unit.imageUrl.trim() !== '' ? unit.imageUrl : '/dummy/sample-product.png'}
                                             alt={unit.title}
                                             fill
-                                            className="object-cover"
+                                            className="object-cover transition duration-300 group-hover:brightness-50"
                                         />
+
+                                        {/* Overlay on Hover */}
+                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500 ">
+                                            <span className="backdrop-blur-xs bg-white/30 text-white px-12 py-3 rounded-lg font-semibold shadow">
+                                                See Unit
+                                            </span>
+
+                                        </div>
                                     </div>
                                     <div className="mt-6 text-primary font-bold text-4xl">
                                         <h2>{unitNumber}. {unit.title}</h2>
@@ -166,13 +174,14 @@ export default function CourseDetailClient() {
                             );
                         })}
                     </div>
+
                 </div>
             </section>
 
             {/* FREE RESOURCE Section */}
             <section className="py-40 px-4 md:px-20 bg-white">
                 <div className="max-w-full mx-auto">
-                    <h2 className="text-3xl md:text-8xl font-bold text-[#363F36] mb-8">FREE RESOURCE</h2>
+                    <h2 className="text-3xl md:text-8xl font-bold text-black mb-8">FREE RESOURCE</h2>
                     <div className="mb-4 text-primary text-lg">
                         Curious about this course? Checkout this free resource
                     </div>

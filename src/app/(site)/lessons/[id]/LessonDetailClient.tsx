@@ -8,6 +8,7 @@ import AnimatedAddToCartButton from '../../components/AnimatedAddToCartButton';
 import LessonPdfThumbnailModal from '../../components/LessonPdfThumbnailModal';
 import ModalPreviewPdf from '../../components/ModalPreviewPdf';
 import LessonBundleSection from '../../components/lesson-page/LessonBundleSection';
+import YouMayAlsoLike from './YouMayAlsoLike';
 
 interface Lesson {
     id: string;
@@ -144,166 +145,144 @@ export default function LessonDetailClient() {
     };
 
     return (
-        <main className="px-6 md:px-16 py-10 font-body bg-white text-[#363F36]">
-            <Link href={getBackLink()} className="text-sm text-[#346046] font-semibold mb-6 inline-block">
-                {getBackText()}
-            </Link>
+        <main className="font-body bg-white text-[#363F36]">
+            <div className='px-6 md:px-16 py-10 '>
+                <Link href={getBackLink()} className="text-sm text-[#346046] font-semibold mb-6 inline-block">
+                    {getBackText()}
+                </Link>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 ">
-                {/* LEFT SIDE */}
-                <div className='max-w-lg'>
-                    <h1 className="text-2xl md:text-3xl font-bold mb-4">{lesson.title}</h1>
-                    <p className="text-sm text-[#363F36] mb-4 ">{lesson.description}</p>
+                <div className=" grid grid-cols-1 md:grid-cols-2 gap-12 ">
+                    {/* LEFT SIDE */}
+                    <div className='max-w-lg'>
+                        <h1 className="text-2xl md:text-3xl font-bold mb-4">{lesson.title}</h1>
+                        <p className="text-sm text-text mb-4 leading-6">{lesson.description}</p>
 
-                    {lesson.metadata?.learningActivities && (
-                        <div className="mb-6">
-                            <p className="text-md font-semibold text-[#3E724A] p-2 mb-4 border-b-2 border-[#3E724A] pb-1">
-                                Learning Activities
-                            </p>
-                            <div
-                                className="text-sm text-[#363F36] space-y-2"
-                                dangerouslySetInnerHTML={{ __html: lesson.metadata.learningActivities }}
-                            />
-                        </div>
-                    )}
-
-                    {/* Tags */}
-                    {lesson.tags && lesson.tags.length > 0 && (
-                        <div className="mb-4">
-                            <div className="flex flex-wrap gap-3">
-                                {lesson.tags.map((tag, index) => (
-                                    <span
-                                        key={index}
-                                        className="pr-4 py-1  text-gray-500 text-xs rounded-md"
-                                    >
-                                        {tag}
-                                    </span>
-                                ))}
+                        {lesson.metadata?.learningActivities && (
+                            <div className="mb-6">
+                                <p className="text-md font-semibold text-[#3E724A] p-2 mb-4 border-b-2 border-[#3E724A] pb-1">
+                                    Learning Activities
+                                </p>
+                                <div
+                                    className="text-sm text-[#363F36] space-y-5 leading-6"
+                                    dangerouslySetInnerHTML={{ __html: lesson.metadata.learningActivities }}
+                                />
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {/* Price (hanya jika tidak gratis) */}
-                    {/* {!lesson.isFreeLesson && (
+                        {/* Tags */}
+                        {lesson.tags && lesson.tags.length > 0 && (
+                            <div className="mb-4">
+                                <div className="flex flex-wrap gap-3">
+                                    {lesson.tags.map((tag, index) => (
+                                        <span
+                                            key={index}
+                                            className="pr-4 py-1  text-gray-500 text-xs rounded-md"
+                                        >
+                                            {tag}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Price (hanya jika tidak gratis) */}
+                        {/* {!lesson.isFreeLesson && (
                         <div className="mb-6">
                             <p className="text-sm text-gray-600 mb-1">Price:</p>
                             <div className="text-2xl font-bold text-primary">${parseFloat(lesson.price).toFixed(2)}</div>
                         </div>
                     )} */}
 
-                    <div className="flex gap-4 mb-6 mt-8">
-                        <div className="flex flex-row gap-4 w-full md:w-auto">
-                            <button
-                                onClick={() => setOpenPreviewPdf(true)}
-                                disabled={!lesson.previewUrl}
-                                className={`px-6 py-3 rounded-lg border font-bold text-base transition-colors ${lesson.previewUrl
-                                    ? 'border-[#363F36] text-[#363F36] bg-white hover:bg-primary hover:text-white'
-                                    : 'border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed'
-                                    }`}
-                            >
-                                Preview
-                            </button>
-
-                            {lesson.isFreeLesson ? (
-                                <div className="flex flex-col gap-2 w-full md:w-auto">
-                                    <input
-                                        type="email"
-                                        placeholder="Masukkan email kamu"
-                                        value={emailInput}
-                                        onChange={(e) => setEmailInput(e.target.value)}
-                                        className="px-4 py-2 border border-gray-300 rounded-md text-sm"
-                                    />
-                                    <button
-                                        onClick={handleSubmitFreeLesson}
-                                        disabled={sending}
-                                        className="px-6 py-3 rounded-lg font-bold text-sm transition-colors text-white bg-[#3E724A] hover:bg-[#2e5a39] disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {sending ? 'Mengirim...' : 'Kirim Gratis ke Email'}
-                                    </button>
-                                </div>
-                            ) : (
-                                <AnimatedAddToCartButton
-                                    productId={lesson.id}
-                                    productType="LESSON"
-                                    itemTitle={lesson.title}
-                                    itemImg={lesson.imageUrl}
-                                    itemDesc={lesson.description}
-                                    itemPrice={parseFloat(lesson.price)}
-                                    size="base"
-                                    colorButton={lesson.colorButton || '#363F36'}
-                                />
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Hierarchy Info */}
-                    {/* <div className="mb-6 text-sm text-gray-600">
-                        {lesson.course && (
-                            <p className="mb-1">
-                                <span className="font-medium">Course:</span>{' '}
-                                <Link href={`/courses/${lesson.course.id}`} className="text-[#346046] hover:underline">
-                                    {lesson.course.title}
-                                </Link>
-                            </p>
-                        )}
-                        {lesson.unit && (
-                            <p className="mb-1">
-                                <span className="font-medium">Unit:</span>{' '}
-                                <Link href={getBackLink()} className="text-[#346046] hover:underline">
-                                    {lesson.unit.title}
-                                </Link>
-                            </p>
-                        )}
-                        {lesson.subunit && (
-                            <p className="mb-1">
-                                <span className="font-medium">Subunit:</span> {lesson.subunit.title}
-                            </p>
-                        )}
-                    </div> */}
-
-                    {lesson.previewUrl && (
-                        <Link
-                            href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                setOpenPreviewPdf(true);
-                            }}
-                            className="text-[#346046] text-sm font-medium flex items-center gap-1 hover:underline"
-                        >
-                            Preview Lesson Overview →
-                        </Link>
-                    )}
-                </div>
-
-                {/* RIGHT SIDE */}
-                <div className="flex flex-col gap-10">
-                    <div className="relative w-full aspect-[4/3]">
-                        <Image
-                            src={lesson.imageUrl || '/dummy/sample-product.png'}
-                            alt={lesson.title}
-                            fill
-                            className="object-cover rounded-md shadow"
-                            onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.src = '/dummy/sample-product.png';
-                            }}
-                        />
-                        {lesson.previewUrl && (
-                            <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity duration-200 flex items-center justify-center rounded-md">
+                        <div className="flex gap-4 mb-6 mt-8">
+                            <div className="flex flex-row gap-4 w-full md:w-auto">
                                 <button
-                                    onClick={() => setOpenThumbnail(true)}
-                                    className="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-lg text-sm font-medium"
+                                    onClick={() => setOpenPreviewPdf(true)}
+                                    disabled={!lesson.previewUrl}
+                                    className={`px-6 py-3 rounded-lg border font-bold text-base transition-colors ${lesson.previewUrl
+                                        ? 'border-[#363F36] text-[#363F36] bg-white hover:bg-primary hover:text-white'
+                                        : 'border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed'
+                                        }`}
                                 >
                                     Preview
                                 </button>
+
+                                {lesson.isFreeLesson ? (
+                                    <div className="flex flex-col gap-2 w-full md:w-auto">
+                                        <input
+                                            type="email"
+                                            placeholder="Masukkan email kamu"
+                                            value={emailInput}
+                                            onChange={(e) => setEmailInput(e.target.value)}
+                                            className="px-4 py-2 border border-gray-300 rounded-md text-sm"
+                                        />
+                                        <button
+                                            onClick={handleSubmitFreeLesson}
+                                            disabled={sending}
+                                            className="px-6 py-3 rounded-lg font-bold text-sm transition-colors text-white bg-[#3E724A] hover:bg-[#2e5a39] disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {sending ? 'Mengirim...' : 'Kirim Gratis ke Email'}
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <AnimatedAddToCartButton
+                                        productId={lesson.id}
+                                        productType="LESSON"
+                                        itemTitle={lesson.title}
+                                        itemImg={lesson.imageUrl}
+                                        itemDesc={lesson.description}
+                                        itemPrice={parseFloat(lesson.price)}
+                                        size="base"
+                                        colorButton={lesson.colorButton || '#363F36'}
+                                    />
+                                )}
                             </div>
+                        </div>
+
+
+                        {lesson.previewUrl && (
+                            <Link
+                                href="#"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    setOpenPreviewPdf(true);
+                                }}
+                                className="text-[#346046] text-sm font-medium flex items-center gap-1 hover:underline"
+                            >
+                                Preview Lesson Overview →
+                            </Link>
                         )}
                     </div>
 
-                    <LessonBundleSection lessonId={lesson.id} />
+                    {/* RIGHT SIDE */}
+                    <div className="flex flex-col gap-10">
+                        <div className="relative w-full aspect-[4/3]">
+                            <Image
+                                src={lesson.imageUrl || '/dummy/sample-product.png'}
+                                alt={lesson.title}
+                                fill
+                                className="object-cover rounded-md shadow"
+                                onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.src = '/dummy/sample-product.png';
+                                }}
+                            />
+                            {lesson.previewUrl && (
+                                <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity duration-200 flex items-center justify-center rounded-md">
+                                    <button
+                                        onClick={() => setOpenThumbnail(true)}
+                                        className="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-lg text-sm font-medium"
+                                    >
+                                        Preview
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        <LessonBundleSection lessonId={lesson.id} />
+                    </div>
+
                 </div>
             </div>
-
             <LessonPdfThumbnailModal
                 open={openThumbnail}
                 onClose={() => setOpenThumbnail(false)}
@@ -320,6 +299,48 @@ export default function LessonDetailClient() {
                 pdfUrl={lesson.previewUrl || ''}
                 title="Preview PDF"
             />
+
+            {/* YOU MAY ALSO LIKE (Dummy) */}
+            <section className="bg-alt2 px-6 md:px-16 py-25">
+                <h2 className="text-xl md:text-4xl font-bold text-[#4E3D34] mb-10 uppercase tracking-wide">
+                    You may also like
+                </h2>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="flex flex-col">
+                            {/* Image */}
+                            <div className="relative w-full aspect-[4/3] overflow-hidden rounded-md mb-4">
+                                <Image
+                                    src={`/placeholder.jpg`}
+                                    alt={`Related Lesson ${i}`}
+                                    fill
+                                    className="object-cover"
+                                />
+                            </div>
+
+                            {/* Grade + Category */}
+                            <p className="text-xs text-[#4E3D34] mb-1">
+                                11th - 12th, Adult Education, Higher Education
+                            </p>
+
+                            {/* Title */}
+                            <h3 className="text-sm md:text-xl font-semibold text-[#363F36] mb-2 leading-normal">
+                                {i === 1
+                                    ? 'GLOBAL ACTORS AND GLOBAL GOVERNANCE'
+                                    : 'POWER IN GLOBAL POLITICS'}
+                            </h3>
+
+                            {/* Description */}
+                            <p className="text-xs text-[#8E8E8E]">
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet...
+                            </p>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            <YouMayAlsoLike />
         </main>
     );
 }

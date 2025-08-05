@@ -43,7 +43,8 @@ export default function LessonsPage() {
     return (
         <main className="font-body">
             <section>
-                <div className="mb-10 bg-alt2 px-4 md:px-25 py-16">
+                <div className="mb-10 bg-alt2 px-4 md:px-24 pt-10 md:pt-30 pb-10 md:pb-40">
+
                     <h1 className="text-5xl md:text-7xl font-extrabold text-primary leading-normal tracking-wider ">
                         EXPLORE <br /> LESSONS
                     </h1>

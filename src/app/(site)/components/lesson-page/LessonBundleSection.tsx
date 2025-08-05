@@ -35,7 +35,7 @@ export default function LessonBundleSection({ lessonId }: { lessonId: string }) 
 
     return (
         <div>
-            <h3 className="font-bold text-lg mb-4 text-heading">
+            <h3 className="font-bold text-2xl mb-4 text-heading py-4">
                 Save even more with bundles
             </h3>
             <div className="space-y-4">

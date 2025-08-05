@@ -26,9 +26,9 @@ const cardList = [
 
 export default function WhoWeWorkWithSection() {
     return (
-        <section className="py-4 md:py-70 px-4 md:px-25  bg-white max-w-full ">
-            <div className=" mx-auto ">
-                <h2 className="text-4xl md:text-7xl font-bold mt-8 md:mt-2  mb-8 tracking-tight md:text-left">
+        <section className="py-4 md:py-60 px-4 md:px-25  bg-white max-w-full ">
+            <div className=" mx-auto mb-4">
+                <h2 className="text-4xl md:text-[5rem] font-bold mt-8 md:mt-2  mb-16 tracking-tight md:text-left">
                     WHO WE WORK WITH
                 </h2>
 

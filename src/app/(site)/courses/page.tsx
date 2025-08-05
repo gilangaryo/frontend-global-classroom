@@ -30,8 +30,8 @@ export default async function CoursePage() {
 
     return (
         <main className="font-body">
-            <section className="bg-alt2 py-16 text-primary">
-                <div className="px-4 md:px-25 max-w-full mx-auto ">
+            <section className="bg-alt2 px-4 md:px-24 pt-10 md:pt-30 pb-10 md:pb-40 text-primary">
+                <div className=" max-w-full mx-auto ">
                     <h1 className="text-5xl md:text-7xl font-bold  mb-8 leading-normal tracking-wider">
                         EXPLORE <br /> COURSES
                     </h1>
@@ -66,11 +66,17 @@ export default async function CoursePage() {
             </section>
 
             <section className="py-20 md:px-25 px-4 max-w-full mx-auto">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
                     {courses.map((c) => (
                         <div key={c.id} className="bg-card rounded-lg overflow-hidden flex flex-col ">
                             <div className="relative h-90 w-full">
-                                <Image src={c.imageUrl} alt={c.title} fill className="object-cover" />
+                                <Image
+                                    src={c.imageUrl?.trim() ? c.imageUrl : '/placeholder.jpg'}
+                                    alt={c.title}
+                                    fill
+                                    className="object-cover"
+                                />
+
                             </div>
                             <div className="p-6 flex flex-col flex-1">
                                 <div className='mb-4 h-12/12'>

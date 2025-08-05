@@ -27,15 +27,11 @@ export default function SuccessPage() {
 
     useEffect(() => {
         if (!sessionId) {
-            setError('Session ID tidak ditemukan di URL.');
+            setError('Session ID not found in URL.');
             return;
         }
 
-        fetch(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/download/download-links?session_id=${encodeURIComponent(
-                sessionId
-            )}`
-        )
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/download/download-links?session_id=${encodeURIComponent(sessionId)}`)
             .then(res => {
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 return res.json() as Promise<DownloadLink[]>;
@@ -43,7 +39,7 @@ export default function SuccessPage() {
             .then(setLinks)
             .catch(err => {
                 console.error(err);
-                setError('Gagal memuat tautan download.');
+                setError('Failed to load download links.');
             });
     }, [sessionId]);
 
@@ -60,9 +56,7 @@ export default function SuccessPage() {
                     console.log(`Downloading ${link.title}...`);
 
                     const res = await fetch(link.url);
-                    if (!res.ok) {
-                        throw new Error(`Failed to fetch ${link.title}: ${res.status}`);
-                    }
+                    if (!res.ok) throw new Error(`Failed to fetch ${link.title}: ${res.status}`);
 
                     const blob = await res.blob();
                     const blobUrl = URL.createObjectURL(blob);
@@ -96,23 +90,22 @@ export default function SuccessPage() {
     };
 
     return (
-        <main className="max-w-3xl mx-auto px-6 py-16 text-center font-body text-primary">
+        <main className="max-w-full mx-auto px-6 py-25 text-center font-body text-primary">
             <div className="flex justify-center mb-6">
                 <Image
                     src="/success/success-button.png"
                     alt="Success"
-                    width={150}
-                    height={150}
+                    width={200}
+                    height={200}
                     priority
                 />
             </div>
 
-            <h1 className="text-3xl md:text-4xl font-bold text-green-800 uppercase mb-2">
-                Pembayaran Berhasil!
+            <h1 className="text-3xl md:text-5xl font-bold text-green-active uppercase mb-6">
+                Your Payment Successfully Paid
             </h1>
-            <p className="text-sm text-gray-600 mb-8">
-                File Anda siap diunduh. Klik Download All untuk mengunduh semua sekaligus,
-                atau pilih per-file di bawah.
+            <p className="max-w-xl mx-auto text-sm text-gray-600 mb-8 ">
+                Your purchased resources are now available. You can download it directly below or check your Email account.
             </p>
 
             {error && (
@@ -123,7 +116,7 @@ export default function SuccessPage() {
 
             {links === null && !error && (
                 <div className="mb-6">
-                    <p className="text-gray-500">Memuat tautan download…</p>
+                    <p className="text-gray-500">Loading download links…</p>
                 </div>
             )}
 
@@ -143,15 +136,15 @@ export default function SuccessPage() {
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                Mengunduh...
+                                Downloading...
                             </>
                         ) : (
-                            `Download All (${links.length})`
+                            `Download Resources (${links.length})`
                         )}
                     </button>
                 )}
 
-                {/* Individual Download Links */}
+                {/* Optional: individual download buttons */}
                 {/* {links && links.map(dl => (
                     <a
                         key={dl.title}
@@ -159,21 +152,21 @@ export default function SuccessPage() {
                         download={`${dl.title.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_')}.pdf`}
                         className="inline-flex items-center bg-green-active text-white px-6 py-2 rounded shadow hover:bg-green-hover transition font-semibold"
                     >
-                        Unduh {dl.title}
+                        Download {dl.title}
                     </a>
                 ))} */}
 
                 {links && links.length === 0 && !error && (
                     <p className="text-gray-500">
-                        Tidak ada file ditemukan. Silakan periksa email Anda.
+                        No files found. Please check your email for access.
                     </p>
                 )}
 
                 <Link
                     href="/"
-                    className="inline-flex items-center text-green-active px-6 py-2 rounded hover:bg-green-50 transition font-semibold"
+                    className="inline-flex items-center text-green-active px-6 py-2 rounded hover:bg-gray-50 transition font-semibold"
                 >
-                    Kembali ke Beranda
+                    Back to Homepage
                     <span className="ml-2 text-lg" aria-hidden="true">
                         →
                     </span>

@@ -169,10 +169,6 @@ export default function UnitDetailClient({
                         <div className="text-lg font-semibold text-gray-700">{totalLessons} lessons</div>
                     </div>
 
-                    <div className="mb-6">
-                        <p className="font-medium mb-1">Unit Price:</p>
-                        <div className="text-2xl font-bold text-primary">${unitPrice.toFixed(2)}</div>
-                    </div>
 
                     <AnimatedAddToCartButton
                         productId={unit.id}
@@ -183,6 +179,7 @@ export default function UnitDetailClient({
                         itemPrice={unitPrice}
                         size="course"
                         colorButton='#D9C7BF'
+                        buttonText="Buy All Lesson"
                     />
 
                     <button
@@ -232,7 +229,7 @@ export default function UnitDetailClient({
                                     <Link
                                         key={lesson.id}
                                         href={`/lessons/${lesson.id}`}
-                                        className="rounded-lg p-4 flex flex-col cursor-pointer transition hover:bg-gray-50"
+                                        className="rounded-lg p-4 flex flex-col cursor-pointer transition mb-10"
                                         style={{ textDecoration: 'none' }}
                                     >
                                         <div className="relative w-full h-48 mb-4 rounded overflow-hidden group">
@@ -240,14 +237,14 @@ export default function UnitDetailClient({
                                                 src={lesson.imageUrl || '/placeholder.jpg'}
                                                 alt={lesson.title}
                                                 fill
-                                                className="object-cover z-0 group-hover:scale-105 transition-transform duration-200"
+                                                className="object-cover z-0 group-hover:scale-101 transition-transform duration-200"
                                                 onError={(e) => {
                                                     const target = e.target as HTMLImageElement;
                                                     target.src = '/placeholder.jpg';
                                                 }}
                                             />
                                             {lesson.previewUrl && (
-                                                <div className="absolute inset-0 bg-black/75 z-10 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity ease-in duration-200">
+                                                <div className=" absolute inset-0 bg-black/50 z-10 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity ease-in duration-200">
                                                     <button
                                                         type="button"
                                                         onClick={e => {
@@ -262,13 +259,13 @@ export default function UnitDetailClient({
                                             )}
                                         </div>
 
-                                        <span className="text-lg font-semibold text-primary ml-2">
+                                        <span className="text-xs text-text ml-1 mb-2">
                                             {lesson.tags?.[0] || displayTag}
                                         </span>
-                                        <h3 className="text-lg font-bold mb-2 line-clamp-2">{lesson.title}</h3>
+                                        <h3 className="text-lg font-bold mb-3 line-clamp-2">{lesson.title}</h3>
                                         <p className="text-sm text-gray-500 flex-1 mb-4 line-clamp-3">{lesson.description}</p>
 
-                                        <div className="flex w-full gap-2 items-stretch mt-auto">
+                                        <div className="flex w-full gap-4 items-stretch mt-auto">
                                             <button
                                                 type="button"
                                                 onClick={e => {
@@ -277,7 +274,7 @@ export default function UnitDetailClient({
                                                 }}
                                                 disabled={!lesson.previewUrl}
                                                 className={`w-1/2 border px-4 py-2 text-sm rounded transition-colors ${lesson.previewUrl
-                                                    ? 'border-gray-400 hover:border-gray-600 hover:bg-gray-50'
+                                                    ? 'border-gray-500 hover:border-gray-700 hover:bg-gray-100'
                                                     : 'border-gray-200 text-gray-300 cursor-not-allowed'
                                                     }`}
                                             >

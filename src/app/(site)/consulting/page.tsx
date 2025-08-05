@@ -1,9 +1,8 @@
 'use client';
 
-import Image from 'next/image';
-import Link from 'next/link';
 import WhoWeWorkWithSection from "../components/consulting/WhoWeWorkWithSection";
 import FeaturedProjects from '../components/consulting/FeaturedProjects';
+import ContactForm from "../components/consulting/ContactForm";
 export default function ConsultingPage() {
     const offerItems = [
         {
@@ -29,7 +28,7 @@ export default function ConsultingPage() {
             <section className="bg-white py-4 md:py-16 px-4 md:px-25 max-w-full">
                 <div className="mx-auto">
                     {/* HERO JUDUL */}
-                    <h1 className="text-4xl md:text-7xl md:text-[5rem] font-bold text-[#222] leading-normal mb-16">
+                    <h1 className="text-4xl md:text-[5rem] font-bold text-[#222] leading-normal mb-16">
                         BEYOND<br />
                         THE CLASSROOM
                     </h1>
@@ -60,7 +59,7 @@ export default function ConsultingPage() {
             {/* What We Offer */}
             <section className="bg-alt2 py-4 md:py-40 px-4 md:px-25 max-w-full">
                 <div className=" mx-auto ">
-                    <h2 className="text-4xl md:text-7xl font-bold text-primary mb-8 py-14">WHAT WE OFFER</h2>
+                    <h2 className="text-4xl md:text-[5rem] font-bold text-primary mb-8 py-20">WHAT WE OFFER</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {offerItems.map((item) => (
                             <div key={item.title} className='border-l-4 border-primary px-4 mb-4'>
@@ -76,13 +75,13 @@ export default function ConsultingPage() {
 
 
             {/* Why Work With Us */}
-            <section className="py-4 md:py-70 px-4 md:px-25 bg-alt2 max-w-full">
-                <div className=" mx-auto  grid md:grid-cols-3 gap-12 items-center">
+            <section className="py-4 md:py-50 px-4 md:px-25 bg-alt2 max-w-full">
+                <div className=" mx-auto  grid md:grid-cols-3 items-center">
                     <div className='col-span-2'>
-                        <h2 className="text-4xl md:text-7xl  font-bold text-primary mb-8">
+                        <h2 className="text-4xl md:text-[5rem] font-bold text-primary mb-12">
                             WHY WORK
                         </h2>
-                        <h2 className="text-4xl md:text-7xl  font-bold text-primary mb-18">
+                        <h2 className="text-4xl md:text-[5rem]  font-bold text-primary mb-18">
                             WITH US
                         </h2>
                         <ul className="list-disc list-inside space-y-8 text-primary border-l-4 border-primary px-4 font-semibold">
@@ -92,7 +91,7 @@ export default function ConsultingPage() {
                             <li>Committed to education that centers real voices and real issues</li>
                         </ul>
                     </div>
-                    <div className="h-100 aspect-square bg-gray-100 " />
+                    <div className="h-120 aspect-square bg-gray-100 " />
                 </div>
             </section>
 
@@ -100,57 +99,7 @@ export default function ConsultingPage() {
             <FeaturedProjects />
 
             {/* Let's Collaborate */}
-            <section className="py-4 md:py-70 px-4 md:px-25 bg-alt2 max-w-full">
-                <div className=" mx-auto  grid md:grid-cols-2 gap-12 items-start">
-                    <div>
-                        <h2 className="text-4xl md:text-7xl font-bold text-black mb-4 leading-normal">LET’S COLLABORATE</h2>
-                        <p className="text-[#8E8E8E] mb-2">
-                            Ready to bring your project to life through story-rich, justice-centered learning?{' '}
-
-                        </p>
-                        <p className='mb-1 font-bold'>
-                            <Link href="#" className="underline text-black">
-                                Contact Us
-                            </Link>{' '}
-                            to discuss your goals and how we can help.
-                        </p>
-                        <p className="text-[#8E8E8E] text-sm flex items-center gap-2 mt-3">
-                            <Image src="/consulting/email-icon.png" alt="Email" width={20} height={20} />
-                            aglobalclass@gmail.com
-                        </p>
-                    </div>
-                    <form className="space-y-4 bg-white/80 p-5 rounded-lg ">
-                        <div className="flex gap-4">
-                            <input
-                                type="text"
-                                placeholder="First Name"
-                                className="w-1/2 px-4 py-2 border border-gray-300 rounded-lg "
-                            />
-                            <input
-                                type="text"
-                                placeholder="Last Name"
-                                className="w-1/2 px-4 py-2 border border-gray-300  rounded-lg "
-                            />
-                        </div>
-                        <input
-                            type="email"
-                            placeholder="E-mail*"
-                            className="w-full px-4 py-2 border border-gray-300  rounded-lg "
-                        />
-                        <textarea
-                            placeholder="Message*"
-                            rows={4}
-                            className="w-full px-4 py-2 border border-gray-300  rounded-lg "
-                        />
-                        <button
-                            type="submit"
-                            className="w-full py-3 bg-primary text-[#FDFDFD] rounded-lg font-semibold"
-                        >
-                            Submit
-                        </button>
-                    </form>
-                </div>
-            </section>
+            <ContactForm />
         </main>
     );
 }
