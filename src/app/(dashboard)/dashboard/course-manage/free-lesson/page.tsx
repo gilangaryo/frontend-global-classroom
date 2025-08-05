@@ -2,7 +2,6 @@
 
 import DashboardTabs from "../../components/DashboardTabs";
 import ImageDropZone from "../../components/ImageDropZone";
-import TiptapEditor from '../../components/TiptapEditor';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from "next/image";
@@ -32,7 +31,7 @@ export default function AddFreeLessonPage() {
   // Create free lesson function
   const createFreeLesson = async (data: CreateFreeLessonData) => {
     try {
-      const response = await fetch('/api/free-lessons', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/free-lessons`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -166,9 +165,6 @@ export default function AddFreeLessonPage() {
                 {formData.title.trim().length > 0 && formData.title.trim().length < 3 && (
                   <p className="text-xs text-red-500">Title must be at least 3 characters</p>
                 )}
-                {/* {!formData.title.trim() && (
-                  <p className="text-xs text-red-500">Title is required</p>
-                )} */}
                 <p className="text-xs text-gray-500 ml-auto">{formData.title.length}/255</p>
               </div>
             </div>
@@ -178,10 +174,12 @@ export default function AddFreeLessonPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Description <span className="text-red-500">*</span>
               </label>
-              <TiptapEditor
-                content={formData.description}
-                onChange={(value) => updateField('description', value)}
+              <textarea
+                rows={6}
                 placeholder="Describe what this lesson covers..."
+                value={formData.description}
+                onChange={(e) => updateField('description', e.target.value)}
+                className="w-full rounded-md border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
               />
             </div>
 

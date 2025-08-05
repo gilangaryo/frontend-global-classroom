@@ -9,7 +9,6 @@ import { StatusBadge } from './components/StatusBadge';
 import { OverviewSection } from './components/OverviewSection';
 import { RevenueOverview } from './components/RevenueOverview';
 import { QuickStats } from './components/QuickStats';
-
 import { Calendar, Download } from 'lucide-react';
 
 import type {

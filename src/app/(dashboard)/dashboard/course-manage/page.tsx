@@ -5,6 +5,8 @@ import Link from 'next/link';
 import StatusDropdown from '../components/StatusDropdown';
 import DashboardTabs from '../components/DashboardTabs';
 import { useProductActions } from '../../../../hooks/useProducts';
+import FreeLessonsSection from '../components/FreeLessonsSection';
+
 
 // =================== Types ===================
 type Product = {
@@ -386,6 +388,11 @@ export default function CourseManagePage() {
           </div>
         )}
       </section>
+
+      {/* Free Lessons */}
+
+      <FreeLessonsSection />
+
     </div>
   );
 }

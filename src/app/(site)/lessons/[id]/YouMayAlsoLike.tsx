@@ -40,11 +40,14 @@ export default function YouMayAlsoLike() {
 
     return (
         <section className="bg-alt2 px-4 md:px-20 py-16">
-            <h2 className="text-lg md:text-xl font-bold mb-10 text-secondary">YOU MAY ALSO LIKE</h2>
+            <h2 className="text-xl md:text-4xl font-bold text-[#4E3D34] mb-10 uppercase tracking-wide">
+                You may also like
+            </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
                 {lessons.map((lesson) => (
-                    <Link key={lesson.id} href={`/lessons/${lesson.slug}`} className="bg-white rounded overflow-hidden shadow hover:shadow-lg transition-all">
-                        <div className="w-full h-[200px] relative">
+                    <Link key={lesson.id} href={`/lessons/${lesson.id}`} className="rounded overflow-hidden transition-all">
+
+                        <div className="relative w-full aspect-[4/3] overflow-hidden rounded-md mb-4">
                             <Image
                                 src={lesson.imageUrl || '/dummy/sample-product.png'}
                                 alt={lesson.title}
@@ -52,10 +55,10 @@ export default function YouMayAlsoLike() {
                                 className="object-cover"
                             />
                         </div>
-                        <div className="p-4">
-                            <p className="text-sm text-gray-500 mb-1">11th - 12th, Adult Education, Higher Education</p>
-                            <h3 className="text-md font-semibold text-primary">{lesson.title}</h3>
-                            <p className="text-sm text-gray-500 line-clamp-2">{lesson.description}</p>
+                        <div className="">
+                            <p className="text-sm text-[#4E3D34] mb-2">11th - 12th, Adult Education, Higher Education</p>
+                            <h3 className="text-md md:text-2xl font-semibold text-primary leading-normal mb-3">{lesson.title}</h3>
+                            <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">{lesson.description}</p>
                         </div>
                     </Link>
                 ))}

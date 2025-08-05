@@ -299,47 +299,6 @@ export default function LessonDetailClient() {
                 pdfUrl={lesson.previewUrl || ''}
                 title="Preview PDF"
             />
-
-            {/* YOU MAY ALSO LIKE (Dummy) */}
-            <section className="bg-alt2 px-6 md:px-16 py-25">
-                <h2 className="text-xl md:text-4xl font-bold text-[#4E3D34] mb-10 uppercase tracking-wide">
-                    You may also like
-                </h2>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
-                    {[1, 2, 3].map((i) => (
-                        <div key={i} className="flex flex-col">
-                            {/* Image */}
-                            <div className="relative w-full aspect-[4/3] overflow-hidden rounded-md mb-4">
-                                <Image
-                                    src={`/placeholder.jpg`}
-                                    alt={`Related Lesson ${i}`}
-                                    fill
-                                    className="object-cover"
-                                />
-                            </div>
-
-                            {/* Grade + Category */}
-                            <p className="text-xs text-[#4E3D34] mb-1">
-                                11th - 12th, Adult Education, Higher Education
-                            </p>
-
-                            {/* Title */}
-                            <h3 className="text-sm md:text-xl font-semibold text-[#363F36] mb-2 leading-normal">
-                                {i === 1
-                                    ? 'GLOBAL ACTORS AND GLOBAL GOVERNANCE'
-                                    : 'POWER IN GLOBAL POLITICS'}
-                            </h3>
-
-                            {/* Description */}
-                            <p className="text-xs text-[#8E8E8E]">
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet...
-                            </p>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
             <YouMayAlsoLike />
         </main>
     );
