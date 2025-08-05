@@ -87,11 +87,9 @@ export default function LessonList({
     const [totalPages, setTotalPages] = useState(1);
     const [tag, setTag] = useState('');
 
-    // State for all available tags
     const [allLessonTags, setAllLessonTags] = useState<string[]>([]);
     const [tagsLoading, setTagsLoading] = useState(false);
 
-    // Fetch all available tags when course changes
     useEffect(() => {
         const fetchTags = async () => {
             setTagsLoading(true);
@@ -126,30 +124,25 @@ export default function LessonList({
         fetchTags();
     }, [course]);
 
-    // Filter units berdasarkan course yang dipilih
     const filteredUnits = course
         ? initialUnits.filter(unit => String(unit.parentId) === String(course))
         : [];
 
-    // Set default course to first course if available
     useEffect(() => {
         if (initialCourses.length > 0 && !course) {
             setCourse(initialCourses[0].id);
         }
     }, [initialCourses, course]);
 
-    // Reset unit selection ketika course berubah
     useEffect(() => {
         setUnit('');
         setPage(1);
     }, [course]);
 
-    // Reset page ketika filter berubah
     useEffect(() => {
         setPage(1);
     }, [search, unit, tag]);
 
-    // Fetch lessons
     useEffect(() => {
         const controller = new AbortController();
         const timeout = setTimeout(() => setLoading(true), 50);
@@ -169,7 +162,6 @@ export default function LessonList({
                 console.log('Lessons response:', json);
 
                 const transformedLessons: Lesson[] = (json.data || []).map((lesson: LessonApi) => {
-                    // Handle tags - could be JSON string or array
                     let tags: string[] = [];
                     if (lesson.tags) {
                         if (typeof lesson.tags === 'string') {

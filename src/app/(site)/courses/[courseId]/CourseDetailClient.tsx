@@ -25,7 +25,6 @@ export default function CourseDetailClient() {
             ? params.courseId[0]
             : "";
 
-    // Fetch free lessons for this course
     const { freeLessons, loading: freeLessonsLoading } = useFreeLessons(id);
 
     useEffect(() => {
@@ -53,7 +52,6 @@ export default function CourseDetailClient() {
     const pdfUrl = course.previewUrl;
     const imgUrl = course.imageUrl;
 
-    // Get the first free lesson for display
     const featuredFreeLesson = freeLessons?.[0];
 
     return (
@@ -171,10 +169,10 @@ export default function CourseDetailClient() {
                 </div>
             </section>
 
-            {/* FREE RESOURCE Section - UPDATED WITH DYNAMIC DATA */}
+            {/* FREE RESOURCE Section */}
             <section className="py-40 px-4 md:px-20 bg-white">
                 <div className="max-w-full mx-auto">
-                    <h2 className="text-3xl md:text-7xl font-bold text-[#363F36] mb-8">FREE RESOURCE</h2>
+                    <h2 className="text-3xl md:text-8xl font-bold text-[#363F36] mb-8">FREE RESOURCE</h2>
                     <div className="mb-4 text-primary text-lg">
                         Curious about this course? Checkout this free resource
                     </div>
@@ -199,7 +197,7 @@ export default function CourseDetailClient() {
                                 />
                             </div>
                             <div className="p-6 flex flex-col justify-center text-primary">
-                                <div className="font-bold text-6xl mb-4 leading-normal">
+                                <div className="font-bold text-5xl mb-4 leading-normal">
                                     <h2>{featuredFreeLesson.title}</h2>
                                 </div>
 
@@ -216,7 +214,7 @@ export default function CourseDetailClient() {
                                         }
                                     }}
                                 >
-                                    <p>Access Free Lesson</p>
+                                    <p>Click Here</p>
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                     </svg>
@@ -230,7 +228,7 @@ export default function CourseDetailClient() {
                     )}
 
                     {/* Show additional free lessons if available */}
-                    {freeLessons.length > 1 && (
+                    {/* {freeLessons.length > 1 && (
                         <div className="mt-12">
                             <h3 className="text-2xl font-bold text-primary mb-6">More Free Resources:</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -260,7 +258,7 @@ export default function CourseDetailClient() {
                                 ))}
                             </div>
                         </div>
-                    )}
+                    )} */}
                 </div>
             </section>
         </main>

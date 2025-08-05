@@ -16,7 +16,6 @@ export default function LessonCard({
 }) {
     const [openPreviewPdf, setOpenPreviewPdf] = useState(false);
 
-    // Use actual lesson preview URL or fallback
     const pdfUrl = lesson.previewUrl || "https://res.cloudinary.com/dla5fna8n/image/upload/v1753374352/data_desqhr.pdf";
 
     return (
@@ -38,7 +37,6 @@ export default function LessonCard({
                         }}
                     />
 
-                    {/* Preview overlay on hover */}
                     {lesson.previewUrl && (
                         <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity duration-200 flex items-center justify-center rounded-lg">
                             <button
@@ -61,18 +59,18 @@ export default function LessonCard({
                 {lesson.tags && lesson.tags.length > 0 && (
                     <div className="mb-2">
                         <div className="flex flex-wrap gap-1">
-                            {lesson.tags.slice(0, 3).map((tag, index) => (
+                            {lesson.tags.slice(0, 5).map((tag, index) => (
                                 <span
                                     key={index}
-                                    className="inline-block  py-0.5 text-xs  text-gray-700 "
+                                    className="inline-block py-0.5 text-xs text-gray-700"
                                     title={tag}
                                 >
-                                    {tag.length > 10 ? `${tag.slice(0, 10)}...` : tag}
+                                    {tag}{index < (lesson.tags?.length ?? 0) - 1 ? ',' : ''}
                                 </span>
                             ))}
-                            {lesson.tags.length > 3 && (
+                            {(lesson.tags?.length ?? 0) > 5 && (
                                 <span className="inline-block py-0.5 text-xs bg-gray-200 text-gray-600 rounded-full">
-                                    +{lesson.tags.length - 3}
+                                    +{(lesson.tags?.length ?? 0) - 5}
                                 </span>
                             )}
                         </div>

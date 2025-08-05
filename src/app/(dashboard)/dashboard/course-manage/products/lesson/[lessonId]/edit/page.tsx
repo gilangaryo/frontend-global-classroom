@@ -452,7 +452,7 @@ export default function EditLessonPage() {
                         {/* Learning Activities with TiptapEditor */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Learning Activities (Optional)
+                                Learning Activities
                             </label>
                             <TiptapEditor
                                 content={formData.learningActivities}
@@ -481,7 +481,7 @@ export default function EditLessonPage() {
                         {/* Tags Management */}
                         <div className="space-y-3">
                             <label className="block text-sm font-medium text-gray-700">
-                                Lesson Tags (Optional)
+                                Lesson Tags
                             </label>
 
                             {/* Tags Display */}
@@ -600,7 +600,7 @@ export default function EditLessonPage() {
                         {!formData.isFreeLesson && (
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Price (Optional)
+                                    Price
                                 </label>
                                 <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
                                     <div className="flex-shrink-0 flex items-center justify-center bg-sky-500 px-4">
@@ -625,7 +625,7 @@ export default function EditLessonPage() {
                         {/* Preview URL */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Preview Content URL (Optional)
+                                Preview Content URL
                             </label>
                             <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
                                 <span className="flex w-12 items-center justify-center text-gray-700">
@@ -650,7 +650,7 @@ export default function EditLessonPage() {
                         {/* Digital URL */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Digital Content URL (Optional)
+                                Digital Content URL
                             </label>
                             <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
                                 <span className="flex w-12 items-center justify-center text-gray-700">

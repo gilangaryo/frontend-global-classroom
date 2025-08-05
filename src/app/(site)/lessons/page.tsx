@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import LessonList, { Course, Unit } from '../components/lesson-page/LessonList';
-import FreeLessonsSection from '../components/lesson-page/FreeLessonsSection';
+import FreeLessonsSection from '../components/landing-page/FreeLessonsSection';
+
 import WhyTeachersLoveSection from '../components/lesson-page/WhyTeachersLoveSection';
 
 export default function LessonsPage() {
@@ -92,6 +93,8 @@ export default function LessonsPage() {
                 loading={loading}
             />
             <FreeLessonsSection />
+            {/* FreeLessonsSection */}
+
             <WhyTeachersLoveSection />
         </main>
     );

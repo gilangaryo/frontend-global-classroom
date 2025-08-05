@@ -69,7 +69,6 @@ export default function AddUnitPage() {
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      // Optional: Add a toast notification here
     } catch (err) {
       console.error('Failed to copy text: ', err);
     }
@@ -169,7 +168,7 @@ export default function AddUnitPage() {
             {/* Price */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Price (Optional)
+                Price
               </label>
               <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
                 <div className="flex-shrink-0 flex items-center justify-center bg-sky-500 px-4">
@@ -193,7 +192,7 @@ export default function AddUnitPage() {
             {/* Preview URL */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Preview Content URL (Optional)
+                Preview Content URL
               </label>
               <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
                 <span className="flex w-12 items-center justify-center text-gray-700">
@@ -231,7 +230,7 @@ export default function AddUnitPage() {
             {/* Digital URL */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Digital Content URL (Optional)
+                Digital Content URL
               </label>
               <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
                 <span className="flex w-12 items-center justify-center text-gray-700">

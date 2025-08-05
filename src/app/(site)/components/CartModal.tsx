@@ -45,7 +45,7 @@ export default function CartModal({ open, onClose }: CartModalProps) {
 
                     <hr className="my-3" />
 
-                    {/* Show cart items summary (optional) */}
+                    {/* Show cart items summary  */}
                     {cartItems.length > 0 && (
                         <div className="max-h-32 overflow-y-auto mb-3">
                             {cartItems.slice(0, 3).map((item) => (
