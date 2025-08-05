@@ -153,7 +153,7 @@ export default function CourseDetailClient() {
                                 >
                                     <div className="relative w-full h-90">
                                         <Image
-                                            src={unit.imageUrl ?? '/dummy/sample-unit.jpg'}
+                                            src={unit.imageUrl && unit.imageUrl.trim() !== '' ? unit.imageUrl : '/dummy/sample-product.png'}
                                             alt={unit.title}
                                             fill
                                             className="object-cover"

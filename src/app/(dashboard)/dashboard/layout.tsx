@@ -29,6 +29,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 default: '/dashboard/icons/dashboard-black.png',
                 active: '/dashboard/icons/dashboard-white.png',
             },
+            isActive: (path: string) => path === '/dashboard'
         },
         {
             name: 'Course Manage',
@@ -37,8 +38,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 default: '/dashboard/icons/page-manage-black.png',
                 active: '/dashboard/icons/page-manage-white.png',
             },
+            // Match untuk semua sub-path course-manage
+            isActive: (path: string) => path.startsWith('/dashboard/course-manage')
         },
-
+        {
+            name: 'Featured Projects',
+            href: '/dashboard/featured-project', // Kembalikan ke href original
+            icon: {
+                default: '/dashboard/icons/page-manage-black.png',
+                active: '/dashboard/icons/page-manage-white.png',
+            },
+            // Match untuk semua sub-path featured-project
+            isActive: (path: string) => path.startsWith('/dashboard/featured-project')
+        },
     ]
 
     const sidebarClasses = collapsed ? 'w-16 px-2' : 'w-64 px-4'
@@ -91,7 +103,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                 <nav className="flex-1 overflow-y-auto">
                     {navItems.map((item) => {
-                        const isActive = pathname === item.href
+                        // Gunakan custom isActive function atau fallback ke exact match
+                        const isActive = item.isActive ? item.isActive(pathname) : pathname === item.href
+
                         return (
                             <Link
                                 key={item.href}
