@@ -61,7 +61,7 @@ export default function AddLessonPage() {
   };
 
   const handleTagInputKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ',') {
+    if (e.key === 'Enter') {
       e.preventDefault();
       addTag(tagInput);
     } else if (e.key === 'Backspace' && tagInput === '' && tags.length > 0) {
@@ -282,7 +282,7 @@ export default function AddLessonPage() {
                 placeholder={
                   tags.length >= 10
                     ? "Maximum 10 tags reached"
-                    : "Type a tag and press Enter or comma"
+                    : "Type a tag and press Enter"
                 }
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}

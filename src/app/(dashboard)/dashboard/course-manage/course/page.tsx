@@ -6,6 +6,7 @@ import TiptapEditor from '../../components/TiptapEditor';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCourseActions, CreateCourseData } from '../../../../../hooks/useProducts';
+import FileDropZone from "../../components/FileDropZone";
 
 function isColorDark(hex: string): boolean {
   const cleanHex = hex.replace('#', '');
@@ -132,7 +133,7 @@ export default function AddCoursePage() {
               <TiptapEditor
                 content={formData.courseIncluded}
                 onChange={(value) => updateField('courseIncluded', value)}
-                placeholder="List what students will get (e.g., videos, exercises, certificates)..."
+                placeholder="List Course Included"
               />
             </div>
 
@@ -192,43 +193,40 @@ export default function AddCoursePage() {
               <p className="text-xs text-gray-500 mt-1">Set to 0 for free course</p>
             </div>
 
-            {/* Preview URL */}
+            {/* Preview URL*/}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Preview Course Content URL
+                Upload Preview File
               </label>
-              <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
-                <span className="flex w-12 items-center justify-center text-gray-700">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                </span>
-                <input
-                  type="url"
-                  placeholder="Preview Course Content URL"
-                  value={formData.previewUrl}
-                  onChange={(e) => updateField('previewUrl', e.target.value)}
-                  className="flex-1 h-full px-4 text-sm placeholder:text-gray-600 outline-none"
-                />
-              </div>
-              <p className="text-xs text-gray-500 mt-1">Link for free preview/demo of your course</p>
+              <FileDropZone
+                onFileUpload={(url) => updateField('previewUrl', url)}
+                label="Upload preview content"
+                acceptedTypes="video/*,application/pdf"
+              />
+              {formData.previewUrl && (
+                <p className="text-xs text-gray-500 mt-2 break-all">
+                  URL: {formData.previewUrl}
+                </p>
+              )}
             </div>
 
-            {/* Digital Product URL */}
+            {/* Access Link After Purchase */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Access Link After Purchase
+                Upload Digital File
               </label>
-              <input
-                type="url"
-                placeholder="https://your-course-platform.com/access"
-                value={formData.digitalUrl}
-                onChange={(e) => updateField('digitalUrl', e.target.value)}
-                className="h-12 w-full rounded-lg border border-gray-300 px-5 text-sm placeholder:text-gray-600 outline-none focus:ring-2 focus:ring-sky-400"
+              <FileDropZone
+                onFileUpload={(url) => updateField('digitalUrl', url)}
+                label="Upload access file"
+                acceptedTypes="application/zip,application/pdf"
               />
-              <p className="text-xs text-gray-500 mt-1">Link where students can access the course content after purchase</p>
+              {formData.digitalUrl && (
+                <p className="text-xs text-gray-500 mt-2 break-all">
+                  URL: {formData.digitalUrl}
+                </p>
+              )}
             </div>
+
           </div>
 
           {/* Image Upload Section */}

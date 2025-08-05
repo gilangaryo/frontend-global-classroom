@@ -69,30 +69,29 @@ export default async function CoursePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
                     {courses.map((c) => (
                         <div key={c.id} className="bg-card rounded-lg overflow-hidden flex flex-col ">
-                            <div className="relative h-90 w-full">
+                            <div className="relative w-full aspect-[4/3]">
                                 <Image
                                     src={c.imageUrl?.trim() ? c.imageUrl : '/placeholder.jpg'}
                                     alt={c.title}
                                     fill
-                                    className="object-cover"
+                                    className="object-cover rounded-t-lg"
                                 />
-
                             </div>
+
                             <div className="p-6 flex flex-col flex-1">
                                 <div className='mb-4 h-12/12'>
                                     <h3 className="text-4xl font-semibold text-primary mb-2 leading-normal ">{c.title}</h3>
                                 </div>
-                                <p className="text-[#8E8E8E] text-sm mb-4 flex-1">{c.description}</p>
+                                <p className="text-[#8E8E8E] text-sm mb-4 flex-1 leading-relaxed">{c.description}</p>
 
                                 <div className="mb-6">
                                     <p className="font-medium text-[#4E3D34] mb-2">This course includes:</p>
                                     <div
-                                        className="text-sm text-[#8E8E8E]"
+                                        className="text-sm text-[#8E8E8E] leading-relaxed space-y-2"
                                         dangerouslySetInnerHTML={{ __html: c.courseIncluded || '' }}
                                     />
-
-
                                 </div>
+
 
                                 <Link
                                     href={`/courses/${c.id}`}

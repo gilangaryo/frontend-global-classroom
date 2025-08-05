@@ -513,12 +513,12 @@ export default function EditLessonPage() {
                                 placeholder={
                                     tags.length >= 10
                                         ? "Maximum 10 tags reached"
-                                        : "Type a tag and press Enter or comma"
+                                        : "Type a tag and press Enter "
                                 }
                                 value={newTag}
                                 onChange={(e) => setNewTag(e.target.value)}
                                 onKeyDown={(e) => {
-                                    if (e.key === 'Enter' || e.key === ',') {
+                                    if (e.key === 'Enter') {
                                         e.preventDefault();
                                         handleAddTag();
                                     } else if (e.key === 'Backspace' && newTag === '' && tags.length > 0) {

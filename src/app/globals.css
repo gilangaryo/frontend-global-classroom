@@ -73,4 +73,5 @@ button {
   padding-left: 1.5rem;
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
+  @apply list-disc pl-5 leading-relaxed space-y-2;
 }
