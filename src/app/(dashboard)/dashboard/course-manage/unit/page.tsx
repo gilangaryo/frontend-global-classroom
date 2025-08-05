@@ -2,10 +2,9 @@
 
 import DashboardTabs from "../../components/DashboardTabs";
 import ImageDropZone from "../../components/ImageDropZone";
-import TiptapEditor from '../../components/TiptapEditor';
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useProducts, useProductActions, CreateProductData } from '../../hooks/useProducts';
+import { useProducts, useProductActions, CreateProductData } from '../../../../../hooks/useProducts';
 import Image from "next/image";
 
 interface FormData {
@@ -158,10 +157,12 @@ export default function AddUnitPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Description
               </label>
-              <TiptapEditor
-                content={formData.description}
-                onChange={(value) => updateField('description', value)}
+              <textarea
                 placeholder="Describe what this unit covers..."
+                value={formData.description}
+                onChange={(e) => updateField('description', e.target.value)}
+                className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
+                rows={4}
               />
             </div>
 

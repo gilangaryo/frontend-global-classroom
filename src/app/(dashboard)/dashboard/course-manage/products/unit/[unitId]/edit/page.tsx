@@ -1,50 +1,59 @@
-// app/(dashboard)/course-manage/products/unit/[unitId]/edit/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import ImageDropZone from '@/app/(dashboard)/dashboard/components/ImageDropZone';
-
-function isColorDark(hex: string): boolean {
-    const cleanHex = hex.replace('#', '');
-    const r = parseInt(cleanHex.slice(0, 2), 16);
-    const g = parseInt(cleanHex.slice(2, 4), 16);
-    const b = parseInt(cleanHex.slice(4, 6), 16);
-    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-    return brightness < 128;
-}
+import Image from "next/image";
 
 interface Course {
     id: string;
     title: string;
-    type: string;
 }
+
+interface FormData {
+    title: string;
+    description: string;
+    price: number;
+    digitalUrl: string;
+    previewUrl: string;
+    imageUrl: string;
+    parentId: string;
+}
+
+type FormField = keyof FormData;
+type FormValue = string | number;
 
 export default function EditUnitPage() {
     const router = useRouter();
     const { unitId } = useParams<{ unitId: string }>();
 
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [price, setPrice] = useState<number>(0);
-    const [digitalUrl, setDigitalUrl] = useState('');
-    const [previewUrl, setPreviewUrl] = useState('');
-    const [colorButton, setColorButton] = useState('#3E724A');
-    const [tags, setTags] = useState<string[]>([]);
-    const [newTag, setNewTag] = useState('');
-    const [imageUrl, setImageUrl] = useState('');
-    const [parentId, setParentId] = useState('');
+    const [formData, setFormData] = useState<FormData>({
+        title: '',
+        description: '',
+        price: 0,
+        digitalUrl: '',
+        previewUrl: '',
+        imageUrl: '',
+        parentId: '',
+    });
+
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [coursesLoading, setCoursesLoading] = useState(true);
     const [error, setError] = useState('');
 
-    // Fetch courses for parent selection and existing unit data
+    const updateField = (field: FormField, value: FormValue) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const token = localStorage.getItem('token');
+                setCoursesLoading(true);
 
-                // Fetch existing unit data
+                // Fetch unit data
                 const unitRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/${unitId}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -61,20 +70,19 @@ export default function EditUnitPage() {
                 if (unitData.status === 'success' && unitData.data) {
                     const unit = unitData.data;
 
-                    // Validate that this is actually a UNIT type
                     if (unit.type !== 'UNIT') {
                         throw new Error('This product is not a unit');
                     }
 
-                    setTitle(unit.title || '');
-                    setDescription(unit.description || '');
-                    setPrice(parseFloat(unit.price) || 0);
-                    setDigitalUrl(unit.digitalUrl || '');
-                    setPreviewUrl(unit.previewUrl || '');
-                    setColorButton(unit.colorButton || '#3E724A');
-                    setImageUrl(unit.imageUrl || '');
-                    setTags(unit.tags || []);
-                    setParentId(unit.parentId || '');
+                    setFormData({
+                        title: unit.title || '',
+                        description: unit.description || '',
+                        price: parseFloat(unit.price) || 0,
+                        digitalUrl: unit.digitalUrl || '',
+                        previewUrl: unit.previewUrl || '',
+                        imageUrl: unit.imageUrl || '',
+                        parentId: unit.parentId || '',
+                    });
                 } else {
                     throw new Error(unitData.message || 'Invalid response format');
                 }
@@ -89,9 +97,14 @@ export default function EditUnitPage() {
 
                 if (coursesRes.ok) {
                     const coursesData = await coursesRes.json();
+                    console.log('Courses data:', coursesData); // Debug log
                     if (coursesData.status === 'success' && coursesData.data) {
-                        setCourses(coursesData.data.data || []);
+                        const coursesList = coursesData.data.data || coursesData.data || [];
+                        console.log('Courses list:', coursesList); // Debug log
+                        setCourses(coursesList);
                     }
+                } else {
+                    console.error('Failed to fetch courses:', coursesRes.status);
                 }
 
             } catch (err) {
@@ -99,6 +112,7 @@ export default function EditUnitPage() {
                 setError(err instanceof Error ? err.message : 'Failed to load unit data');
             } finally {
                 setLoading(false);
+                setCoursesLoading(false);
             }
         };
 
@@ -107,46 +121,34 @@ export default function EditUnitPage() {
         }
     }, [unitId]);
 
-    const handleAddTag = () => {
-        if (newTag.trim() && !tags.includes(newTag.trim())) {
-            setTags([...tags, newTag.trim()]);
-            setNewTag('');
+    const handleSave = async () => {
+        if (!formData.parentId) {
+            alert('Please select a parent course!');
+            return;
         }
-    };
 
-    const handleRemoveTag = (tagToRemove: string) => {
-        setTags(tags.filter(tag => tag !== tagToRemove));
-    };
+        if (!formData.title.trim()) {
+            alert('Please enter a unit title');
+            return;
+        }
 
-    const handleImageUpload = (url: string) => {
-        setImageUrl(url);
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
+        setSaving(true);
         setError('');
 
         try {
             const token = localStorage.getItem('token');
 
-            // Prepare update data
             const updateData = {
-                title: title.trim(),
-                description: description.trim(),
-                price: price,
-                digitalUrl: digitalUrl.trim(),
-                previewUrl: previewUrl.trim(),
-                colorButton,
-                imageUrl: imageUrl.trim(),
-                tags: tags.filter(tag => tag.trim() !== ''), // Remove empty tags
-                parentId: parentId || null, // Parent course ID
+                title: formData.title.trim(),
+                description: formData.description.trim(),
+                price: formData.price,
+                digitalUrl: formData.digitalUrl.trim(),
+                previewUrl: formData.previewUrl.trim(),
+                imageUrl: formData.imageUrl.trim(),
+                parentId: formData.parentId, // This is the course ID
             };
 
-            // Validate required fields
-            if (!updateData.title) {
-                throw new Error('Unit title is required');
-            }
+            console.log('Updating unit with data:', updateData); // Debug log
 
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/${unitId}`, {
                 method: 'PATCH',
@@ -170,7 +172,16 @@ export default function EditUnitPage() {
             setError(err instanceof Error ? err.message : 'Failed to update unit');
             alert(err instanceof Error ? err.message : 'Failed to update unit');
         } finally {
-            setLoading(false);
+            setSaving(false);
+        }
+    };
+
+    const copyToClipboard = async (text: string) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            // Optional: Add a toast notification here
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
         }
     };
 
@@ -206,259 +217,274 @@ export default function EditUnitPage() {
 
     return (
         <div className="p-8">
-            <header className="space-y-1 mb-8">
-                <div className="flex items-center gap-4 mb-4">
-                    <button
-                        onClick={() => router.push('/dashboard/course-manage')}
-                        className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
-                        Back to Course Management
-                    </button>
-                </div>
+            <header className="space-y-1">
                 <h1 className="text-2xl font-semibold">Unit Management</h1>
                 <p className="text-sm text-gray-500">
                     Edit your unit information and settings.
                 </p>
             </header>
 
-            <section className="space-y-6">
-                <h2 className="text-lg font-semibold">Edit Unit</h2>
+            <section className="mt-10 space-y-6">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-semibold">Edit Unit</h2>
+                </div>
 
-                <form onSubmit={handleSubmit}>
-                    <div className="grid gap-6 md:grid-cols-3">
-                        <div className="md:col-span-2 space-y-5">
-                            {/* Parent Course Selection */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Parent Course
-                                </label>
+                <div className="grid gap-6 md:grid-cols-3">
+                    <div className="md:col-span-2 space-y-5">
+                        {/* Course Selection */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Parent Course <span className="text-red-500">*</span>
+                            </label>
+                            {coursesLoading ? (
+                                <div className="w-full h-12 border border-gray-300 rounded-md flex items-center justify-center">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-sky-500"></div>
+                                    <span className="ml-2 text-sm text-gray-500">Loading courses...</span>
+                                </div>
+                            ) : (
                                 <select
-                                    value={parentId}
-                                    onChange={(e) => setParentId(e.target.value)}
-                                    className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
+                                    value={formData.parentId}
+                                    onChange={(e) => updateField('parentId', e.target.value)}
+                                    className={`w-full rounded-md border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400 ${!formData.parentId ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                                        }`}
+                                    required
                                 >
-                                    <option value="">Select a parent course (optional)</option>
+                                    <option value="">-- Select Parent Course --</option>
                                     {courses.map((course) => (
                                         <option key={course.id} value={course.id}>
                                             {course.title}
                                         </option>
                                     ))}
                                 </select>
-                                <p className="text-xs text-gray-500 mt-1">Choose which course this unit belongs to</p>
-                            </div>
+                            )}
+                            <p className="text-xs text-gray-500 mt-1">
+                                {formData.parentId
+                                    ? `This unit belongs to: ${courses.find(c => c.id === formData.parentId)?.title || 'Selected course'}`
+                                    : 'Choose which course this unit belongs to'
+                                }
+                            </p>
+                            {!formData.parentId && (
+                                <p className="text-xs text-red-500 mt-1">Please select a parent course</p>
+                            )}
+                        </div>
 
-                            {/* Unit Title */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Unit Title *
-                                </label>
+                        {/* Unit Title */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Unit Title <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="Enter unit title"
+                                value={formData.title}
+                                onChange={(e) => updateField('title', e.target.value)}
+                                className={`w-full rounded-md border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400 ${!formData.title.trim() ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                                    }`}
+                                required
+                                maxLength={255}
+                            />
+                            <div className="flex justify-between items-center mt-1">
+                                {!formData.title.trim() && (
+                                    <p className="text-xs text-red-500">Title is required</p>
+                                )}
+                                <p className="text-xs text-gray-500 ml-auto">{formData.title.length}/255</p>
+                            </div>
+                        </div>
+
+                        {/* Description */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Description
+                            </label>
+                            <textarea
+                                placeholder="Describe what this unit covers..."
+                                value={formData.description}
+                                onChange={(e) => updateField('description', e.target.value)}
+                                className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
+                                rows={4}
+                            />
+                        </div>
+
+                        {/* Price */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Price (Optional)
+                            </label>
+                            <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
+                                <div className="flex-shrink-0 flex items-center justify-center bg-sky-500 px-4">
+                                    <span className="text-white text-sm font-medium">$</span>
+                                </div>
                                 <input
-                                    type="text"
-                                    placeholder="Enter unit title"
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
-                                    required
-                                    className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
+                                    type="number"
+                                    placeholder="0.00"
+                                    value={formData.price || ''}
+                                    min="0"
+                                    step="0.01"
+                                    onChange={(e) => updateField('price', parseFloat(e.target.value) || 0)}
+                                    className="flex-1 px-4 py-2 text-sm placeholder:text-gray-500 outline-none border-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                             </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                                Leave as 0 if this unit should be free
+                            </p>
+                        </div>
 
-                            {/* Description */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Description
-                                </label>
-                                <textarea
-                                    rows={5}
-                                    placeholder="Describe your unit content and objectives..."
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    className="w-full resize-none rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
-                                />
-                            </div>
-
-                            {/* Tags Management */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Unit Tags
-                                </label>
-                                <div className="flex gap-2 mb-3">
-                                    <input
-                                        type="text"
-                                        placeholder="Add a tag (e.g., basics, advanced)"
-                                        value={newTag}
-                                        onChange={(e) => setNewTag(e.target.value)}
-                                        onKeyPress={(e) => {
-                                            if (e.key === 'Enter') {
-                                                e.preventDefault();
-                                                handleAddTag();
-                                            }
-                                        }}
-                                        className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={handleAddTag}
-                                        className="px-4 py-2 bg-sky-500 text-white text-sm rounded-md hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-400"
-                                    >
-                                        Add Tag
-                                    </button>
-                                </div>
-                                <div className="flex flex-wrap gap-2">
-                                    {tags.map((tag, index) => (
-                                        <span
-                                            key={index}
-                                            className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full"
-                                        >
-                                            {tag}
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveTag(tag)}
-                                                className="text-gray-500 hover:text-red-500 ml-1"
-                                            >
-                                                ×
-                                            </button>
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Color Button */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Button Color Theme
-                                </label>
-                                <div className="flex items-center gap-4 border border-gray-300 rounded-lg px-4 py-2 h-12">
-                                    <div className="w-6 h-6 rounded-full" style={{ backgroundColor: colorButton }} />
-                                    <label className="text-sm text-gray-600 whitespace-nowrap">
-                                        Change Color Template (for button)
-                                    </label>
-                                    <input
-                                        type="color"
-                                        value={colorButton}
-                                        onChange={(e) => setColorButton(e.target.value)}
-                                        className="ml-auto h-6 w-6 border-none cursor-pointer bg-transparent"
-                                    />
-                                </div>
-
-                                {/* Live Button Preview */}
-                                <div className="pt-2">
-                                    <label className="text-sm text-gray-600">Live Button Preview:</label>
-                                    <div className="mt-2">
-                                        <button
-                                            type="button"
-                                            className={`px-8 py-3 rounded-lg font-semibold hover:opacity-90 ${isColorDark(colorButton) ? 'text-white' : 'text-black'
-                                                }`}
-                                            style={{ backgroundColor: colorButton }}
-                                        >
-                                            Buy Now
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Price */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Unit Price (USD)
-                                </label>
-                                <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
-                                    <div className="flex-shrink-0 flex items-center justify-center border-2 border-sky-500 bg-sky-100 px-4 m-2 rounded-md">
-                                        <span className="text-sky-500 text-sm font-bold">$</span>
-                                    </div>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        placeholder="0.00 (price for this unit)"
-                                        value={price || ''}
-                                        onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
-                                        className="flex-1 px-4 py-2 text-sm placeholder:text-gray-500 outline-none border-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                    />
-                                </div>
-                                <p className="text-xs text-gray-500 mt-1">Set to 0 for free unit</p>
-                            </div>
-
-                            {/* Preview URL */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Preview Unit Content URL
-                                </label>
-                                <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
-                                    <span className="flex w-12 items-center justify-center text-gray-700">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
-                                    </span>
-                                    <input
-                                        type="url"
-                                        placeholder="Preview Unit Content URL"
-                                        value={previewUrl}
-                                        onChange={(e) => setPreviewUrl(e.target.value)}
-                                        className="flex-1 h-full px-4 text-sm placeholder:text-gray-600 outline-none"
-                                    />
-                                </div>
-                                <p className="text-xs text-gray-500 mt-1">Link for free preview/demo of your unit</p>
-                            </div>
-
-                            {/* Digital URL */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Access Link After Purchase
-                                </label>
+                        {/* Preview URL */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Preview Content URL (Optional)
+                            </label>
+                            <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
+                                <span className="flex w-12 items-center justify-center text-gray-700">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </span>
                                 <input
                                     type="url"
-                                    placeholder="https://your-platform.com/unit-access"
-                                    value={digitalUrl}
-                                    onChange={(e) => setDigitalUrl(e.target.value)}
-                                    className="h-12 w-full rounded-lg border border-gray-300 px-5 text-sm placeholder:text-gray-600 outline-none focus:ring-2 focus:ring-sky-400"
+                                    placeholder="https://example.com/preview-content"
+                                    value={formData.previewUrl}
+                                    onChange={(e) => updateField('previewUrl', e.target.value)}
+                                    className="flex-1 h-full px-4 text-sm placeholder:text-gray-600 outline-none"
                                 />
-                                <p className="text-xs text-gray-500 mt-1">Link where students can access the unit content after purchase</p>
+                            </div>
+
+                            <div className="p-4 flex items-center text-sm text-gray-600 bg-gray-50 rounded-md mt-2">
+                                <span className="flex-1 font-mono text-xs break-all">
+                                    https://res.cloudinary.com/dla5fna8n/image/upload/v1754141514/PREVIEW_bzgt9b.pdf
+                                </span>
+                                <button
+                                    type="button"
+                                    className="ml-2 text-gray-500 hover:text-gray-700 focus:outline-none flex-shrink-0"
+                                    onClick={() => copyToClipboard('https://res.cloudinary.com/dla5fna8n/image/upload/v1754141514/PREVIEW_bzgt9b.pdf')}
+                                    title="Copy to clipboard"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002-2v1h2a2 2 0 002 2h-1V5m-1 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </button>
                             </div>
                         </div>
 
-                        {/* Image Upload Section */}
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Unit Image
-                                </label>
-                                <ImageDropZone
-                                    currentImageUrl={imageUrl}
-                                    onImageUpload={handleImageUpload}
+                        {/* Digital URL */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Digital Content URL (Optional)
+                            </label>
+                            <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
+                                <span className="flex w-12 items-center justify-center text-gray-700">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                    </svg>
+                                </span>
+                                <input
+                                    type="url"
+                                    placeholder="https://example.com/unit-content"
+                                    value={formData.digitalUrl}
+                                    onChange={(e) => updateField('digitalUrl', e.target.value)}
+                                    className="flex-1 h-full px-4 text-sm placeholder:text-gray-600 outline-none"
                                 />
-                                <p className="text-xs text-gray-500 mt-2">
-                                    Upload an image for your unit. Recommended size: 800x600px
-                                </p>
+                            </div>
+                            <div className="p-4 flex items-center text-sm text-gray-600 bg-gray-50 rounded-md mt-2">
+                                <span className="flex-1 font-mono text-xs break-all">
+                                    https://res.cloudinary.com/dla5fna8n/image/upload/v1754141513/ASLI_q4cik2.pdf
+                                </span>
+                                <button
+                                    type="button"
+                                    className="ml-2 text-gray-500 hover:text-gray-700 focus:outline-none flex-shrink-0"
+                                    onClick={() => copyToClipboard('https://res.cloudinary.com/dla5fna8n/image/upload/v1754141513/ASLI_q4cik2.pdf')}
+                                    title="Copy to clipboard"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002-2v1h2a2 2 0 002 2h-1V5m-1 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
-                        <button
-                            type="button"
-                            className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors"
-                            onClick={() => router.back()}
-                            disabled={loading}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={loading || !title.trim()}
-                            className={`px-8 py-2.5 text-sm font-medium transition-colors ${loading || !title.trim()
-                                ? 'bg-gray-400 cursor-not-allowed text-gray-200'
-                                : 'bg-sky-500 hover:bg-sky-600 text-white focus:outline-none focus:ring-2 focus:ring-sky-400'
-                                } rounded-md`}
-                        >
-                            {loading ? 'Saving...' : 'Save Changes'}
-                        </button>
+                    {/* Image Upload */}
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Unit Cover Image
+                            </label>
+                            <ImageDropZone
+                                currentImageUrl={formData.imageUrl}
+                                onImageUpload={(url) => updateField('imageUrl', url)}
+                            />
+                            <p className="text-xs text-gray-500 mt-2">
+                                Upload an image to represent this unit
+                            </p>
+                        </div>
+
+                        {/* Preview Card */}
+                        {(formData.title || formData.imageUrl) && (
+                            <div className="bg-gray-50 border rounded-lg p-4">
+                                <h3 className="text-sm font-medium text-gray-700 mb-3">Preview:</h3>
+                                <div className="bg-white rounded-lg border p-3 shadow-sm">
+                                    {formData.imageUrl && (
+                                        <div className="relative w-full h-32 mb-3">
+                                            <Image
+                                                src={formData.imageUrl}
+                                                alt="Unit preview"
+                                                fill
+                                                className="object-cover rounded"
+                                                onError={(e) => {
+                                                    e.currentTarget.style.display = 'none';
+                                                }}
+                                            />
+                                        </div>
+                                    )}
+                                    <h4 className="font-medium text-gray-900 text-sm">
+                                        {formData.title || 'Unit Title'}
+                                    </h4>
+                                    {formData.price > 0 && (
+                                        <p className="text-sm text-green-600 font-medium mt-1">
+                                            ${formData.price.toFixed(2)}
+                                        </p>
+                                    )}
+                                    {formData.description && (
+                                        <p className="text-xs text-gray-500 mt-2 line-clamp-2">
+                                            {formData.description.replace(/<[^>]*>/g, '').substring(0, 80)}...
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
-                </form>
+                </div>
+
+                {/* Form Actions */}
+                <div className="flex justify-end gap-4 pt-6 border-t">
+                    <button
+                        type="button"
+                        className="rounded-md border border-gray-300 bg-white px-6 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        onClick={() => router.push('/dashboard/course-manage')}
+                        disabled={saving}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleSave}
+                        disabled={saving || !formData.title.trim() || !formData.parentId}
+                        className={`rounded-md px-8 py-2 text-sm font-medium transition-colors ${saving || !formData.title.trim() || !formData.parentId
+                            ? 'bg-gray-400 cursor-not-allowed text-gray-200'
+                            : 'bg-sky-500 hover:bg-sky-600 text-white'
+                            }`}
+                    >
+                        {saving ? (
+                            <span className="flex items-center">
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                Saving...
+                            </span>
+                        ) : (
+                            'Save Changes'
+                        )}
+                    </button>
+                </div>
             </section>
         </div>
     );

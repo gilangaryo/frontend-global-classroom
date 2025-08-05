@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import StatusDropdown from '../components/StatusDropdown';
 import DashboardTabs from '../components/DashboardTabs';
-import { useProductActions } from '../hooks/useProducts';
+import { useProductActions } from '../../../../hooks/useProducts';
 
 // =================== Types ===================
 type Product = {

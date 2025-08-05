@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { BookOpen, Users, Eye, Package } from 'lucide-react';
-import type { Stats } from '../types/dashboard';
+import type { Stats } from '../../../../types/dashboard';
 
 export interface QuickStatsProps {
     stats: Stats;

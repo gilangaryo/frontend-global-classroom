@@ -29,27 +29,29 @@ export default function ConsultingPage() {
             <section className="bg-white py-4 md:py-16 px-4 md:px-25 max-w-full">
                 <div className="mx-auto">
                     {/* HERO JUDUL */}
-                    <h1 className="text-[2.8rem] md:text-[5rem] font-bold text-[#222] leading-normal mb-8">
+                    <h1 className="text-4xl md:text-7xl md:text-[5rem] font-bold text-[#222] leading-normal mb-16">
                         BEYOND<br />
                         THE CLASSROOM
                     </h1>
 
                     {/* 2 GRID BAWAHNYA */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start mb-10">
                         {/* Kiri */}
-                        <div>
-                            <h2 className="text-base font-bold uppercase mb-3 text-[#222] tracking-wider">
+                        <div className=' max-w-sm'>
+                            <h2 className="text-lg font-bold uppercase mb-3 text-black tracking-wider leading-relaxed">
                                 Custom Support for Educators, NGOs, and Global Projects
                             </h2>
-                            <p className="text-[#444] text-base mb-4">
-                                We partner with schools, NGOs, and international organizations to design transformative learning experiences that elevate community knowledge, frontline voices, and justice-centered approaches to education.
-                            </p>
-                            <p className="text-[#444] text-base">
-                                Whether you’re developing new curriculum, launching a student program, or building a field-based project, we help turn your bold ideas into clear, compelling, and practical learning tools.
-                            </p>
+                            <div className=''>
+                                <p className="text-black text-base mb-4 leading-relaxed">
+                                    We partner with schools, NGOs, and international organizations to design transformative learning experiences that elevate community knowledge, frontline voices, and justice-centered approaches to education.
+                                </p>
+                                <p className="text-black text-base leading-relaxed">
+                                    Whether you’re developing new curriculum, launching a student program, or building a field-based project, we help turn your bold ideas into clear, compelling, and practical learning tools.
+                                </p>
+                            </div>
                         </div>
                         {/* Kanan: gambar / placeholder */}
-                        <div className="w-full aspect-video bg-gray-200 " />
+                        <div className="h-full  bg-gray-200 " />
                     </div>
                 </div>
             </section>
@@ -58,12 +60,12 @@ export default function ConsultingPage() {
             {/* What We Offer */}
             <section className="bg-alt2 py-4 md:py-40 px-4 md:px-25 max-w-full">
                 <div className=" mx-auto ">
-                    <h2 className="text-4xl md:text-7xl font-bold text-primary mb-8 py-10">WHAT WE OFFER</h2>
+                    <h2 className="text-4xl md:text-7xl font-bold text-primary mb-8 py-14">WHAT WE OFFER</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {offerItems.map((item) => (
-                            <div key={item.title} className='border-l-4 border-primary px-4'>
+                            <div key={item.title} className='border-l-4 border-primary px-4 mb-4'>
                                 <h3 className="text-lg font-semibold text-primary mb-2">{item.title}</h3>
-                                <p className="text-[#8E8E8E] text-sm">{item.desc}</p>
+                                <p className="text-[#8E8E8E] text-md tracking-wide leading-relaxed">{item.desc}</p>
                             </div>
                         ))}
                     </div>
@@ -74,7 +76,7 @@ export default function ConsultingPage() {
 
 
             {/* Why Work With Us */}
-            <section className="py-4 md:py-40 px-4 md:px-25 bg-alt2 max-w-full">
+            <section className="py-4 md:py-70 px-4 md:px-25 bg-alt2 max-w-full">
                 <div className=" mx-auto  grid md:grid-cols-3 gap-12 items-center">
                     <div className='col-span-2'>
                         <h2 className="text-4xl md:text-7xl  font-bold text-primary mb-8">
@@ -98,7 +100,7 @@ export default function ConsultingPage() {
             <FeaturedProjects />
 
             {/* Let's Collaborate */}
-            <section className="py-4 md:py-40 px-4 md:px-25 bg-alt2 max-w-full">
+            <section className="py-4 md:py-70 px-4 md:px-25 bg-alt2 max-w-full">
                 <div className=" mx-auto  grid md:grid-cols-2 gap-12 items-start">
                     <div>
                         <h2 className="text-4xl md:text-7xl font-bold text-black mb-4 leading-normal">LET’S COLLABORATE</h2>

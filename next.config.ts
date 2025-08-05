@@ -1,45 +1,54 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
+
+// Extract the full URL instead of just the host
 
 const nextConfig: NextConfig = {
-  async rewrites() {
-    return [
-      {
-        source: '/api/uploads/:path*',
-        destination: 'http://192.168.56.1:4200/uploads/:path*',
-      },
-    ];
-  },
   images: {
     remotePatterns: [
       {
         protocol: 'http',
         hostname: 'localhost',
-        port: '4100',
+        pathname: '/api/uploads/**',
+      },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
+        pathname: '/api/uploads/**',
+      },
+      {
+        protocol: 'http',
+        hostname: '192.168.18.17',
+        port: '4200',
         pathname: '/uploads/**',
       },
       {
         protocol: 'http',
-        hostname: '192.168.56.1',
-        port: '4100',
-        pathname: '/uploads/**',
-      },
-      {
-        protocol: 'http',
-        hostname: 'link.com',
-        pathname: '/**',
+        hostname: '192.168.18.17',
+        port: '4200',
+        pathname: '/api/uploads/**', // Add this for the rewrite path
       },
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
-        port: '',
+        pathname: '/**',
+      },
+
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
+        port: '5000',
         pathname: '/**',
       },
       {
-        protocol: 'https',
-        hostname: 'www.w3.org',
-        port: '',
-        pathname: '/TR/pdf/**',
+        protocol: 'http',
+        hostname: 'api.gilangaryo.site',
+        pathname: '/files/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'api.gilangaryo.site',
+        pathname: '/files/**',
+      }
     ],
   },
 };

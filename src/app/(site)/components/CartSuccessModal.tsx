@@ -9,7 +9,6 @@ interface Props {
     open: boolean
     onClose: () => void
     title: string
-    description: string
     imageUrl: string
     price: number | string
 }
@@ -18,7 +17,6 @@ export default function CartSuccessModal({
     open,
     onClose,
     title,
-    description,
     imageUrl,
     price,
 }: Props) {
@@ -74,7 +72,6 @@ export default function CartSuccessModal({
                                 </div>
                                 <div className="flex-1">
                                     <p className="font-medium text-gray-800">{title}</p>
-                                    <p className="text-sm text-gray-500">{description}</p>
                                 </div>
                                 <div className="font-semibold text-gray-800 text-lg">
                                     ${price}

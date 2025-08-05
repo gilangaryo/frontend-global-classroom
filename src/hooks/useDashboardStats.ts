@@ -1,9 +1,7 @@
-// hooks/useDashboardStats.ts
 import { useState, useEffect } from 'react';
-import { dashboardApi, ApiError } from '../../../utils/api';
-import type { Stats, User, Payment, Purchase, Course } from '../../../utils/api';
+import { dashboardApi, ApiError } from '../app/utils/api';
+import type { Stats, User, Payment, Purchase, Course } from '../app/utils/api';
 
-// Hook untuk stats saja
 export function useDashboardStats() {
     const [stats, setStats] = useState<Stats | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
@@ -38,7 +36,6 @@ export function useDashboardStats() {
     };
 }
 
-// Hook untuk semua data dashboard
 interface DashboardData {
     stats: Stats | null;
     users: User[];
@@ -95,7 +92,6 @@ export function useDashboardData() {
     };
 }
 
-// Hook untuk individual data types
 export function useDashboardUsers() {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState<boolean>(true);

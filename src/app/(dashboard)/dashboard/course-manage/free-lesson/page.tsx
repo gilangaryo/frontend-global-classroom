@@ -2,11 +2,11 @@
 
 import DashboardTabs from "../../components/DashboardTabs";
 import ImageDropZone from "../../components/ImageDropZone";
+import TiptapEditor from '../../components/TiptapEditor';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useProducts, useProductActions, CreateProductData } from '../../../../../hooks/useProducts';
 import Image from "next/image";
-import TiptapEditor from "../../components/TiptapEditor";
 interface CreateLessonData extends CreateProductData {
   tags?: string[];
 }
@@ -14,6 +14,7 @@ interface CreateLessonData extends CreateProductData {
 export default function AddLessonPage() {
   const router = useRouter();
 
+  // Using our unified hooks system
   const { createProduct, loading } = useProductActions();
   const { products: units, loading: unitsLoading } = useProducts({ type: 'UNIT' });
 
@@ -26,7 +27,6 @@ export default function AddLessonPage() {
     imageUrl: '',
     parentId: '',
     isFreeLesson: false,
-    learningActivities: '',
   });
 
   const [tags, setTags] = useState<string[]>([]);
@@ -85,6 +85,7 @@ export default function AddLessonPage() {
       return;
     }
 
+    // Create the lesson data - tags go to the tags field, NOT description
     const lessonData: CreateLessonData = {
       ...formData,
       ProductType: 'LESSON',
@@ -106,7 +107,6 @@ export default function AddLessonPage() {
         imageUrl: '',
         parentId: '',
         isFreeLesson: false,
-        learningActivities: '',
       });
       setTags([]);
       setTagInput('');
@@ -210,27 +210,11 @@ export default function AddLessonPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Description
               </label>
-              <textarea
-                rows={5}
-                placeholder="Describe what this lesson covers..."
-                value={formData.description}
-                onChange={(e) => updateField('description', e.target.value)}
-                className="w-full resize-none rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Learning Activities (Optional)
-              </label>
               <TiptapEditor
-                content={formData.learningActivities}
-                onChange={(value) => updateField('learningActivities', value)}
-                placeholder="Write the learning activities using formatting..."
+                content={formData.description}
+                onChange={(value) => updateField('description', value)}
+                placeholder="Describe what this lesson covers..."
               />
-              <p className="text-xs text-gray-500 mt-1">
-                You can format lists, bold, links, etc.
-              </p>
             </div>
 
             {/* Free Lesson Toggle */}

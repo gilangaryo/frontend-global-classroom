@@ -9,7 +9,7 @@ interface ProductResult {
     type: string;
     imageUrl?: string;
     description?: string;
-    parentId?: string; // tambahkan
+    parentId?: string;
 }
 
 export default function ProductSearchBar() {
@@ -66,7 +66,7 @@ export default function ProductSearchBar() {
             />
             {/* List result */}
             {open && results.length > 0 && (
-                <ul className="absolute left-0 w-full mt-2 bg-white border rounded shadow-lg z-30 max-h-80 overflow-y-auto">
+                <ul className="absolute -left-80 w-150 mt-6 bg-white border  shadow-lg z-30 max-h-80 overflow-y-auto ">
                     {results.map((item) => (
                         <li key={item.id}>
                             <Link href={getDetailUrl(item)} className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100">

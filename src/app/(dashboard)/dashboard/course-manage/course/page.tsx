@@ -5,7 +5,7 @@ import ImageDropZone from "../../components/ImageDropZone";
 import TiptapEditor from '../../components/TiptapEditor';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useCourseActions, CreateCourseData } from '../../hooks/useProducts';
+import { useCourseActions, CreateCourseData } from '../../../../../hooks/useProducts';
 
 function isColorDark(hex: string): boolean {
   const cleanHex = hex.replace('#', '');
@@ -115,10 +115,12 @@ export default function AddCoursePage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Course Description
               </label>
-              <TiptapEditor
-                content={formData.description}
-                onChange={(value) => updateField('description', value)}
-                placeholder="Add course description and content..."
+              <textarea
+                placeholder="Add course description..."
+                value={formData.description}
+                onChange={(e) => updateField('description', e.target.value)}
+                className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
+                rows={4}
               />
             </div>
 

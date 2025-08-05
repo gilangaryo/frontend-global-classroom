@@ -13,12 +13,17 @@ interface Lesson {
     id: string;
     title: string;
     description: string;
+    courseIncluded?: string | null;
     imageUrl: string;
     price: string;
     previewUrl: string | null;
     digitalUrl: string | null;
+    isFreeLesson?: boolean;
     tags?: string[];
     colorButton?: string;
+    metadata?: {
+        learningActivities?: string;
+    };
     subunit?: {
         id: string;
         title: string;
@@ -45,6 +50,8 @@ export default function LessonDetailClient() {
     const [loading, setLoading] = useState(true);
     const [openPreviewPdf, setOpenPreviewPdf] = useState(false);
     const [openThumbnail, setOpenThumbnail] = useState(false);
+    const [emailInput, setEmailInput] = useState('');
+    const [sending, setSending] = useState(false);
 
     const id =
         typeof params.id === 'string'
@@ -53,6 +60,7 @@ export default function LessonDetailClient() {
                 ? params.id[0]
                 : '';
 
+    // Tambahkan setelah fetch data
     useEffect(() => {
         const fetchLesson = async () => {
             try {
@@ -65,7 +73,18 @@ export default function LessonDetailClient() {
                     throw new Error(`HTTP error! status: ${res.status}`);
                 }
                 const json = await res.json();
-                setLesson(json.data);
+
+                const parsedLesson = json.data;
+                if (parsedLesson.metadata && typeof parsedLesson.metadata === 'string') {
+                    try {
+                        parsedLesson.metadata = JSON.parse(parsedLesson.metadata);
+                    } catch (e) {
+                        console.warn('Failed to parse metadata:', e);
+                        parsedLesson.metadata = {};
+                    }
+                }
+
+                setLesson(parsedLesson);
             } catch (err) {
                 console.error('Error fetching lesson:', err);
                 setLesson(null);
@@ -79,12 +98,11 @@ export default function LessonDetailClient() {
     if (loading) return <div className="text-center py-20">Loading...</div>;
     if (!lesson) return notFound();
 
-    // Determine the back link based on hierarchy
     const getBackLink = () => {
         if (lesson.unit) {
             return `/courses/${lesson.course?.id || 'unknown'}/unit/${lesson.unit.id}`;
         }
-        return '/lessons'; // Fallback to lessons page
+        return '/lessons';
     };
 
     const getBackText = () => {
@@ -94,26 +112,69 @@ export default function LessonDetailClient() {
         return '← Back to Lessons';
     };
 
+    const handleSubmitFreeLesson = async () => {
+        if (!emailInput || !/\S+@\S+\.\S+/.test(emailInput)) {
+            alert('Masukkan email yang valid.');
+            return;
+        }
+
+        setSending(true);
+
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/free-access`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lessonId: lesson.id, email: emailInput }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert('✅ Materi telah dikirim ke email!');
+                setEmailInput('');
+            } else {
+                alert(`❌ Gagal: ${data.error}`);
+            }
+        } catch (err) {
+            console.error('Send failed:', err);
+            alert('❌ Gagal mengirim email.');
+        } finally {
+            setSending(false);
+        }
+    };
+
     return (
         <main className="px-6 md:px-16 py-10 font-body bg-white text-[#363F36]">
             <Link href={getBackLink()} className="text-sm text-[#346046] font-semibold mb-6 inline-block">
                 {getBackText()}
             </Link>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 ">
                 {/* LEFT SIDE */}
-                <div>
+                <div className='max-w-lg'>
                     <h1 className="text-2xl md:text-3xl font-bold mb-4">{lesson.title}</h1>
-                    <p className="text-sm text-[#363F36] mb-4 max-w-lg">{lesson.description}</p>
+                    <p className="text-sm text-[#363F36] mb-4 ">{lesson.description}</p>
+
+                    {lesson.metadata?.learningActivities && (
+                        <div className="mb-6">
+                            <p className="text-md font-semibold text-[#3E724A] p-2 mb-4 border-b-2 border-[#3E724A] pb-1">
+                                Learning Activities
+                            </p>
+                            <div
+                                className="text-sm text-[#363F36] space-y-2"
+                                dangerouslySetInnerHTML={{ __html: lesson.metadata.learningActivities }}
+                            />
+                        </div>
+                    )}
 
                     {/* Tags */}
                     {lesson.tags && lesson.tags.length > 0 && (
                         <div className="mb-4">
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-3">
                                 {lesson.tags.map((tag, index) => (
                                     <span
                                         key={index}
-                                        className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md"
+                                        className="pr-4 py-1  text-gray-500 text-xs rounded-md"
                                     >
                                         {tag}
                                     </span>
@@ -122,11 +183,13 @@ export default function LessonDetailClient() {
                         </div>
                     )}
 
-                    {/* Price */}
-                    <div className="mb-6">
-                        <p className="text-sm text-gray-600 mb-1">Price:</p>
-                        <div className="text-2xl font-bold text-primary">${parseFloat(lesson.price).toFixed(2)}</div>
-                    </div>
+                    {/* Price (hanya jika tidak gratis) */}
+                    {/* {!lesson.isFreeLesson && (
+                        <div className="mb-6">
+                            <p className="text-sm text-gray-600 mb-1">Price:</p>
+                            <div className="text-2xl font-bold text-primary">${parseFloat(lesson.price).toFixed(2)}</div>
+                        </div>
+                    )} */}
 
                     <div className="flex gap-4 mb-6 mt-8">
                         <div className="flex flex-row gap-4 w-full md:w-auto">
@@ -141,21 +204,40 @@ export default function LessonDetailClient() {
                                 Preview
                             </button>
 
-                            <AnimatedAddToCartButton
-                                productId={lesson.id}
-                                productType="LESSON"
-                                itemTitle={lesson.title}
-                                itemImg={lesson.imageUrl}
-                                itemDesc={lesson.description}
-                                itemPrice={parseFloat(lesson.price)}
-                                size="base"
-                                colorButton={lesson.colorButton || '#3E724A'}
-                            />
+                            {lesson.isFreeLesson ? (
+                                <div className="flex flex-col gap-2 w-full md:w-auto">
+                                    <input
+                                        type="email"
+                                        placeholder="Masukkan email kamu"
+                                        value={emailInput}
+                                        onChange={(e) => setEmailInput(e.target.value)}
+                                        className="px-4 py-2 border border-gray-300 rounded-md text-sm"
+                                    />
+                                    <button
+                                        onClick={handleSubmitFreeLesson}
+                                        disabled={sending}
+                                        className="px-6 py-3 rounded-lg font-bold text-sm transition-colors text-white bg-[#3E724A] hover:bg-[#2e5a39] disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {sending ? 'Mengirim...' : 'Kirim Gratis ke Email'}
+                                    </button>
+                                </div>
+                            ) : (
+                                <AnimatedAddToCartButton
+                                    productId={lesson.id}
+                                    productType="LESSON"
+                                    itemTitle={lesson.title}
+                                    itemImg={lesson.imageUrl}
+                                    itemDesc={lesson.description}
+                                    itemPrice={parseFloat(lesson.price)}
+                                    size="base"
+                                    colorButton={lesson.colorButton || '#363F36'}
+                                />
+                            )}
                         </div>
                     </div>
 
                     {/* Hierarchy Info */}
-                    <div className="mb-6 text-sm text-gray-600">
+                    {/* <div className="mb-6 text-sm text-gray-600">
                         {lesson.course && (
                             <p className="mb-1">
                                 <span className="font-medium">Course:</span>{' '}
@@ -167,10 +249,7 @@ export default function LessonDetailClient() {
                         {lesson.unit && (
                             <p className="mb-1">
                                 <span className="font-medium">Unit:</span>{' '}
-                                <Link
-                                    href={getBackLink()}
-                                    className="text-[#346046] hover:underline"
-                                >
+                                <Link href={getBackLink()} className="text-[#346046] hover:underline">
                                     {lesson.unit.title}
                                 </Link>
                             </p>
@@ -180,7 +259,7 @@ export default function LessonDetailClient() {
                                 <span className="font-medium">Subunit:</span> {lesson.subunit.title}
                             </p>
                         )}
-                    </div>
+                    </div> */}
 
                     {lesson.previewUrl && (
                         <Link
@@ -198,7 +277,6 @@ export default function LessonDetailClient() {
 
                 {/* RIGHT SIDE */}
                 <div className="flex flex-col gap-10">
-                    {/* Image */}
                     <div className="relative w-full aspect-[4/3]">
                         <Image
                             src={lesson.imageUrl || '/dummy/sample-product.png'}
@@ -222,7 +300,6 @@ export default function LessonDetailClient() {
                         )}
                     </div>
 
-                    {/* Bundles */}
                     <LessonBundleSection lessonId={lesson.id} />
                 </div>
             </div>

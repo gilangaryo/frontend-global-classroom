@@ -3,7 +3,7 @@
 import React from 'react';
 import { KpiCard } from './KpiCard';
 import { TrendingUp, Users, BookOpen, Eye, RefreshCw } from 'lucide-react';
-import { useDashboardStats } from '../hooks/useDashboardStats';
+import { useDashboardStats } from '../../../../hooks/useDashboardStats';
 import type { Stats } from '../../../utils/api';
 
 // Props interface untuk jika ingin pass stats dari parent

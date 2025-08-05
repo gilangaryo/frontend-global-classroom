@@ -1,9 +1,11 @@
-// app/(dashboard)/course-manage/products/lesson/[lessonId]/edit/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import ImageDropZone from '@/app/(dashboard)/dashboard/components/ImageDropZone';
+// import DashboardTabs from "../../components/DashboardTabs";
+import TiptapEditor from "../../../../../components/TiptapEditor";
+import Image from "next/image";
 
 function isColorDark(hex: string): boolean {
     const cleanHex = hex.replace('#', '');
@@ -22,44 +24,64 @@ interface ParentOption {
     parentTitle?: string;
 }
 
+interface LessonMetadata {
+    learningActivities?: string;
+    [key: string]: string | undefined;
+}
+
+interface FormData {
+    title: string;
+    description: string;
+    price: number;
+    digitalUrl: string;
+    previewUrl: string;
+    colorButton: string;
+    imageUrl: string;
+    parentId: string;
+    isFreeLesson: boolean;
+    learningActivities: string;
+}
+
+type FormField = keyof FormData;
+type FormValue = string | number | boolean;
+
 export default function EditLessonPage() {
     const router = useRouter();
-    const params = useParams();
+    const { lessonId } = useParams<{ lessonId: string }>();
 
-    // Debug params - extract lessonId properly
-    console.log('🔧 All params:', params);
-    console.log('🔧 typeof params:', typeof params);
-    console.log('🔧 Object.keys(params):', Object.keys(params));
+    const [formData, setFormData] = useState<FormData>({
+        title: '',
+        description: '',
+        price: 0,
+        digitalUrl: '',
+        previewUrl: '',
+        colorButton: '#3E724A',
+        imageUrl: '',
+        parentId: '',
+        isFreeLesson: false,
+        learningActivities: '',
+    });
 
-    // Try different ways to get the lesson ID
-    const lessonId = params.lessonId || params.lesson || params.id || (typeof params === 'string' ? params : undefined);
-    console.log('🎯 Extracted lessonId:', lessonId);
-
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [price, setPrice] = useState<number>(0);
-    const [digitalUrl, setDigitalUrl] = useState('');
-    const [previewUrl, setPreviewUrl] = useState('');
-    const [colorButton, setColorButton] = useState('#3E724A');
     const [tags, setTags] = useState<string[]>([]);
     const [newTag, setNewTag] = useState('');
-    const [imageUrl, setImageUrl] = useState('');
-    const [parentId, setParentId] = useState('');
-    const [isFreeLesson, setIsFreeLesson] = useState(false);
 
     // Parent options (units and subunits)
     const [parentOptions, setParentOptions] = useState<ParentOption[]>([]);
-
     const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [parentOptionsLoading, setParentOptionsLoading] = useState(true);
     const [error, setError] = useState('');
+
+    const updateField = (field: FormField, value: FormValue) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+    };
 
     // Fetch parent options and existing lesson data
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const token = localStorage.getItem('token');
-                console.log('🔍 Starting to fetch lesson data for ID:', lessonId);
-                console.log('🔑 Token exists:', !!token);
+                setParentOptionsLoading(true);
 
                 // Fetch existing lesson data
                 const lessonRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/${lessonId}`, {
@@ -69,13 +91,8 @@ export default function EditLessonPage() {
                     }
                 });
 
-                console.log('📡 Response status:', lessonRes.status);
-                console.log('📡 Response ok:', lessonRes.ok);
-
                 if (!lessonRes.ok) {
-                    const errorText = await lessonRes.text();
-                    console.error('❌ API Error Response:', errorText);
-                    throw new Error(`Failed to fetch lesson data: ${lessonRes.status} ${errorText}`);
+                    throw new Error(`Failed to fetch lesson data: ${lessonRes.status}`);
                 }
 
                 const lessonData = await lessonRes.json();
@@ -83,42 +100,51 @@ export default function EditLessonPage() {
 
                 if (lessonData.status === 'success' && lessonData.data) {
                     const lesson = lessonData.data;
-                    console.log('✅ Processing lesson:', lesson);
 
-                    setTitle(lesson.title || '');
-                    setPrice(parseFloat(lesson.price) || 0);
-                    setDigitalUrl(lesson.digitalUrl || '');
-                    setPreviewUrl(lesson.previewUrl || '');
-                    setColorButton(lesson.colorButton || '#3E724A');
-                    setImageUrl(lesson.imageUrl || '');
-                    setParentId(lesson.parentId || '');
-                    setIsFreeLesson(lesson.isFreeLesson || false);
+                    if (lesson.type !== 'LESSON') {
+                        throw new Error('This product is not a lesson');
+                    }
 
-                    // Handle tags and description migration
-                    let cleanDescription = lesson.description || '';
+                    // Parse metadata JSON for learningActivities
+                    let metadata: LessonMetadata = {};
+                    try {
+                        if (lesson.metadata && typeof lesson.metadata === 'string') {
+                            metadata = JSON.parse(lesson.metadata) as LessonMetadata;
+                        } else if (lesson.metadata && typeof lesson.metadata === 'object') {
+                            metadata = lesson.metadata as LessonMetadata;
+                        }
+                    } catch (e) {
+                        console.warn('Failed to parse metadata JSON:', e);
+                        metadata = {};
+                    }
+
+                    setFormData({
+                        title: lesson.title || '',
+                        description: lesson.description || '',
+                        price: parseFloat(lesson.price) || 0,
+                        digitalUrl: lesson.digitalUrl || '',
+                        previewUrl: lesson.previewUrl || '',
+                        colorButton: lesson.colorButton || '#3E724A',
+                        imageUrl: lesson.imageUrl || '',
+                        parentId: lesson.parentId || '',
+                        isFreeLesson: lesson.isFreeLesson || false,
+                        learningActivities: metadata.learningActivities || '',
+                    });
+
+                    // Handle tags
                     let extractedTags: string[] = [];
-
-                    // If tags exist in the tags field, use them
                     if (lesson.tags && Array.isArray(lesson.tags) && lesson.tags.length > 0) {
                         extractedTags = lesson.tags;
-                        setDescription(cleanDescription);
-                        console.log('🏷️ Using existing tags from JSON field:', extractedTags);
                     } else {
-                        // Otherwise, try to extract tags from description (legacy data)
-                        const tagMatch = cleanDescription.match(/\n\nTags: (.+)$/);
+                        // Try to extract tags from description (legacy data)
+                        const tagMatch = lesson.description?.match(/\n\nTags: (.+)$/);
                         if (tagMatch) {
                             const tagString = tagMatch[1];
                             extractedTags = tagString.split(' - ').map((tag: string) => tag.trim()).filter((tag: string) => tag);
-                            // Remove tags from description
-                            cleanDescription = cleanDescription.replace(/\n\nTags: .+$/, '');
-                            console.log('🏷️ Extracted tags from description:', extractedTags);
                         }
-                        setDescription(cleanDescription);
                     }
-
                     setTags(extractedTags);
                 } else {
-                    console.error('❌ Invalid lesson data format:', lessonData);
                     throw new Error(lessonData.message || 'Invalid response format');
                 }
 
@@ -143,22 +169,14 @@ export default function EditLessonPage() {
                 // Add units
                 if (unitsRes.ok) {
                     const unitsData = await unitsRes.json();
-                    console.log('📚 Units response:', unitsData);
-
-                    // Handle different response structures
                     let unitsList = [];
                     if (unitsData.status === 'success' && unitsData.data) {
-                        // If data has pagination structure
                         unitsList = unitsData.data.data || unitsData.data;
                     } else if (Array.isArray(unitsData.data)) {
-                        // If data is direct array
                         unitsList = unitsData.data;
                     } else if (Array.isArray(unitsData)) {
-                        // If response is direct array
                         unitsList = unitsData;
                     }
-
-                    console.log('📚 Units list:', unitsList);
 
                     unitsList.forEach((unit: {
                         id: string;
@@ -177,22 +195,14 @@ export default function EditLessonPage() {
                 // Add subunits
                 if (subunitsRes.ok) {
                     const subunitsData = await subunitsRes.json();
-                    console.log('📑 Subunits response:', subunitsData);
-
-                    // Handle different response structures
                     let subunitsList = [];
                     if (subunitsData.status === 'success' && subunitsData.data) {
-                        // If data has pagination structure
                         subunitsList = subunitsData.data.data || subunitsData.data;
                     } else if (Array.isArray(subunitsData.data)) {
-                        // If data is direct array
                         subunitsList = subunitsData.data;
                     } else if (Array.isArray(subunitsData)) {
-                        // If response is direct array
                         subunitsList = subunitsData;
                     }
-
-                    console.log('📑 Subunits list:', subunitsList);
 
                     subunitsList.forEach((subunit: {
                         id: string;
@@ -217,22 +227,18 @@ export default function EditLessonPage() {
                 console.error('💥 Error fetching data:', err);
                 setError(err instanceof Error ? err.message : 'Failed to load lesson data');
             } finally {
-                console.log('🏁 Setting loading to false');
                 setLoading(false);
+                setParentOptionsLoading(false);
             }
         };
 
-        console.log('🚀 useEffect triggered with lessonId:', lessonId);
         if (lessonId) {
             fetchData();
-        } else {
-            console.log('❌ No lessonId provided');
-            setLoading(false);
         }
     }, [lessonId]);
 
     const handleAddTag = () => {
-        if (newTag.trim() && !tags.includes(newTag.trim())) {
+        if (newTag.trim() && !tags.includes(newTag.trim()) && tags.length < 10) {
             setTags([...tags, newTag.trim()]);
             setNewTag('');
         }
@@ -242,38 +248,48 @@ export default function EditLessonPage() {
         setTags(tags.filter(tag => tag !== tagToRemove));
     };
 
-    const handleImageUpload = (url: string) => {
-        setImageUrl(url);
-    };
+    const handleSave = async () => {
+        if (!formData.parentId) {
+            alert('Please select a parent unit or subunit!');
+            return;
+        }
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
+        if (!formData.title.trim()) {
+            alert('Please enter a lesson title');
+            return;
+        }
+
+        if (formData.title.trim().length < 3) {
+            alert('Title must be at least 3 characters long!');
+            return;
+        }
+
+        setSaving(true);
         setError('');
 
         try {
             const token = localStorage.getItem('token');
 
-            // Prepare update data
-            const updateData = {
-                title: title.trim(),
-                description: description.trim(), // Clean description without tags
-                price: price,
-                digitalUrl: digitalUrl.trim(),
-                previewUrl: previewUrl.trim(),
-                colorButton,
-                imageUrl: imageUrl.trim(),
-                tags: tags.filter(tag => tag.trim() !== ''), // This will go to the JSON tags field
-                parentId: parentId || null, // Parent unit/subunit ID
-                isFreeLesson,
+            // Prepare metadata object with proper typing
+            const metadata: LessonMetadata = {
+                learningActivities: formData.learningActivities
             };
 
-            // Validate required fields
-            if (!updateData.title) {
-                throw new Error('Lesson title is required');
-            }
+            const updateData = {
+                title: formData.title.trim(),
+                description: formData.description.trim(),
+                price: formData.price,
+                digitalUrl: formData.digitalUrl.trim(),
+                previewUrl: formData.previewUrl.trim(),
+                colorButton: formData.colorButton,
+                imageUrl: formData.imageUrl.trim(),
+                tags: tags.filter(tag => tag.trim() !== ''),
+                parentId: formData.parentId,
+                isFreeLesson: formData.isFreeLesson,
+                metadata: JSON.stringify(metadata), // Send as JSON string
+            };
 
-            console.log('Updating lesson with data:', updateData); // Debug log
+            console.log('Updating lesson with data:', updateData);
 
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/${lessonId}`, {
                 method: 'PATCH',
@@ -297,9 +313,11 @@ export default function EditLessonPage() {
             setError(err instanceof Error ? err.message : 'Failed to update lesson');
             alert(err instanceof Error ? err.message : 'Failed to update lesson');
         } finally {
-            setLoading(false);
+            setSaving(false);
         }
     };
+
+    const isFormValid = formData.parentId !== "" && formData.title.trim().length >= 3;
 
     if (loading) {
         return (
@@ -333,41 +351,41 @@ export default function EditLessonPage() {
 
     return (
         <div className="p-8">
-            <header className="space-y-1 mb-8">
-                <div className="flex items-center gap-4 mb-4">
-                    <button
-                        onClick={() => router.push('/dashboard/course-manage')}
-                        className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
-                        Back to Course Management
-                    </button>
-                </div>
+            <header className="space-y-1">
                 <h1 className="text-2xl font-semibold">Lesson Management</h1>
                 <p className="text-sm text-gray-500">
                     Edit your lesson information and settings.
                 </p>
             </header>
 
-            <section className="space-y-6">
-                <h2 className="text-lg font-semibold">Edit Lesson</h2>
+            {/* <DashboardTabs /> */}
 
-                <form onSubmit={handleSubmit}>
-                    <div className="grid gap-6 md:grid-cols-3">
-                        <div className="md:col-span-2 space-y-5">
-                            {/* Parent Selection */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Parent Unit/Subunit
-                                </label>
+            <section className="mt-10 space-y-6">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-semibold">Edit Lesson</h2>
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-3">
+                    <div className="md:col-span-2 space-y-5">
+                        {/* Parent Selection */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Parent Unit/Subunit <span className="text-red-500">*</span>
+                            </label>
+                            {parentOptionsLoading ? (
+                                <div className="w-full h-12 border border-gray-300 rounded-md flex items-center justify-center">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-sky-500"></div>
+                                    <span className="ml-2 text-sm text-gray-500">Loading parent options...</span>
+                                </div>
+                            ) : (
                                 <select
-                                    value={parentId}
-                                    onChange={(e) => setParentId(e.target.value)}
-                                    className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
+                                    value={formData.parentId}
+                                    onChange={(e) => updateField('parentId', e.target.value)}
+                                    className={`w-full rounded-md border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400 ${!formData.parentId ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                                        }`}
+                                    required
                                 >
-                                    <option value="">Select a parent unit or subunit (optional)</option>
+                                    <option value="">-- Select Parent Unit/Subunit --</option>
                                     {parentOptions.map((option) => (
                                         <option key={option.id} value={option.id}>
                                             {option.type === 'UNIT' ? '📚' : '📑'} {option.title}
@@ -375,272 +393,393 @@ export default function EditLessonPage() {
                                         </option>
                                     ))}
                                 </select>
-                                <p className="text-xs text-gray-500 mt-1">Choose which unit or subunit this lesson belongs to</p>
-                            </div>
+                            )}
+                            <p className="text-xs text-gray-500 mt-1">
+                                {formData.parentId
+                                    ? `This lesson belongs to: ${parentOptions.find(p => p.id === formData.parentId)?.title || 'Selected parent'}`
+                                    : 'Choose which unit or subunit this lesson belongs to'
+                                }
+                            </p>
+                            {!formData.parentId && (
+                                <p className="text-xs text-red-500 mt-1">Please select a parent unit or subunit</p>
+                            )}
+                        </div>
 
-                            {/* Lesson Title */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Lesson Title *
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Enter lesson title"
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
-                                    required
-                                    className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
-                                />
-                            </div>
-
-                            {/* Description */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Description
-                                </label>
-                                <textarea
-                                    rows={5}
-                                    placeholder="Describe your lesson content and learning objectives..."
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    className="w-full resize-none rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
-                                />
-                            </div>
-
-                            {/* Free Lesson Toggle */}
-                            <div className="flex items-center space-x-3">
-                                <input
-                                    type="checkbox"
-                                    id="isFreeLesson"
-                                    checked={isFreeLesson}
-                                    onChange={(e) => setIsFreeLesson(e.target.checked)}
-                                    className="h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded"
-                                />
-                                <label htmlFor="isFreeLesson" className="text-sm font-medium text-gray-700">
-                                    This is a free lesson
-                                </label>
-                            </div>
-
-                            {/* Tags Management */}
-                            <div className="space-y-3">
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Lesson Tags
-                                </label>
-
-                                {/* Tags Display */}
-                                <div className="flex flex-wrap gap-2 min-h-[40px] p-3 border border-gray-300 rounded-md bg-gray-50">
-                                    {tags.map((tag, index) => (
-                                        <span
-                                            key={index}
-                                            className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-sky-700 bg-sky-100 rounded-full animate-in fade-in duration-200"
-                                        >
-                                            {tag}
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveTag(tag)}
-                                                className="ml-1 text-sky-500 hover:text-sky-700 hover:bg-sky-200 rounded-full w-4 h-4 flex items-center justify-center transition-colors"
-                                                title="Remove tag"
-                                            >
-                                                ×
-                                            </button>
-                                        </span>
-                                    ))}
-                                    {tags.length === 0 && (
-                                        <span className="text-gray-400 text-sm">No tags added yet</span>
-                                    )}
-                                </div>
-
-                                {/* Tag Input */}
-                                <input
-                                    type="text"
-                                    placeholder={
-                                        tags.length >= 10
-                                            ? "Maximum 10 tags reached"
-                                            : "Type a tag and press Enter or comma"
-                                    }
-                                    value={newTag}
-                                    onChange={(e) => setNewTag(e.target.value)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' || e.key === ',') {
-                                            e.preventDefault();
-                                            handleAddTag();
-                                        } else if (e.key === 'Backspace' && newTag === '' && tags.length > 0) {
-                                            handleRemoveTag(tags[tags.length - 1]);
-                                        }
-                                    }}
-                                    disabled={tags.length >= 10}
-                                    className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                />
-
-                                {/* Suggested Tags */}
-                                {tags.length < 10 && (
-                                    <div className="space-y-2">
-                                        <p className="text-xs text-gray-500">Suggested tags (click to add):</p>
-                                        <div className="flex flex-wrap gap-2">
-                                            {[
-                                                "Beginner", "Intermediate", "Advanced",
-                                                "Introduction", "Practical", "Theory",
-                                                "Hands-on", "Case Study", "Exercise",
-                                                "Quiz", "Review", "Summary"
-                                            ].filter(tag => !tags.includes(tag)).slice(0, 12).map((tag) => (
-                                                <button
-                                                    key={tag}
-                                                    type="button"
-                                                    onClick={() => {
-                                                        if (tags.length < 10 && !tags.includes(tag)) {
-                                                            setTags([...tags, tag]);
-                                                        }
-                                                    }}
-                                                    className="px-2 py-1 text-xs text-gray-600 bg-gray-200 rounded hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400"
-                                                >
-                                                    + {tag}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
+                        {/* Lesson Title */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Lesson Title <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="Enter lesson title (minimum 3 characters)"
+                                value={formData.title}
+                                onChange={(e) => updateField('title', e.target.value)}
+                                className={`w-full rounded-md border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400 ${formData.title.trim().length > 0 && formData.title.trim().length < 3
+                                    ? 'border-red-300 bg-red-50'
+                                    : !formData.title.trim()
+                                        ? 'border-red-300 bg-red-50'
+                                        : 'border-gray-300'
+                                    }`}
+                                required
+                                maxLength={255}
+                            />
+                            <div className="flex justify-between items-center mt-1">
+                                {formData.title.trim().length > 0 && formData.title.trim().length < 3 && (
+                                    <p className="text-xs text-red-500">Title must be at least 3 characters</p>
                                 )}
-
-                                <div className="text-xs text-gray-500">
-                                    Tags: {tags.length}/10 | Tags will be stored in the tags field (JSON)
-                                </div>
+                                {!formData.title.trim() && (
+                                    <p className="text-xs text-red-500">Title is required</p>
+                                )}
+                                <p className="text-xs text-gray-500 ml-auto">{formData.title.length}/255</p>
                             </div>
+                        </div>
 
-                            {/* Color Button */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Button Color Theme
-                                </label>
-                                <div className="flex items-center gap-4 border border-gray-300 rounded-lg px-4 py-2 h-12">
-                                    <div className="w-6 h-6 rounded-full" style={{ backgroundColor: colorButton }} />
-                                    <label className="text-sm text-gray-600 whitespace-nowrap">
-                                        Change Color Template (for button)
-                                    </label>
-                                    <input
-                                        type="color"
-                                        value={colorButton}
-                                        onChange={(e) => setColorButton(e.target.value)}
-                                        className="ml-auto h-6 w-6 border-none cursor-pointer bg-transparent"
-                                    />
-                                </div>
+                        {/* Description */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Description
+                            </label>
+                            <textarea
+                                rows={5}
+                                placeholder="Describe your lesson content and learning objectives..."
+                                value={formData.description}
+                                onChange={(e) => updateField('description', e.target.value)}
+                                className="w-full resize-none rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
+                            />
+                        </div>
 
-                                {/* Live Button Preview */}
-                                <div className="pt-2">
-                                    <label className="text-sm text-gray-600">Live Button Preview:</label>
-                                    <div className="mt-2">
+                        {/* Learning Activities with TiptapEditor */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Learning Activities (Optional)
+                            </label>
+                            <TiptapEditor
+                                content={formData.learningActivities}
+                                onChange={(value) => updateField('learningActivities', value)}
+                                placeholder="Write the learning activities using formatting..."
+                            />
+                            <p className="text-xs text-gray-500 mt-1">
+                                You can format lists, bold, links, etc. for learning activities
+                            </p>
+                        </div>
+
+                        {/* Free Lesson Toggle */}
+                        <div className="flex items-center space-x-3">
+                            <input
+                                type="checkbox"
+                                id="isFreeLesson"
+                                checked={formData.isFreeLesson}
+                                onChange={(e) => updateField('isFreeLesson', e.target.checked)}
+                                className="h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded"
+                            />
+                            <label htmlFor="isFreeLesson" className="text-sm font-medium text-gray-700">
+                                This is a free lesson
+                            </label>
+                        </div>
+
+                        {/* Tags Management */}
+                        <div className="space-y-3">
+                            <label className="block text-sm font-medium text-gray-700">
+                                Lesson Tags (Optional)
+                            </label>
+
+                            {/* Tags Display */}
+                            <div className="flex flex-wrap gap-2 min-h-[40px] p-3 border border-gray-300 rounded-md bg-gray-50">
+                                {tags.map((tag, index) => (
+                                    <span
+                                        key={index}
+                                        className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-sky-700 bg-sky-100 rounded-full animate-in fade-in duration-200"
+                                    >
+                                        {tag}
                                         <button
                                             type="button"
-                                            className={`px-8 py-3 rounded-lg font-semibold hover:opacity-90 ${isColorDark(colorButton) ? 'text-white' : 'text-black'
-                                                }`}
-                                            style={{ backgroundColor: colorButton }}
+                                            onClick={() => handleRemoveTag(tag)}
+                                            className="ml-1 text-sky-500 hover:text-sky-700 hover:bg-sky-200 rounded-full w-4 h-4 flex items-center justify-center transition-colors"
+                                            title="Remove tag"
                                         >
-                                            {isFreeLesson ? 'Access Free' : 'Buy Now'}
+                                            ×
                                         </button>
-                                    </div>
-                                </div>
+                                    </span>
+                                ))}
+                                {tags.length === 0 && (
+                                    <span className="text-gray-400 text-sm">No tags added yet</span>
+                                )}
                             </div>
 
-                            {/* Price (only if not free lesson) */}
-                            {!isFreeLesson && (
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Lesson Price (USD)
-                                    </label>
-                                    <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
-                                        <div className="flex-shrink-0 flex items-center justify-center border-2 border-sky-500 bg-sky-100 px-4 m-2 rounded-md">
-                                            <span className="text-sky-500 text-sm font-bold">$</span>
-                                        </div>
-                                        <input
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            placeholder="0.00 (price for this lesson)"
-                                            value={price || ''}
-                                            onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
-                                            className="flex-1 px-4 py-2 text-sm placeholder:text-gray-500 outline-none border-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                        />
+                            {/* Tag Input */}
+                            <input
+                                type="text"
+                                placeholder={
+                                    tags.length >= 10
+                                        ? "Maximum 10 tags reached"
+                                        : "Type a tag and press Enter or comma"
+                                }
+                                value={newTag}
+                                onChange={(e) => setNewTag(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ',') {
+                                        e.preventDefault();
+                                        handleAddTag();
+                                    } else if (e.key === 'Backspace' && newTag === '' && tags.length > 0) {
+                                        handleRemoveTag(tags[tags.length - 1]);
+                                    }
+                                }}
+                                disabled={tags.length >= 10}
+                                className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            />
+
+                            {/* Suggested Tags */}
+                            {tags.length < 10 && (
+                                <div className="space-y-2">
+                                    <p className="text-xs text-gray-500">Suggested tags (click to add):</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {[
+                                            "Beginner", "Intermediate", "Advanced",
+                                            "Introduction", "Practical", "Theory",
+                                            "Hands-on", "Case Study", "Exercise",
+                                            "Quiz", "Review", "Summary"
+                                        ].filter(tag => !tags.includes(tag)).slice(0, 12).map((tag) => (
+                                            <button
+                                                key={tag}
+                                                type="button"
+                                                onClick={() => {
+                                                    if (tags.length < 10 && !tags.includes(tag)) {
+                                                        setTags([...tags, tag]);
+                                                    }
+                                                }}
+                                                className="px-2 py-1 text-xs text-gray-600 bg-gray-200 rounded hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400"
+                                            >
+                                                + {tag}
+                                            </button>
+                                        ))}
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-1">Individual lesson pricing</p>
                                 </div>
                             )}
 
-                            {/* Preview URL */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Preview Lesson Content URL
-                                </label>
-                                <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
-                                    <span className="flex w-12 items-center justify-center text-gray-700">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
-                                    </span>
-                                    <input
-                                        type="url"
-                                        placeholder="Preview Lesson Content URL"
-                                        value={previewUrl}
-                                        onChange={(e) => setPreviewUrl(e.target.value)}
-                                        className="flex-1 h-full px-4 text-sm placeholder:text-gray-600 outline-none"
-                                    />
-                                </div>
-                                <p className="text-xs text-gray-500 mt-1">Link for free preview/demo of your lesson</p>
+                            <div className="text-xs text-gray-500">
+                                Tags: {tags.length}/10 | Tags will be stored in the tags field (JSON)
                             </div>
+                        </div>
 
-                            {/* Digital URL */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Access Link After Purchase
+                        {/* Color Button */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Button Color Theme
+                            </label>
+                            <div className="flex items-center gap-4 border border-gray-300 rounded-lg px-4 py-2 h-12">
+                                <div className="w-6 h-6 rounded-full" style={{ backgroundColor: formData.colorButton }} />
+                                <label className="text-sm text-gray-600 whitespace-nowrap">
+                                    Change Color Template (for button)
                                 </label>
                                 <input
-                                    type="url"
-                                    placeholder="https://your-platform.com/lesson-access"
-                                    value={digitalUrl}
-                                    onChange={(e) => setDigitalUrl(e.target.value)}
-                                    className="h-12 w-full rounded-lg border border-gray-300 px-5 text-sm placeholder:text-gray-600 outline-none focus:ring-2 focus:ring-sky-400"
+                                    type="color"
+                                    value={formData.colorButton}
+                                    onChange={(e) => updateField('colorButton', e.target.value)}
+                                    className="ml-auto h-6 w-6 border-none cursor-pointer bg-transparent"
                                 />
-                                <p className="text-xs text-gray-500 mt-1">Link where students can access the lesson content after purchase</p>
+                            </div>
+
+                            {/* Live Button Preview */}
+                            <div className="pt-2">
+                                <label className="text-sm text-gray-600">Live Button Preview:</label>
+                                <div className="mt-2">
+                                    <button
+                                        type="button"
+                                        className={`px-8 py-3 rounded-lg font-semibold hover:opacity-90 ${isColorDark(formData.colorButton) ? 'text-white' : 'text-black'
+                                            }`}
+                                        style={{ backgroundColor: formData.colorButton }}
+                                    >
+                                        {formData.isFreeLesson ? 'Access Free' : 'Buy Now'}
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Image Upload Section */}
-                        <div className="space-y-4">
+                        {/* Price (only if not free lesson) */}
+                        {!formData.isFreeLesson && (
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Lesson Image
+                                    Price (Optional)
                                 </label>
-                                <ImageDropZone
-                                    currentImageUrl={imageUrl}
-                                    onImageUpload={handleImageUpload}
-                                />
-                                <p className="text-xs text-gray-500 mt-2">
-                                    Upload an image for your lesson. Recommended size: 800x600px
+                                <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
+                                    <div className="flex-shrink-0 flex items-center justify-center bg-sky-500 px-4">
+                                        <span className="text-white text-sm font-medium">$</span>
+                                    </div>
+                                    <input
+                                        type="number"
+                                        placeholder="0.00"
+                                        value={formData.price || ''}
+                                        min="0"
+                                        step="0.01"
+                                        onChange={(e) => updateField('price', parseFloat(e.target.value) || 0)}
+                                        className="flex-1 px-4 py-2 text-sm placeholder:text-gray-500 outline-none border-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                    />
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Leave as 0 if this lesson should be free
                                 </p>
+                            </div>
+                        )}
+
+                        {/* Preview URL */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Preview Content URL (Optional)
+                            </label>
+                            <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
+                                <span className="flex w-12 items-center justify-center text-gray-700">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </span>
+                                <input
+                                    type="url"
+                                    placeholder="https://example.com/lesson-preview"
+                                    value={formData.previewUrl}
+                                    onChange={(e) => updateField('previewUrl', e.target.value)}
+                                    className="flex-1 h-full px-4 text-sm placeholder:text-gray-600 outline-none"
+                                />
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                                Link to preview content or demo version for users to see before purchasing
+                            </p>
+                        </div>
+
+                        {/* Digital URL */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Digital Content URL (Optional)
+                            </label>
+                            <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
+                                <span className="flex w-12 items-center justify-center text-gray-700">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                    </svg>
+                                </span>
+                                <input
+                                    type="url"
+                                    placeholder="https://example.com/lesson-content"
+                                    value={formData.digitalUrl}
+                                    onChange={(e) => updateField('digitalUrl', e.target.value)}
+                                    className="flex-1 h-full px-4 text-sm placeholder:text-gray-600 outline-none"
+                                />
                             </div>
                         </div>
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
-                        <button
-                            type="button"
-                            className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors"
-                            onClick={() => router.back()}
-                            disabled={loading}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={loading || !title.trim()}
-                            className={`px-8 py-2.5 text-sm font-medium transition-colors ${loading || !title.trim()
-                                ? 'bg-gray-400 cursor-not-allowed text-gray-200'
-                                : 'bg-sky-500 hover:bg-sky-600 text-white focus:outline-none focus:ring-2 focus:ring-sky-400'
-                                } rounded-md`}
-                        >
-                            {loading ? 'Saving...' : 'Save Changes'}
-                        </button>
+                    {/* Image Upload */}
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Lesson Cover Image
+                            </label>
+                            <ImageDropZone
+                                currentImageUrl={formData.imageUrl}
+                                onImageUpload={(url) => updateField('imageUrl', url)}
+                            />
+                            <p className="text-xs text-gray-500 mt-2">
+                                Upload an image to represent this lesson
+                            </p>
+                        </div>
+
+                        {/* Preview Card */}
+                        {(formData.title || formData.imageUrl || tags.length > 0) && (
+                            <div className="bg-gray-50 border rounded-lg p-4">
+                                <h3 className="text-sm font-medium text-gray-700 mb-3">Preview:</h3>
+                                <div className="bg-white rounded-lg border p-3 shadow-sm">
+                                    {formData.imageUrl && (
+                                        <div className="relative w-full h-32 mb-3">
+                                            <Image
+                                                src={formData.imageUrl}
+                                                alt="Lesson preview"
+                                                fill
+                                                className="object-cover rounded"
+                                                onError={(e) => {
+                                                    e.currentTarget.style.display = 'none';
+                                                }}
+                                            />
+                                        </div>
+                                    )}
+                                    <h4 className="font-medium text-gray-900 text-sm">
+                                        {formData.title || 'Lesson Title'}
+                                    </h4>
+                                    {!formData.isFreeLesson && formData.price > 0 && (
+                                        <p className="text-sm text-green-600 font-medium mt-1">
+                                            ${formData.price.toFixed(2)}
+                                        </p>
+                                    )}
+                                    {formData.isFreeLesson && (
+                                        <p className="text-sm text-blue-600 font-medium mt-1">
+                                            Free Lesson
+                                        </p>
+                                    )}
+                                    {formData.description && (
+                                        <p className="text-xs text-gray-500 mt-2 line-clamp-2">
+                                            {formData.description.replace(/<[^>]*>/g, '').substring(0, 80)}...
+                                        </p>
+                                    )}
+                                    {tags.length > 0 && (
+                                        <div className="flex flex-wrap gap-1 mt-2">
+                                            {tags.slice(0, 3).map((tag, index) => (
+                                                <span key={index} className="px-2 py-1 text-xs bg-sky-100 text-sky-700 rounded">
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                            {tags.length > 3 && (
+                                                <span className="px-2 py-1 text-xs bg-gray-100 text-gray-500 rounded">
+                                                    +{tags.length - 3} more
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
+                                    {formData.learningActivities && (
+                                        <div className="mt-2 p-2 bg-gray-50 rounded text-xs">
+                                            <strong>Learning Activities:</strong>
+                                            <div
+                                                className="mt-1 text-gray-600"
+                                                dangerouslySetInnerHTML={{
+                                                    __html: formData.learningActivities.substring(0, 100) + '...'
+                                                }}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
-                </form>
+                </div>
+
+                {/* Form Actions */}
+                <div className="flex justify-end gap-4 pt-6 border-t">
+                    <button
+                        type="button"
+                        className="rounded-md border border-gray-300 bg-white px-6 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        onClick={() => router.push('/dashboard/course-manage')}
+                        disabled={saving}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleSave}
+                        disabled={saving || !isFormValid}
+                        className={`rounded-md px-8 py-2 text-sm font-medium transition-colors ${saving || !isFormValid
+                            ? 'bg-gray-400 cursor-not-allowed text-gray-200'
+                            : 'bg-sky-500 hover:bg-sky-600 text-white'
+                            }`}
+                    >
+                        {saving ? (
+                            <span className="flex items-center">
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                Saving...
+                            </span>
+                        ) : (
+                            'Save Changes'
+                        )}
+                    </button>
+                </div>
             </section>
         </div>
     );

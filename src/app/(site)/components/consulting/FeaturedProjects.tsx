@@ -54,7 +54,7 @@ export default function FeaturedProjects() {
     }, []);
 
     return (
-        <section className="py-8 md:py-32 px-4 md:px-20 bg-white max-w-full">
+        <section className="py-8 md:py-40 px-4 md:px-20 bg-white max-w-full">
             <div className="mx-auto">
                 <h2 className="text-4xl md:text-7xl font-bold text-black text-center mb-20">
                     FEATURED PROJECTS

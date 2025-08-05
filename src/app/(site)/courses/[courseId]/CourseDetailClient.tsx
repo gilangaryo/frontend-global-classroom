@@ -8,42 +8,8 @@ import DividerWithPlus from "../../components/Divider";
 import ModalPreviewPdf from "../../components/ModalPreviewPdf";
 import LessonPdfThumbnailModal from "../../components/LessonPdfThumbnailModal";
 import AnimatedAddToCartButton from '../../components/AnimatedAddToCartButton';
-
-interface Unit {
-    id: string;
-    title: string;
-    slug: string;
-    previewUrl: string | null;
-    digitalUrl: string | null;
-    description: string;
-    price: string;
-    imageUrl: string | null;
-    isActive: boolean;
-    courseId: string;
-    createdAt: string;
-    updatedAt: string;
-}
-
-interface Course {
-    id: string;
-    slug: string;
-    title: string;
-    description: string;
-    price: string;
-    imageUrl: string;
-    previewUrl: string;
-    digitalUrl: string;
-    colorButton: string;
-    isActive: boolean;
-    createdAt: string;
-    updatedAt: string;
-    units: Unit[];
-    freeResources?: {
-        image: string;
-        title: string;
-        link: string;
-    }[];
-}
+import { useFreeLessons } from '../../../../hooks/useFreeLessons';
+import { Course } from '@/types/course';
 
 export default function CourseDetailClient() {
     const params = useParams();
@@ -53,12 +19,14 @@ export default function CourseDetailClient() {
     const [openPreviewPdf, setOpenPreviewPdf] = useState(false);
     const [openThumbnail, setOpenThumbnail] = useState(false);
 
-
     const id = typeof params.courseId === "string"
         ? params.courseId
         : Array.isArray(params.courseId)
             ? params.courseId[0]
             : "";
+
+    // Fetch free lessons for this course
+    const { freeLessons, loading: freeLessonsLoading } = useFreeLessons(id);
 
     useEffect(() => {
         const fetchCourse = async () => {
@@ -85,6 +53,9 @@ export default function CourseDetailClient() {
     const pdfUrl = course.previewUrl;
     const imgUrl = course.imageUrl;
 
+    // Get the first free lesson for display
+    const featuredFreeLesson = freeLessons?.[0];
+
     return (
         <main className="font-body">
             {/* Hero Section */}
@@ -105,7 +76,9 @@ export default function CourseDetailClient() {
                         </div>
                     </div>
                     <div className="order-2 md:order-1 flex flex-col items-start mt-6 md:mt-0">
-                        <p className="mb-6 text-sm md:text-[18px] text-black max-w-md leading-loose ">
+                        <p
+                            className="mb-6 text-sm md:text-[18px] text-black max-w-md leading-loose whitespace-pre-wrap"
+                        >
                             {course.description}
                         </p>
                         <div className="flex flex-col gap-3 w-full md:flex-col md:gap-4">
@@ -149,7 +122,6 @@ export default function CourseDetailClient() {
                 pdfUrl={pdfUrl}
                 title="Preview Unit"
             />
-
 
             {/* Units Section */}
             <section className="bg-alt2 py-40 px-4 md:px-20 " id="units">
@@ -199,6 +171,7 @@ export default function CourseDetailClient() {
                 </div>
             </section>
 
+            {/* FREE RESOURCE Section - UPDATED WITH DYNAMIC DATA */}
             <section className="py-40 px-4 md:px-20 bg-white">
                 <div className="max-w-full mx-auto">
                     <h2 className="text-3xl md:text-7xl font-bold text-[#363F36] mb-8">FREE RESOURCE</h2>
@@ -206,29 +179,88 @@ export default function CourseDetailClient() {
                         Curious about this course? Checkout this free resource
                     </div>
                     <DividerWithPlus />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8  items-end ">
-                        <div className="relative max-w-full aspect-video ">
-                            <Image
-                                src={course.freeResources?.[0]?.image ?? '/dummy/sample-product.png'}
-                                alt={course.freeResources?.[0]?.title ?? 'Free Resource'}
-                                fill
-                                className="object-cover"
-                            />
+
+                    {freeLessonsLoading ? (
+                        <div className="flex items-center justify-center py-12">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                            <span className="ml-3 text-primary">Loading free resources...</span>
                         </div>
-                        <div className="p-6 flex flex-col justify-center text-primary">
-                            <div className="font-bold  text-4xl mb-4 leading-normal">
-                                <h2>{course.freeResources?.[0]?.title ?? 'foundation of a Global Politics'}</h2>
+                    ) : featuredFreeLesson ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
+                            <div className="relative max-w-full aspect-video">
+                                <Image
+                                    src={featuredFreeLesson.imageUrl || '/dummy/sample-product.png'}
+                                    alt={featuredFreeLesson.title}
+                                    fill
+                                    className="object-cover"
+                                    onError={(e) => {
+                                        e.currentTarget.src = '/dummy/sample-product.png';
+                                    }}
+                                />
                             </div>
-                            <Link
-                                href={course.freeResources?.[0]?.link ?? '#'}
-                                className=" font-semibold text-base flex items-center gap-1 hover:underline "
-                            >
-                                <p >
-                                    Click Here
-                                </p>
-                            </Link>
+                            <div className="p-6 flex flex-col justify-center text-primary">
+                                <div className="font-bold text-6xl mb-4 leading-normal">
+                                    <h2>{featuredFreeLesson.title}</h2>
+                                </div>
+
+                                <Link
+                                    href={featuredFreeLesson.digitalUrl || featuredFreeLesson.previewUrl || '#'}
+                                    target={featuredFreeLesson.digitalUrl || featuredFreeLesson.previewUrl ? '_blank' : '_self'}
+                                    rel={featuredFreeLesson.digitalUrl || featuredFreeLesson.previewUrl ? 'noopener noreferrer' : ''}
+                                    className="font-semibold text-base flex items-center gap-1 hover:underline"
+                                    onClick={(e) => {
+                                        const pdfUrl = featuredFreeLesson.digitalUrl || featuredFreeLesson.previewUrl;
+                                        if (!pdfUrl) {
+                                            e.preventDefault();
+                                            alert('PDF not available for this lesson');
+                                        }
+                                    }}
+                                >
+                                    <p>Access Free Lesson</p>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                    </svg>
+                                </Link>
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="text-center py-12 text-gray-500">
+                            <p>No free resources available for this course</p>
+                        </div>
+                    )}
+
+                    {/* Show additional free lessons if available */}
+                    {freeLessons.length > 1 && (
+                        <div className="mt-12">
+                            <h3 className="text-2xl font-bold text-primary mb-6">More Free Resources:</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {freeLessons.slice(1, 4).map((lesson) => (
+                                    <Link
+                                        key={lesson.id}
+                                        href={`/lessons/${lesson.id}`}
+                                        className="group bg-white border rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+                                    >
+                                        <div className="relative w-full h-48">
+                                            <Image
+                                                src={lesson.imageUrl || '/dummy/sample-product.png'}
+                                                alt={lesson.title}
+                                                fill
+                                                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                            />
+                                        </div>
+                                        <div className="p-4">
+                                            <h4 className="font-semibold text-primary group-hover:underline">
+                                                {lesson.title}
+                                            </h4>
+                                            <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+                                                {lesson.description}
+                                            </p>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </section>
         </main>

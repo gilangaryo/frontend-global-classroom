@@ -1,117 +1,111 @@
-"use client";
-import { useEffect, useState } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination, Autoplay } from "swiper/modules"; // ← Tambah Autoplay di sini
-import Image from "next/image";
-import Link from "next/link";
-import "swiper/css";
-import "swiper/css/pagination";
-
-interface FreeLesson {
+'use client';
+import { useEffect, useState } from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Navigation } from 'swiper/modules';
+import Image from 'next/image';
+import Link from 'next/link';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+interface SimpleFreeLesson {
   id: string;
   title: string;
   description: string;
-  imageUrl?: string;
-  parentId?: string;
-  type?: string;
-  slug?: string;
+  url: string;
 }
 
 export default function FreeLessonsSlider() {
-  const [lessons, setLessons] = useState<FreeLesson[]>([]);
+  const [lessons, setLessons] = useState<SimpleFreeLesson[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/free-lessons`)
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/free-lessons`)
       .then((res) => res.json())
       .then((json) => {
-        setLessons(json.data || []);
+        if (json.success) {
+          setLessons(json.data || []);
+        } else {
+          setError(json.error || 'Failed to load lessons');
+        }
+      })
+      .catch((err) => {
+        console.error('Error fetching free lessons:', err);
+        setError('Failed to load lessons');
       })
       .finally(() => setLoading(false));
   }, []);
 
   return (
     <section className="py-8 md:py-40 px-4 md:px-20 bg-alt2">
-      <h2 className="text-5xl md:text-7xl font-bold text-primary text-center mb-16">
+      <h2 className="text-5xl md:text-8xl font-bold text-primary text-center mb-20">
         Explore Free Lessons
       </h2>
-      <div className="max-w-6xl mx-auto">
+      <div className="relative max-w-6xl mx-auto">
         {loading ? (
           <div className="text-center text-gray-500 py-20">Loading...</div>
+        ) : error ? (
+          <div className="text-center text-red-500 py-20">{error}</div>
         ) : lessons.length === 0 ? (
           <div className="text-center text-gray-500 py-20">No free lessons found.</div>
         ) : (
-          <Swiper
-            modules={[Pagination, Autoplay]} // ← Tambah Autoplay di sini
-            pagination={{
-              clickable: true,
-              renderBullet: (index, className) =>
-                `<span class="${className} custom-bullet"></span>`,
-            }}
-            slidesPerView={1}
-            className="w-full group"
-            speed={1000}
-            autoplay={{
-              delay: 7000,
-              disableOnInteraction: false,
-            }}
-            loop={true}
-          >
-            {lessons.map((lesson) => (
-              <SwiperSlide key={lesson.id}>
-                <div className="grid md:grid-cols-2 gap-10 items-end">
-                  {/* Image */}
-                  <div className="relative w-full aspect-[16/9] rounded-lg overflow-hidden">
-                    <Image
-                      src={lesson.imageUrl || "/landing-page/explore-lesson.jpg"}
-                      alt={lesson.title}
-                      fill
-                      className="object-cover rounded-lg"
-                    />
+          <>
+            {/* Navigation arrows */}
+            {/* Navigation arrows */}
+            <div className="swiper-button-prev-custom absolute -left-20 top-1/2 -translate-y-1/2 z-10 
+  text-primary h-55 w-16 flex items-center justify-center cursor-pointer">
+              <ChevronLeft size={64} strokeWidth={2} />
+            </div>
+
+            <div className="swiper-button-next-custom absolute -right-20 top-1/2 -translate-y-1/2 z-10 
+  text-primary h-55 w-16 flex items-center justify-center cursor-pointer">
+              <ChevronRight size={64} strokeWidth={2} />
+            </div>
+
+
+            <Swiper
+              modules={[Autoplay, Navigation]}
+              slidesPerView={1}
+              speed={1000}
+              autoplay={{ delay: 7000, disableOnInteraction: false }}
+              loop={true}
+              navigation={{
+                prevEl: '.swiper-button-prev-custom',
+                nextEl: '.swiper-button-next-custom',
+              }}
+              className="w-full group"
+            >
+              {lessons.map((lesson) => (
+                <SwiperSlide key={lesson.id}>
+                  <div className="grid md:grid-cols-2 gap-10 items-end">
+                    <div className="relative w-full aspect-[16/9] overflow-hidden">
+                      <Image
+                        src="/landing-page/explore-lesson.jpg"
+                        alt="Free lesson"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="flex flex-col items-start justify-end">
+                      <h3 className="text-3xl md:text-5xl font-bold text-primary tracking-wide mb-4 leading-snug">
+                        {lesson.title}
+                      </h3>
+                      <p className="text-lg text-text mb-6 max-w-md">{lesson.description}</p>
+                      <Link
+                        href={lesson.url}
+                        className="text-xl py-2 text-primary font-semibold rounded hover:underline"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Explore Free Lessons &rarr;
+                      </Link>
+                    </div>
                   </div>
-                  {/* Content */}
-                  <div className="flex flex-col items-start justify-end">
-                    <h3 className="text-3xl md:text-4xl font-bold text-primary tracking-wide mb-4 bottom-0">
-                      {lesson.title}
-                    </h3>
-                    <p className="text-lg text-text mb-6">
-                      {lesson.description}
-                    </p>
-                    <Link
-                      href={`/lessons/${lesson.id}`}
-                      className="py-2 text-primary font-semibold rounded hover:underline"
-                    >
-                      Explore Free Lessons &rarr;
-                    </Link>
-                  </div>
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </>
         )}
-        <style jsx global>{`
-          .swiper-pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 0.2rem;
-            margin-top: 2rem;
-            position: static;
-          }
-          .custom-bullet {
-            display: inline-block;
-            width: 20px;
-            height: 3px;
-            border-radius: 9999px;
-            background: #bbb;
-            opacity: 0.5;
-            transition: background 0.2s, opacity 0.2s;
-          }
-          .swiper-pagination-bullet-active.custom-bullet {
-            background: #346046;
-            opacity: 1;
-          }
-        `}</style>
       </div>
     </section>
   );

@@ -25,26 +25,20 @@ type ResourceCardProps = {
 };
 
 function getSafeImageSrc(imageUrl?: string | null): string {
-    const defaultImage = 'https://via.placeholder.com/400x300/f3f4f6/9ca3af?text=No+Image';
+    const defaultImage = 'https://res.cloudinary.com/dla5fna8n/image/upload/v1753368277/course_u3alrf.jpg';
 
-    // Return default if no imageUrl provided
     if (!imageUrl) return defaultImage;
 
-    // Return default if imageUrl is empty string or only whitespace
     if (typeof imageUrl === 'string' && imageUrl.trim() === '') return defaultImage;
 
-    // Return the imageUrl if it seems valid
     return imageUrl;
 }
 
-// Utility function to strip HTML and truncate text
 function getCleanDescription(htmlString?: string, maxLength: number = 100): string {
     if (!htmlString) return '';
 
-    // Remove HTML tags
     const cleanText = htmlString.replace(/<[^>]*>/g, '');
 
-    // Truncate if too long
     if (cleanText.length > maxLength) {
         return cleanText.substring(0, maxLength) + '...';
     }
@@ -63,62 +57,52 @@ function ResourceCard({
     badgeColor = "bg-green-active",
 }: ResourceCardProps) {
     const [imageSrc, setImageSrc] = useState<string>(getSafeImageSrc(img));
-    const [imageError, setImageError] = useState(false);
 
-    // Update image source when img prop changes
     useEffect(() => {
         setImageSrc(getSafeImageSrc(img));
-        setImageError(false);
     }, [img]);
-
-    const handleImageError = () => {
-        if (!imageError) {
-            console.warn(`Image failed to load for resource ${id}: ${img}`);
-            setImageSrc('https://via.placeholder.com/400x300/f3f4f6/9ca3af?text=No+Image');
-            setImageError(true);
-        }
-    };
-
 
     return (
         <Link href={`/lessons/${id}`} className="space-y-2 w-full max-w-[340px]">
             <div className="w-full relative rounded-lg overflow-hidden aspect-3/2">
-                {imageSrc ? (
+                {img && img.trim() !== '' ? (
                     <Image
                         src={imageSrc}
                         alt={title || 'Resource image'}
                         fill
                         className="object-cover"
-                        onError={handleImageError}
-                        onLoad={() => console.log(`Image loaded successfully: ${imageSrc}`)}
                     />
                 ) : (
-                    // Fallback div jika tidak ada image sama sekali
-                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
                         <span className="text-gray-500 text-sm">No Image</span>
                     </div>
                 )}
+
                 {badge && (
                     <span className={`absolute top-0 left-0 text-white text-xs font-semibold px-4 py-2 rounded ${badgeColor}`}>
                         {badge}
                     </span>
                 )}
             </div>
-            <div className="flex flex-wrap gap-1 mb-1">
+
+
+            <div className="flex flex-wrap gap-1 mb-2 mt-5">
                 {tags.length > 0 && (
-                    <span className="text-xs text-tag font-medium">
+                    <span className="text-sm text-tag font-normals">
                         {tags.join(', ')}
                     </span>
                 )}
             </div>
-            <h4 className="text-base font-bold text-primary uppercase">{title}</h4>
-            <p className="text-xs text-text">{subtitle}</p>
+            <h4 className="text-xl font-bold text-primary uppercase leading-relaxed">{title}</h4>
+            <p className="text-xs text-text mt-3">{subtitle}</p>
+
         </Link>
     );
 }
 
 export default function FeaturedResourcesSection() {
-    const [featured, setFeatured] = useState<Resource[]>([]);
+    const [featured, setFeatured] = useState<(Resource & { source: 'best' | 'new' })[]>([]);
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -136,18 +120,22 @@ export default function FeaturedResourcesSection() {
 
                 const json = await response.json();
 
-                if (json.status === 'success' && Array.isArray(json.data)) {
-                    // Filter dan validate data sebelum set state
-                    const validResources = json.data
-                        .filter((item: Resource) =>
-                            item &&
-                            item.id &&
-                            item.title &&
-                            item.title.trim() !== ''
-                        )
-                        .slice(0, 2); // Ambil 2 item pertama
+                if (
+                    json.status === 'success' &&
+                    json.data &&
+                    Array.isArray(json.data.bestSellers) &&
+                    Array.isArray(json.data.newLessons)
+                ) {
+                    const best = json.data.bestSellers?.[0];
+                    const newest = json.data.newLessons?.[0];
 
-                    setFeatured(validResources);
+                    const combined = [
+                        best ? { ...best, source: 'best' } : null,
+                        newest ? { ...newest, source: 'new' } : null,
+                    ].filter(Boolean) as (Resource & { source: 'best' | 'new' })[];
+
+                    setFeatured(combined);
+
                 } else {
                     console.warn('Invalid response format:', json);
                     setFeatured([]);
@@ -164,7 +152,6 @@ export default function FeaturedResourcesSection() {
         fetchFeatured();
     }, []);
 
-    // Loading state
     if (loading) {
         return (
             <section className="py-8 md:py-40 px-4 md:px-20 bg-white">
@@ -175,7 +162,6 @@ export default function FeaturedResourcesSection() {
                                 FEATURED <br /> RESOURCES
                             </h2>
                             <div className="flex gap-6 mt-auto mb-6 flex-wrap">
-                                {/* Loading skeletons */}
                                 {[1, 2].map((i) => (
                                     <div key={i} className="space-y-2 w-full max-w-[340px]">
                                         <div className="w-full aspect-3/2 bg-gray-200 rounded-lg animate-pulse"></div>
@@ -201,7 +187,6 @@ export default function FeaturedResourcesSection() {
         );
     }
 
-    // Error state
     if (error) {
         return (
             <section className="py-8 md:py-40 px-4 md:px-20 bg-white">
@@ -237,12 +222,11 @@ export default function FeaturedResourcesSection() {
         <section className="py-8 md:py-40 px-4 md:px-20 bg-white">
             <div className="mx-auto">
                 <div className="grid grid-cols-1 md:grid-cols-3 md:gap-8 items-stretch min-h-[520px]">
-                    {/* Kiri: Judul dan dua card di bawah */}
                     <div className='col-span-2 flex flex-col h-full'>
-                        <h2 className="text-4xl md:text-7xl font-bold text-primary mb-8 leading-normal">
+                        <h2 className="text-4xl md:text-7xl font-bold text-primary mb-30 leading-normal">
                             FEATURED <br /> RESOURCES
                         </h2>
-                        <div className="flex gap-6 mt-auto mb-6 flex-wrap">
+                        <div className="flex gap-12 mt-auto mb-6 flex-wrap">
                             {featured.length > 0 ? (
                                 featured.map((item) => (
                                     <ResourceCard
@@ -251,9 +235,9 @@ export default function FeaturedResourcesSection() {
                                         img={item.imageUrl}
                                         title={item.title}
                                         subtitle={getCleanDescription(item.description, 80)}
-                                        badge={item.type === 'LESSON' ? 'Lesson' : item.type === 'COURSE' ? 'Course' : undefined}
-                                        badgeColor={item.type === 'LESSON' ? 'bg-blue-500' : 'bg-green-500'}
-                                        tags={["11th - 12th", "Higher Education"]}
+                                        badge={item.source === 'best' ? 'Best Seller' : 'New Lesson'}
+                                        badgeColor={item.source === 'best' ? 'bg-orange-500' : 'bg-blue-600'}
+                                        tags={["11th - 12th", "Adult Education", "Higher Education"]}
                                     />
                                 ))
                             ) : (
@@ -264,17 +248,19 @@ export default function FeaturedResourcesSection() {
                         </div>
                     </div>
 
-                    {/* Kanan: Gambar besar */}
                     <div className="flex justify-center">
-                        <div className="w-full max-w-full md:max-w-md aspect-[3/4] relative items-center">
-                            <Image
-                                src="/landing-page/cover-featured.jpg"
-                                alt="Featured Resources Cover"
-                                fill
-                                className="object-cover"
-                            />
+                        <div className="w-full max-w-full md:max-w-md">
+                            <div className="aspect-[2/3] relative w-full">
+                                <Image
+                                    src="/landing-page/cover-featured.jpg"
+                                    alt="Featured Resources Cover"
+                                    fill
+                                    className="object-cover "
+                                />
+                            </div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </section>

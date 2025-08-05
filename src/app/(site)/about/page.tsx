@@ -56,14 +56,14 @@ export default function AboutPage() {
             </section>
 
             {/* Meet the Team */}
-            <section className="bg-[#EFE9E9] py-16">
+            <section className="bg-[#EFE9E9] py-25">
                 <div className="max-w-7xl mx-auto px-4">
                     <h2 className="text-7xl font-bold text-[#363F36] mb-12">MEET THE TEAM</h2>
 
                     {/* Abby */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start mb-16">
                         <div className="flex flex-col items-start">
-                            <div className="relative w-full h-150 overflow-hidden mb-2">
+                            <div className="relative w-full h-150 overflow-hidden mb-4">
                                 <Image
                                     src="/about/abby.jpg"
                                     alt="Abby MacPhail"
@@ -71,7 +71,7 @@ export default function AboutPage() {
                                     className="object-cover "
                                 />
                             </div>
-                            <h3 className="text-3xl font-bold text-[#363F36] w-full text-left ">ABBY MACPHAIL</h3>
+                            <h3 className="text-3xl font-bold text-[#363F36] w-full text-left">ABBY MACPHAIL</h3>
                         </div>
                         <div className="space-y-4 text-[#8E8E8E] text-base leading-relaxed">
                             <p>

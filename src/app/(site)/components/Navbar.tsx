@@ -51,23 +51,9 @@ export default function Navbar() {
         </div>
         {/* Right: Search & Cart */}
         <div className="flex items-center">
-          {/* <div className="relative mr-4">
-            <input
-              type="text"
-              placeholder="Search"
-              className="pl-10 pr-8 py-2 rounded-md border border-gray-300 text-sm text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400"
-            />
-            <Image
-              src={search_icon}
-              alt="Search"
-              width={16}
-              height={16}
-              className="absolute left-3 top-2.5 opacity-70"
-            />
-          </div> */}
           <ProductSearchBar />
           {/* Cart Button with Relative Positioning */}
-          <div className="relative">
+          <div className="relative ml-4">
             <button
               onClick={() => setCartOpen(!cartOpen)}
               className="focus:outline-none p-2 hover:bg-gray-100 rounded-lg transition-colors"

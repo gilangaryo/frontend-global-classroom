@@ -19,7 +19,7 @@ import type {
     Course,
     Stats,
     TabItem
-} from './types/dashboard';
+} from '../../../types/dashboard';
 
 export default function DashboardPage() {
     const router = useRouter();

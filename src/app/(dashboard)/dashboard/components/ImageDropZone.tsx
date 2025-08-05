@@ -7,37 +7,46 @@ interface ImageDropZoneProps {
     currentImageUrl?: string;
 }
 
-export default function ImageDropZone({ onImageUpload, currentImageUrl }: ImageDropZoneProps) {
+export default function ImageDropZone({
+    onImageUpload,
+    currentImageUrl,
+}: ImageDropZoneProps) {
     const [dragActive, setDragActive] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [imageError, setImageError] = useState(false);
     const [localPreview, setLocalPreview] = useState<string | null>(null);
+    const [debugInfo, setDebugInfo] = useState<string>('');
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         setImageError(false);
-        if (currentImageUrl) setLocalPreview(null);
+        if (currentImageUrl) {
+            setLocalPreview(null);
+        }
     }, [currentImageUrl]);
 
     const handleDrag = (e: React.DragEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
-        else if (e.type === "dragleave") setDragActive(false);
+        if (e.type === 'dragenter' || e.type === 'dragover') {
+            setDragActive(true);
+        } else {
+            setDragActive(false);
+        }
     };
 
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault();
         e.stopPropagation();
         setDragActive(false);
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        if (e.dataTransfer.files?.[0]) {
             handleFile(e.dataTransfer.files[0]);
         }
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
-        if (e.target.files && e.target.files[0]) {
+        if (e.target.files?.[0]) {
             handleFile(e.target.files[0]);
         }
     };
@@ -47,53 +56,49 @@ export default function ImageDropZone({ onImageUpload, currentImageUrl }: ImageD
             alert('Please upload an image file');
             return;
         }
-        if (file.size > 5 * 1024 * 1024) {
-            alert('File size should be less than 5MB');
+        if (file.size > 50 * 1024 * 1024) { // 50MB sesuai server
+            alert('File size should be less than 50MB');
             return;
         }
 
+        // Show local preview immediately
         const reader = new FileReader();
-        reader.onload = (e) => {
-            setLocalPreview(e.target?.result as string);
+        reader.onload = () => {
+            setLocalPreview(reader.result as string);
         };
         reader.readAsDataURL(file);
 
         setUploading(true);
         setImageError(false);
+        setDebugInfo('Uploading to server...');
 
         try {
             const formData = new FormData();
             formData.append('file', file);
-            const token = localStorage.getItem("token");
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/upload`, {
+
+            const res = await fetch('https://api.gilangaryo.site/upload', {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` },
                 body: formData,
             });
 
-            let result;
-            try {
-                result = await response.json();
-            } catch {
-                setImageError(true);
-                alert("Upload failed. Invalid server response.");
-                return;
+            const result = await res.json();
+
+            if (res.ok && result.success && result.file?.url) {
+                const serverUrl = result.file.url;
+
+                setLocalPreview(null);
+                onImageUpload(serverUrl);
+                setDebugInfo(`✅ Upload successful: ${result.file.filename}`);
+            } else {
+                throw new Error(result.error || result.message || 'Upload failed');
             }
 
-            if (response.ok && result.status === 'success') {
-                console.log('Upload success, URL:', result.url);
-                const proxyUrl = result.url.replace(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/uploads`, '/api/uploads');
-                console.log('Proxy URL:', proxyUrl);
-                setLocalPreview(null);
-                onImageUpload(proxyUrl);
-                console.log('Full result:', result);
-            } else {
-                alert(result.message || 'Upload failed. Please try again.');
-                setImageError(true);
-            }
-        } catch {
-            alert('Upload failed. Please check your connection and try again.');
-            setImageError(true);
+
+        } catch (err: unknown) {
+            console.error('Upload error:', err);
+            const message = err instanceof Error ? err.message : String(err);
+            setDebugInfo(`❌ Upload failed: ${message}`);
+            setLocalPreview(null);
         } finally {
             setUploading(false);
         }
@@ -103,34 +108,30 @@ export default function ImageDropZone({ onImageUpload, currentImageUrl }: ImageD
 
     const removeImage = (e: React.MouseEvent) => {
         e.stopPropagation();
-        setImageError(false);
         setLocalPreview(null);
+        setImageError(false);
+        setDebugInfo('Image removed');
         onImageUpload('');
     };
 
-    const handleImageError = () => {
-        console.log('Image failed to load');
-        setImageError(true);
-    };
-
-    // Show preview: either localPreview (before upload), or currentImageUrl (after upload)
-    const previewUrl = localPreview || (currentImageUrl && !imageError ? currentImageUrl : null);
-
-    console.log('Debug preview:', {
-        localPreview,
-        currentImageUrl,
-        imageError,
-        previewUrl
-    });
+    const srcUrl = localPreview || currentImageUrl;
 
     return (
         <div className="w-full">
+            {/* Debug panel */}
+            {debugInfo && (
+                <div className="mb-2 p-2 bg-[var(--color-alt2)] rounded text-xs text-[var(--color-text)] font-mono">
+                    Debug: {debugInfo}
+                </div>
+            )}
+
             <div
-                className={`relative border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
-                    ${dragActive ? 'border-sky-400 bg-sky-50'
-                        : previewUrl ? 'border-gray-300 bg-gray-50'
-                            : 'border-gray-300 hover:border-gray-400'
-                    } ${uploading ? 'pointer-events-none opacity-50' : ''}`}
+                className={`
+          relative border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
+          ${dragActive ? 'border-[var(--color-primary)] bg-[var(--color-alt2)]' : ''}
+          ${srcUrl ? 'border-[var(--color-secondary)] bg-[var(--color-alt2)]' : 'hover:border-[var(--color-secondary)]'}
+          ${uploading ? 'pointer-events-none opacity-50' : ''}
+        `}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
@@ -140,37 +141,47 @@ export default function ImageDropZone({ onImageUpload, currentImageUrl }: ImageD
                 <input
                     ref={inputRef}
                     type="file"
-                    className="hidden"
                     accept="image/*"
+                    className="hidden"
                     onChange={handleChange}
                 />
 
-                {previewUrl ? (
+                {srcUrl ? (
                     <div className="relative group min-h-[200px] flex items-center justify-center">
-                        {/* Coba gunakan img tag biasa dulu untuk testing */}
                         <Image
-                            src={previewUrl}
+                            src={srcUrl}
                             alt="Uploaded preview"
                             width={400}
                             height={240}
-                            className="w-full h-full max-h-[240px] object-contain rounded-lg bg-white"
-                            onError={handleImageError}
-                            onLoad={() => console.log('Image loaded successfully')}
-                            unoptimized={true}
+                            unoptimized
+                            className="w-full h-full max-h-[240px] object-contain rounded-lg bg-[var(--color-white)]"
+                            onError={(e) => {
+                                const failed = (e.currentTarget as HTMLImageElement).src;
+                                console.error('Image load failed:', failed);
+                                setImageError(true);
+                                setDebugInfo(`❌ Load failed`);
+                            }}
+                            onLoad={() => {
+                                setImageError(false);
+                                setDebugInfo(`✅ Image loaded successfully`);
+                            }}
                         />
-                        <div className="absolute inset-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg flex items-center justify-center">
+                        <div className="absolute inset-0 group-hover:bg-black group-hover:bg-opacity-20 transition-all duration-200 rounded-lg flex items-center justify-center">
                             <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-2">
                                 <button
                                     type="button"
-                                    onClick={(e) => { e.stopPropagation(); onButtonClick(); }}
-                                    className="bg-white text-gray-700 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 transition-colors"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onButtonClick();
+                                    }}
+                                    className="bg-white text-gray-700 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 transition-colors shadow-lg"
                                 >
                                     Change
                                 </button>
                                 <button
                                     type="button"
                                     onClick={removeImage}
-                                    className="bg-red-500 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-red-600 transition-colors"
+                                    className="bg-red-500 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-red-600 transition-colors shadow-lg"
                                 >
                                     Remove
                                 </button>
@@ -181,25 +192,46 @@ export default function ImageDropZone({ onImageUpload, currentImageUrl }: ImageD
                     <div className="space-y-4 min-h-[200px] flex flex-col justify-center">
                         {uploading ? (
                             <div className="flex flex-col items-center">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-500"></div>
-                                <p className="mt-2 text-sm text-gray-600">Uploading to server...</p>
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]"></div>
+                                <p className="mt-2 text-sm text-[var(--color-text)]">
+                                    Uploading to server...
+                                </p>
                             </div>
                         ) : (
                             <>
-                                <div className="mx-auto w-16 h-16 text-gray-400">
-                                    <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 48 48">
-                                        <path d="M24 36V20M24 20l-6 6M24 20l6 6" stroke="#8E8E8E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                        <path d="M8 38a10 10 0 0 1 2-19.8A12 12 0 0 1 34.6 9.8 10 10 0 0 1 40 38H8Z" stroke="#bbb" strokeWidth="2" strokeLinecap="round" />
+                                <div className="mx-auto w-16 h-16 text-[var(--color-tertiary)]">
+                                    <svg
+                                        className="w-full h-full"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 48 48"
+                                    >
+                                        <path
+                                            d="M24 36V20M24 20l-6 6M24 20l6 6"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        />
+                                        <path
+                                            d="M8 38a10 10 0 0 1 2-19.8A12 12 0 0 1 34.6 9.8 10 10 0 0 1 40 38H8Z"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        />
                                     </svg>
                                 </div>
                                 <div>
-                                    <p className="text-lg font-medium text-[#363F36]">Click or Drop image</p>
-                                    <p className="text-sm text-[#8E8E8E] mt-1">
-                                        PNG, JPG, GIF up to 5MB
+                                    <p className="text-lg font-medium text-[var(--color-primary)]">
+                                        Click or Drop image
+                                    </p>
+                                    <p className="text-sm text-[var(--color-text)] mt-1">
+                                        PNG, JPG, GIF up to 50MB
                                     </p>
                                     {imageError && (
                                         <p className="text-xs text-red-500 mt-2">
-                                            Previous image failed to load. Please try uploading again.
+                                            Previous image failed to load. Please try again.
                                         </p>
                                     )}
                                 </div>

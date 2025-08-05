@@ -20,7 +20,7 @@ export default function LessonCard({
     const pdfUrl = lesson.previewUrl || "https://res.cloudinary.com/dla5fna8n/image/upload/v1753374352/data_desqhr.pdf";
 
     return (
-        <div className="rounded-lg overflow-hidden flex flex-col bg-white transition shadow-sm hover:shadow-md">
+        <div className="rounded-lg overflow-hidden flex flex-col bg-white transition">
             <Link href={`/lessons/${lesson.id}`}>
                 <div className="relative h-55 w-full bg-[#EFE9E9] cursor-pointer">
                     <Image

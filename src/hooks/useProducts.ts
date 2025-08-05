@@ -41,7 +41,7 @@ export interface CreateProductData {
     imageUrl?: string;
     parentId?: string;
     ProductType: ProductType;
-    tags?: string[]; // Added for lesson support
+    tags?: string[];
 }
 
 export interface UpdateCourseData extends Partial<CreateCourseData> {
@@ -52,7 +52,6 @@ export interface UpdateProductData extends Partial<CreateProductData> {
     isActive?: boolean;
 }
 
-// Generic hook untuk fetch products berdasarkan type
 export const useProducts = (options?: { type?: ProductType; parentId?: string }) => {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
@@ -102,17 +101,14 @@ export const useProducts = (options?: { type?: ProductType; parentId?: string })
     };
 };
 
-// Hook khusus untuk Courses (backward compatibility)
 export const useCourses = () => {
     return useProducts({ type: 'COURSE' });
 };
 
-// Hook khusus untuk Units berdasarkan course
 export const useUnits = (courseId?: string) => {
     return useProducts({ type: 'UNIT', parentId: courseId });
 };
 
-// Hook untuk single product
 export const useProduct = (id: string) => {
     const [product, setProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(true);
@@ -147,12 +143,10 @@ export const useProduct = (id: string) => {
     return { product, loading, error };
 };
 
-// Hook untuk single course (backward compatibility)
 export const useCourse = (id: string) => {
     return useProduct(id);
 };
 
-// Hook untuk Course CRUD operations
 export const useCourseActions = () => {
     const [loading, setLoading] = useState(false);
 
@@ -168,7 +162,6 @@ export const useCourseActions = () => {
         try {
             setLoading(true);
 
-            // Transform ProductType to type for backend compatibility
             const { ProductType, ...requestData } = data;
             const finalData = {
                 ...requestData,
@@ -288,7 +281,6 @@ export const useProductActions = () => {
         try {
             setLoading(true);
 
-            // Transform ProductType to type for backend compatibility
             const { ProductType, ...requestData } = data;
             const finalData = {
                 ...requestData,
@@ -396,7 +388,6 @@ export const useProductActions = () => {
     };
 };
 
-// Hook khusus untuk Unit operations (lebih specific)
 export const useUnitActions = () => {
     const productActions = useProductActions();
 

@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { LogOut, ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import useAuthGuard from '@/hooks/useAuthGuard'
+import useAuthGuard from '../../../hooks/useAuthGuard'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const [collapsed, setCollapsed] = useState(false)

@@ -1,7 +1,7 @@
 // hooks/useRevenueData.ts
 import { useState, useEffect } from 'react';
-import { dashboardApi, ApiError } from '../../../utils/api';
-import type { RevenueData, MonthlyRevenue, TopProduct } from '../../../utils/api';
+import { dashboardApi, ApiError } from '../app/utils/api';
+import type { RevenueData, MonthlyRevenue, TopProduct } from '../app/utils/api';
 
 export function useRevenueOverview() {
     const [revenueData, setRevenueData] = useState<RevenueData | null>(null);

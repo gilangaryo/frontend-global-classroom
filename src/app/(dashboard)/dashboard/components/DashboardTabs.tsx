@@ -8,6 +8,7 @@ const tabs = [
     { label: 'Add Unit', href: '/dashboard/course-manage/unit' },
     // { label: 'Add Sub‑Unit', href: '/dashboard/course-manage/sub-unit' },
     { label: 'Add Lesson', href: '/dashboard/course-manage/lesson' },
+    { label: 'Add FreeLesson', href: '/dashboard/course-manage/free-lesson' },
 ];
 
 export default function DashboardTabs() {

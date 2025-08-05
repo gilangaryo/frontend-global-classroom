@@ -7,6 +7,7 @@ interface Course {
     title: string;
     slug: string;
     description: string;
+    courseIncluded: string;
     imageUrl: string;
 }
 
@@ -79,12 +80,12 @@ export default async function CoursePage() {
 
                                 <div className="mb-6">
                                     <p className="font-medium text-[#4E3D34] mb-2">This course includes:</p>
-                                    <ul className="list-disc list-inside space-y-1 text-[#8E8E8E] text-sm">
-                                        <li>4–5 thematic units</li>
-                                        <li>25+ lessons and study guides</li>
-                                        <li>Editable Google Docs for every lesson</li>
-                                        <li>In-depth, recent, real-world case studies</li>
-                                    </ul>
+                                    <div
+                                        className="text-sm text-[#8E8E8E]"
+                                        dangerouslySetInnerHTML={{ __html: c.courseIncluded || '' }}
+                                    />
+
+
                                 </div>
 
                                 <Link

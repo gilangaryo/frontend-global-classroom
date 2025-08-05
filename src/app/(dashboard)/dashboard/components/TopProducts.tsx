@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { Trophy, Package, TrendingUp } from 'lucide-react';
-import { useTopProducts } from '../hooks/useRevenueData';
+import { useTopProducts } from '../../../../hooks/useRevenueData';
 import type { TopProduct } from '../../../utils/api';
 
 interface TopProductsProps {
