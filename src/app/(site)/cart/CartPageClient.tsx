@@ -36,10 +36,10 @@ export default function CartPageClient() {
     const total = cartItems.reduce((sum: number, item) => sum + item.price * item.quantity, 0);
 
     return (
-        <main className="max-w-11/12 mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <main className="max-w-11/12 mx-auto px-4 sm:px-6 lg:px-8 py-16 mb-20">
             <button
                 onClick={() => router.back()}
-                className="text-sm text-black flex items-center hover:underline mb-6"
+                className="text-sm text-black flex items-center hover:underline mb-8"
             >
                 <Image
                     src="/back-button.png"
@@ -72,9 +72,13 @@ export default function CartPageClient() {
                         cartItems.map((product) => (
                             <div key={product.id} className="flex items-start justify-between gap-4 border-b pb-4">
                                 <div className="flex flex-1 items-start space-x-4">
-                                    <button onClick={() => dispatch(removeFromCart(product.id))} className="p-2 rounded hover:bg-gray-200 mt-1">
-                                        <Image src="/trash.png" alt="Remove" width={28} height={28} />
+                                    <button
+                                        onClick={() => dispatch(removeFromCart(product.id))}
+                                        className="p-2 rounded hover:bg-gray-200 mt-1 shrink-0"
+                                    >
+                                        <Image src="/trash.png" alt="Remove" width={24} height={24} />
                                     </button>
+
                                     <Image src={product.image || '/placeholder.jpg'} alt={product.title} width={80} height={60} className="rounded object-cover" />
                                     <div className="flex-1">
                                         <p className="font-semibold">{product.title}</p>

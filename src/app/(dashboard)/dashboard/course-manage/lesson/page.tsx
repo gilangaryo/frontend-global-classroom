@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useProducts, useProductActions, CreateProductData } from '../../../../../hooks/useProducts';
 import Image from "next/image";
 import TiptapEditor from "../../components/TiptapEditor";
+import FileDropZone from "../../components/FileDropZone";
 interface CreateLessonData extends CreateProductData {
   tags?: string[];
 }
@@ -424,6 +425,42 @@ export default function AddLessonPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002-2v1h2a2 2 0 002 2h-1V5m-1 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </button>
+            </div>
+
+            {/* UPLOAD  */}
+            {/* Preview URL*/}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Upload Preview File
+              </label>
+              <FileDropZone
+                onFileUpload={(url) => updateField('previewUrl', url)}
+                label="Upload preview content"
+                acceptedTypes="video/*,application/pdf"
+              />
+              {formData.previewUrl && (
+                <p className="text-xs text-gray-500 mt-2 break-all">
+                  URL: {formData.previewUrl}
+                </p>
+              )}
+            </div>
+
+            {/* UPLOAD  */}
+            {/* Access Link After Purchase */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Upload Digital File
+              </label>
+              <FileDropZone
+                onFileUpload={(url) => updateField('digitalUrl', url)}
+                label="Upload access file"
+                acceptedTypes="application/zip,application/pdf"
+              />
+              {formData.digitalUrl && (
+                <p className="text-xs text-gray-500 mt-2 break-all">
+                  URL: {formData.digitalUrl}
+                </p>
+              )}
             </div>
           </div>
 

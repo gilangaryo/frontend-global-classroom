@@ -227,7 +227,12 @@ export default function AddCoursePage() {
               )}
             </div>
 
+
           </div>
+
+
+
+
 
           {/* Image Upload Section */}
           <div className="space-y-4">

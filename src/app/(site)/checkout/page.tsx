@@ -5,6 +5,9 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import Image from 'next/image';
 import Link from 'next/link';
+import Select from 'react-select';
+import countries from 'world-countries';
+
 
 export default function CheckoutPage() {
     const cartItems = useSelector((state: RootState) => state.cart.items);
@@ -17,6 +20,10 @@ export default function CheckoutPage() {
 
     const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
+    const countryOptions = countries.map((country) => ({
+        value: country.cca2,
+        label: country.name.common,
+    }));
     const handleCheckout = async () => {
         if (!form.email || !form.firstName || !form.lastName || !form.country) {
             return alert('Please fill all fields');
@@ -138,13 +145,42 @@ export default function CheckoutPage() {
                             className="w-full border rounded px-4 py-2"
                         />
                     </div>
-                    <input
+                    {/* <input
                         type="text"
                         placeholder="Country"
                         value={form.country}
                         onChange={(e) => setForm({ ...form, country: e.target.value })}
                         className="w-full border rounded px-4 py-2"
+                    /> */}
+                    <Select
+                        options={countryOptions}
+                        placeholder="Select Country"
+                        value={countryOptions.find((c) => c.label === form.country)}
+                        onChange={(selected) => {
+                            if (selected) {
+                                setForm({ ...form, country: selected.label });
+                            }
+                        }}
+                        className="text-black"
+                        classNamePrefix="react-select"
+                        styles={{
+                            control: (base) => ({
+                                ...base,
+                                borderColor: '#000000',
+                                boxShadow: 'none',
+                                '&:hover': {
+                                    borderColor: '#000000',
+                                },
+                                minHeight: '42px',
+                            }),
+                            placeholder: (base) => ({
+                                ...base,
+                                color: '#6B7280' // gray-500
+                            }),
+                        }}
                     />
+
+
                 </div>
             </div>
 

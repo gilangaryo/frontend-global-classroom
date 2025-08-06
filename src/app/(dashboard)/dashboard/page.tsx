@@ -144,116 +144,120 @@ export default function DashboardPage() {
                 {/* KPI Cards */}
                 <OverviewSection stats={stats} />
 
-                {/* Tabs */}
-                <TabNavigation tabs={tabs} activeKey={activeTab} onChange={setActiveTab} />
+                <div className='mt-4'>
 
-                {/* Overview Content */}
-                {activeTab === 'overview' && (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <RevenueOverview />
-                        <QuickStats stats={stats} />
-                    </div>
-                )}
+                    {/* Tabs */}
+                    <TabNavigation tabs={tabs} activeKey={activeTab} onChange={setActiveTab} />
 
-                {/* Users */}
-                {activeTab === 'users' && (
-                    <DataTable
-                        title="Recent Users"
-                        data={recentUsers}
-                        columns={[
-                            { header: 'User', renderCell: (u: User) => u.name || 'No Name' },
-                            { header: 'Email', renderCell: (u: User) => u.email },
-                            { header: 'Joined', renderCell: (u: User) => new Date(u.createdAt).toLocaleDateString('en-US') },
-                        ]}
-                        onViewAll={() => router.push('/dashboard/users')}
-                    />
-                )}
+                    {/* Overview Content */}
+                    {activeTab === 'overview' && (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <RevenueOverview />
+                            <QuickStats stats={stats} />
+                        </div>
+                    )}
 
-                {/* Payments */}
-                {activeTab === 'payments' && (
-                    <DataTable
-                        title="Recent Payments"
-                        data={recentPayments}
-                        columns={[
-                            { header: 'Payment ID', renderCell: (p: Payment) => `#${p.id.slice(0, 8)}` },
-                            {
-                                header: 'Customer',
-                                renderCell: (p: Payment) => {
-                                    if (p.customerFirstName && p.customerLastName) {
-                                        return `${p.customerFirstName} ${p.customerLastName}`;
+                    {/* Users */}
+                    {activeTab === 'users' && (
+                        <DataTable
+                            title="Recent Users"
+                            data={recentUsers}
+                            columns={[
+                                { header: 'User', renderCell: (u: User) => u.name || 'No Name' },
+                                { header: 'Email', renderCell: (u: User) => u.email },
+                                { header: 'Joined', renderCell: (u: User) => new Date(u.createdAt).toLocaleDateString('en-US') },
+                            ]}
+                            onViewAll={() => router.push('/dashboard/users')}
+                        />
+                    )}
+
+                    {/* Payments */}
+                    {activeTab === 'payments' && (
+                        <DataTable
+                            title="Recent Payments"
+                            data={recentPayments}
+                            columns={[
+                                { header: 'Payment ID', renderCell: (p: Payment) => `#${p.id}` },
+                                {
+                                    header: 'Customer',
+                                    renderCell: (p: Payment) => {
+                                        if (p.customerFirstName && p.customerLastName) {
+                                            return `${p.customerFirstName} ${p.customerLastName}`;
+                                        }
+                                        return p.customerEmail || 'N/A';
                                     }
-                                    return p.customerEmail || 'N/A';
-                                }
-                            },
-                            {
-                                header: 'Amount',
-                                renderCell: (p: Payment) => new Intl.NumberFormat('en-US', {
-                                    style: 'currency',
-                                    currency: 'USD'
-                                }).format(p.amount)
-                            },
-                            { header: 'Status', renderCell: (p: Payment) => <StatusBadge status={p.status} /> },
-                            {
-                                header: 'Date',
-                                renderCell: (p: Payment) => new Date(p.createdAt).toLocaleDateString('en-US')
-                            },
-                        ]}
-                    />
-                )}
+                                },
+                                {
+                                    header: 'Amount',
+                                    renderCell: (p: Payment) => new Intl.NumberFormat('en-US', {
+                                        style: 'currency',
+                                        currency: 'USD'
+                                    }).format(p.amount)
+                                },
+                                { header: 'Status', renderCell: (p: Payment) => <StatusBadge status={p.status} /> },
+                                {
+                                    header: 'Date',
+                                    renderCell: (p: Payment) => new Date(p.createdAt).toLocaleDateString('en-US')
+                                },
+                            ]}
+                        />
+                    )}
 
-                {/* Orders */}
-                {activeTab === 'orders' && (
-                    <DataTable
-                        title="Recent Orders"
-                        data={recentPurchases}
-                        columns={[
-                            { header: 'Order ID', renderCell: (o: Purchase) => `#${o.id.slice(0, 8)}` },
-                            { header: 'Product', renderCell: (o: Purchase) => o.productTitle || 'Unknown Product' },
-                            { header: 'Customer', renderCell: (o: Purchase) => o.userName || 'Unknown User' },
-                            { header: 'Type', renderCell: (o: Purchase) => o.itemType },
-                            {
-                                header: 'Price',
-                                renderCell: (o: Purchase) => new Intl.NumberFormat('en-US', {
-                                    style: 'currency',
-                                    currency: 'USD'
-                                }).format(o.price)
-                            },
-                            { header: 'Status', renderCell: (o: Purchase) => <StatusBadge status={o.status || 'PAID'} /> },
-                            {
-                                header: 'Date',
-                                renderCell: (o: Purchase) => new Date(o.createdAt).toLocaleDateString('en-US')
-                            },
-                        ]}
-                    />
-                )}
+                    {/* Orders */}
+                    {activeTab === 'orders' && (
+                        <DataTable
+                            title="Recent Orders"
+                            data={recentPurchases}
+                            columns={[
+                                { header: 'Order ID', renderCell: (o: Purchase) => `#${o.id.slice(0, 8)}` },
+                                { header: 'Product', renderCell: (o: Purchase) => o.productTitle || 'Unknown Product' },
+                                { header: 'Customer', renderCell: (o: Purchase) => o.userName || 'Unknown User' },
+                                { header: 'Type', renderCell: (o: Purchase) => o.itemType },
+                                {
+                                    header: 'Price',
+                                    renderCell: (o: Purchase) => new Intl.NumberFormat('en-US', {
+                                        style: 'currency',
+                                        currency: 'USD'
+                                    }).format(o.price)
+                                },
+                                { header: 'Status', renderCell: (o: Purchase) => <StatusBadge status={o.status || 'PAID'} /> },
+                                {
+                                    header: 'Date',
+                                    renderCell: (o: Purchase) => new Date(o.createdAt).toLocaleDateString('en-US')
+                                },
+                            ]}
+                        />
+                    )}
 
-                {/* Products */}
-                {activeTab === 'products' && (
-                    <DataTable
-                        title="Top Selling Courses"
-                        data={topCourses}
-                        columns={[
-                            { header: 'Course', renderCell: (c: Course) => c.title },
-                            { header: 'Type', renderCell: (c: Course) => c.type || 'COURSE' },
-                            {
-                                header: 'Unit Price',
-                                renderCell: (c: Course) => new Intl.NumberFormat('en-US', {
-                                    style: 'currency',
-                                    currency: 'USD'
-                                }).format(c.price)
-                            },
-                            { header: 'Sales', renderCell: (c: Course) => c.totalSales || 0 },
-                            {
-                                header: 'Total Revenue',
-                                renderCell: (c: Course) => new Intl.NumberFormat('en-US', {
-                                    style: 'currency',
-                                    currency: 'USD'
-                                }).format(c.totalRevenue || 0)
-                            },
-                        ]}
-                    />
-                )}
+                    {/* Products */}
+                    {activeTab === 'products' && (
+                        <DataTable
+                            title="Top Selling Courses"
+                            data={topCourses}
+                            columns={[
+                                { header: 'Course', renderCell: (c: Course) => c.title },
+                                { header: 'Type', renderCell: (c: Course) => c.type || 'COURSE' },
+                                {
+                                    header: 'Unit Price',
+                                    renderCell: (c: Course) => new Intl.NumberFormat('en-US', {
+                                        style: 'currency',
+                                        currency: 'USD'
+                                    }).format(c.price)
+                                },
+                                { header: 'Sales', renderCell: (c: Course) => c.totalSales || 0 },
+                                {
+                                    header: 'Total Revenue',
+                                    renderCell: (c: Course) => new Intl.NumberFormat('en-US', {
+                                        style: 'currency',
+                                        currency: 'USD'
+                                    }).format(c.totalRevenue || 0)
+                                },
+                            ]}
+                        />
+                    )}
+                </div>
             </div>
+
         </div>
     );
 }

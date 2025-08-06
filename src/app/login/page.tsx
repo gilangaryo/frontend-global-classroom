@@ -36,7 +36,6 @@ export default function LoginPage() {
             console.log('Response data:', data);
 
             if (res.ok && data.status === 'success' && data.data?.token && data.data?.refreshToken) {
-                // Store tokens and user info
                 localStorage.setItem('token', data.data.token);
                 localStorage.setItem('refreshToken', data.data.refreshToken);
                 localStorage.setItem('userId', data.data.user.id);
@@ -46,7 +45,6 @@ export default function LoginPage() {
 
                 console.log('Login successful, redirecting to dashboard');
 
-                // Redirect to dashboard
                 router.replace('/dashboard');
             } else {
                 console.error('Login failed:', data);

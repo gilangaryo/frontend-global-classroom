@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useProducts, useProductActions, CreateProductData } from '../../../../../hooks/useProducts';
 import Image from "next/image";
+import FileDropZone from "../../components/FileDropZone";
 
 interface FormData {
   title: string;
@@ -258,6 +259,42 @@ export default function AddUnitPage() {
                   </svg>
                 </button>
               </div>
+            </div>
+
+            {/* UPLOAD  */}
+            {/* Preview URL*/}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Upload Preview File
+              </label>
+              <FileDropZone
+                onFileUpload={(url) => updateField('previewUrl', url)}
+                label="Upload preview content"
+                acceptedTypes="video/*,application/pdf"
+              />
+              {formData.previewUrl && (
+                <p className="text-xs text-gray-500 mt-2 break-all">
+                  URL: {formData.previewUrl}
+                </p>
+              )}
+            </div>
+
+            {/* UPLOAD  */}
+            {/* Access Link After Purchase */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Upload Digital File
+              </label>
+              <FileDropZone
+                onFileUpload={(url) => updateField('digitalUrl', url)}
+                label="Upload access file"
+                acceptedTypes="application/zip,application/pdf"
+              />
+              {formData.digitalUrl && (
+                <p className="text-xs text-gray-500 mt-2 break-all">
+                  URL: {formData.digitalUrl}
+                </p>
+              )}
             </div>
           </div>
 

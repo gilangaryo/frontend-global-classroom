@@ -100,12 +100,8 @@ export default function LessonList({
                     tagsUrl += `&courseId=${course}`;
                 }
 
-                console.log('Fetching tags from:', tagsUrl);
-
                 const response = await fetch(tagsUrl);
                 const data = await response.json();
-
-                console.log('Tags response:', data);
 
                 if (data.status === 'success') {
                     setAllLessonTags(data.data.tags || []);
@@ -127,12 +123,6 @@ export default function LessonList({
     const filteredUnits = course
         ? initialUnits.filter(unit => String(unit.parentId) === String(course))
         : [];
-
-    useEffect(() => {
-        if (initialCourses.length > 0 && !course) {
-            setCourse(initialCourses[0].id);
-        }
-    }, [initialCourses, course]);
 
     useEffect(() => {
         setUnit('');
