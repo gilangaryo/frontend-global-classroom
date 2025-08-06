@@ -33,7 +33,8 @@ export default function AddLessonPage() {
   const [tagInput, setTagInput] = useState("");
 
   const suggestedTags = [
-    "9th", "10th", "11th", "12th",
+    "9th", "10th", "11th", "12th", "ESL,EFL and ELL",
+    "Online Courses", "Vocational Training",
     "Adult Education", "Higher Education",
     "AP", "IB", "IGCSE",
     "Beginner", "Intermediate", "Advanced",
@@ -41,7 +42,7 @@ export default function AddLessonPage() {
     "Critical Thinking", "Writing Practice",
     "Geography", "History", "Economics",
     "Mathematics", "Science", "English",
-    "Introduction", "Practical", "Theory"
+    "Introduction", "Practical", "Theory",
   ];
 
   const updateField = (field: string, value: string | number | boolean) => {
@@ -126,6 +127,13 @@ export default function AddLessonPage() {
 
   const isFormValid = formData.parentId !== "" && formData.title.trim().length >= 3;
 
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
   return (
     <div className="p-8">
       <header className="space-y-1">
@@ -228,9 +236,6 @@ export default function AddLessonPage() {
                 onChange={(value) => updateField('learningActivities', value)}
                 placeholder="Write the learning activities using formatting..."
               />
-              <p className="text-xs text-gray-500 mt-1">
-                You can format lists, bold, links, etc.
-              </p>
             </div>
 
             {/* Free Lesson Toggle */}
@@ -311,7 +316,7 @@ export default function AddLessonPage() {
               )}
 
               <div className="text-xs text-gray-500">
-                Tags: {tags.length}/10 | Will be stored in the tags JSON field
+                Tags: {tags.length}/10
               </div>
             </div>
 
@@ -335,9 +340,6 @@ export default function AddLessonPage() {
                     className="flex-1 px-4 py-2 text-sm placeholder:text-gray-500 outline-none border-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  Leave as 0 if this lesson should be free
-                </p>
               </div>
             )}
 
@@ -367,6 +369,21 @@ export default function AddLessonPage() {
               <p className="text-xs text-gray-500 mt-1">
                 Link to preview content or demo version for users to see before purchasing
               </p>
+              <div className="p-4 flex items-center text-sm text-gray-600 bg-gray-50 rounded-md mt-2">
+                <span className="flex-1 font-mono text-xs break-all">
+                  https://res.cloudinary.com/dla5fna8n/image/upload/v1754141514/PREVIEW_bzgt9b.pdf
+                </span>
+                <button
+                  type="button"
+                  className="ml-2 text-gray-500 hover:text-gray-700 focus:outline-none flex-shrink-0"
+                  onClick={() => copyToClipboard('https://res.cloudinary.com/dla5fna8n/image/upload/v1754141514/PREVIEW_bzgt9b.pdf')}
+                  title="Copy to clipboard"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002-2v1h2a2 2 0 002 2h-1V5m-1 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
             {/* Digital URL */}
@@ -391,6 +408,22 @@ export default function AddLessonPage() {
               {formData.digitalUrl.trim() && !isValidUrl(formData.digitalUrl.trim()) && (
                 <p className="text-xs text-red-500 mt-1">Please enter a valid digital URL</p>
               )}
+            </div>
+
+            <div className="p-4 flex items-center text-sm text-gray-600 bg-gray-50 rounded-md mt-2">
+              <span className="flex-1 font-mono text-xs break-all">
+                https://res.cloudinary.com/dla5fna8n/image/upload/v1754141513/ASLI_q4cik2.pdf
+              </span>
+              <button
+                type="button"
+                className="ml-2 text-gray-500 hover:text-gray-700 focus:outline-none flex-shrink-0"
+                onClick={() => copyToClipboard('https://res.cloudinary.com/dla5fna8n/image/upload/v1754141513/ASLI_q4cik2.pdf')}
+                title="Copy to clipboard"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002-2v1h2a2 2 0 002 2h-1V5m-1 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </button>
             </div>
           </div>
 

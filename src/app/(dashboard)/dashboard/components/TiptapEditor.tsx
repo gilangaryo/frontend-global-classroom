@@ -105,9 +105,9 @@ export default function TiptapEditor({ content, onChange, placeholder }: TiptapE
                         : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                         }`}
                 >
-                    • List
+                    •  List
                 </button>
-                <button
+                {/* <button
                     type="button"
                     onClick={() => editor.chain().focus().toggleOrderedList().run()}
                     className={`text-xs px-3 py-1.5 rounded transition-colors ${editor.isActive('orderedList')
@@ -116,7 +116,7 @@ export default function TiptapEditor({ content, onChange, placeholder }: TiptapE
                         }`}
                 >
                     1. List
-                </button>
+                </button> */}
             </div>
             <div className="p-3">
                 <EditorContent editor={editor} />

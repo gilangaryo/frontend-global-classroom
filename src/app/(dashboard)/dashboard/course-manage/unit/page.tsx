@@ -184,9 +184,6 @@ export default function AddUnitPage() {
                   className="flex-1 px-4 py-2 text-sm placeholder:text-gray-500 outline-none border-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Leave as 0 if this unit should be free
-              </p>
             </div>
 
             {/* Preview URL */}
