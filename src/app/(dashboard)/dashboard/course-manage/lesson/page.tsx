@@ -16,7 +16,6 @@ interface CreateLessonData extends CreateProductData {
 
 export default function AddLessonPage() {
   const router = useRouter();
-
   const { createProduct, loading } = useProductActions();
   const { products: units, loading: unitsLoading } = useProducts({ type: 'UNIT' });
 
@@ -40,43 +39,52 @@ export default function AddLessonPage() {
   };
 
   const validateForm = (): boolean => {
-    if (!formData.parentId) {
-      alert('Please select a unit!');
-      return false;
-    }
-
     if (!formData.title.trim()) {
       alert('Please enter a lesson title');
       return false;
     }
-
     if (formData.title.trim().length < 3) {
       alert('Title must be at least 3 characters long!');
       return false;
     }
 
+    // parentId is always required
+    if (!formData.parentId) {
+      alert('Please select a unit!');
+      return false;
+    }
+
+    if (formData.isFreeLesson) {
+      if (!formData.digitalUrl.trim()) {
+        alert('Please upload a digital PDF');
+        return false;
+      }
+      return true;
+    }
+
+    // rest of validations for paid lessons
     if (!formData.description.trim()) {
       alert('Please enter a lesson description');
       return false;
     }
-
     if (!formData.learningActivities.trim()) {
       alert('Please enter learning activities');
       return false;
     }
-
     if (!formData.studyGuideUrl.trim()) {
       alert('Please upload a study guide PDF');
       return false;
     }
-
     if (!formData.previewUrl.trim()) {
       alert('Please upload a preview PDF');
       return false;
     }
-
     if (!formData.digitalUrl.trim()) {
       alert('Please upload a digital PDF');
+      return false;
+    }
+    if (tags.length === 0) {
+      alert('Please add at least one tag');
       return false;
     }
 
@@ -84,23 +92,19 @@ export default function AddLessonPage() {
   };
 
   const handleSave = async () => {
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     try {
       const lessonData: CreateLessonData = {
         ...formData,
         ProductType: 'LESSON',
-        tags: tags,
+        tags: formData.isFreeLesson ? [] : tags,
       };
 
       const result = await createProduct(lessonData);
-
       if (result) {
         alert('Lesson created successfully!');
-
-        // Reset form
+        // reset
         setFormData({
           title: '',
           description: '',
@@ -114,7 +118,6 @@ export default function AddLessonPage() {
           learningActivities: '',
         });
         setTags([]);
-
         router.push('/dashboard/course-manage');
       }
     } catch (err) {
@@ -124,22 +127,23 @@ export default function AddLessonPage() {
   };
 
   const isFormValid =
-    !!formData.parentId &&
-    !!formData.title.trim() &&
     formData.title.trim().length >= 3 &&
-    !!formData.description.trim() &&
-    !!formData.learningActivities.trim() &&
-    !!formData.studyGuideUrl.trim() &&
-    !!formData.previewUrl.trim() &&
-    !!formData.digitalUrl.trim();
+    !!formData.parentId &&
+    (formData.isFreeLesson
+      ? !!formData.digitalUrl.trim()
+      : !!formData.description.trim() &&
+      !!formData.learningActivities.trim() &&
+      !!formData.studyGuideUrl.trim() &&
+      !!formData.previewUrl.trim() &&
+      !!formData.digitalUrl.trim() &&
+      tags.length > 0
+    );
 
   return (
     <div className="p-8">
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold">Lesson Management</h1>
-        <p className="text-sm text-gray-500">
-          Add a new lesson to your course content.
-        </p>
+        <p className="text-sm text-gray-500">Add a new lesson to your course content.</p>
       </header>
 
       <DashboardTabs />
@@ -150,8 +154,9 @@ export default function AddLessonPage() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
+          {/* LEFT COLUMN */}
           <div className="md:col-span-2 space-y-5">
-            {/* Unit Selection */}
+            {/* Always show Unit selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Select Unit <span className="text-red-500">*</span>
@@ -170,9 +175,7 @@ export default function AddLessonPage() {
                 >
                   <option value="">-- Select Unit --</option>
                   {units?.map((unit) => (
-                    <option key={unit.id} value={unit.id}>
-                      {unit.title}
-                    </option>
+                    <option key={unit.id} value={unit.id}>{unit.title}</option>
                   ))}
                 </select>
               )}
@@ -189,52 +192,51 @@ export default function AddLessonPage() {
                 value={formData.title}
                 onChange={(e) => updateField('title', e.target.value)}
                 className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
-                required
                 maxLength={255}
+                required
               />
-              <div className="flex justify-between items-center mt-1">
-                <div className="flex-1">
-                  {formData.title.trim().length > 0 && formData.title.trim().length < 3 && (
-                    <p className="text-xs text-red-500">Title must be at least 3 characters</p>
-                  )}
-
-                </div>
+              <div className="flex justify-between mt-1">
+                {formData.title.trim().length > 0 && formData.title.trim().length < 3 && (
+                  <p className="text-xs text-red-500">Title must be at least 3 characters</p>
+                )}
                 <p className="text-xs text-gray-500">{formData.title.length}/255</p>
               </div>
             </div>
 
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                rows={5}
-                placeholder="Describe what this lesson covers..."
-                value={formData.description}
-                onChange={(e) => updateField('description', e.target.value)}
-                className="w-full resize-none rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
-                required
-              />
-            </div>
-
-            {/* Learning Activities */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Learning Activities <span className="text-red-500">*</span>
-              </label>
-              <TiptapEditor
-                content={formData.learningActivities}
-                onChange={(value) => updateField('learningActivities', value)}
-                placeholder="Write the learning activities using formatting..."
-              />
-            </div>
+            {/* Description & Activities (paid lessons only) */}
+            {!formData.isFreeLesson && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    rows={5}
+                    placeholder="Describe what this lesson covers..."
+                    value={formData.description}
+                    onChange={(e) => updateField('description', e.target.value)}
+                    className="w-full resize-none rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Learning Activities <span className="text-red-500">*</span>
+                  </label>
+                  <TiptapEditor
+                    content={formData.learningActivities}
+                    onChange={(value) => updateField('learningActivities', value)}
+                    placeholder="Write the learning activities using formatting..."
+                  />
+                </div>
+              </>
+            )}
 
             {/* Free Lesson Toggle */}
             <div className="flex items-center space-x-3">
               <input
-                type="checkbox"
                 id="isFreeLesson"
+                type="checkbox"
                 checked={formData.isFreeLesson}
                 onChange={(e) => updateField('isFreeLesson', e.target.checked)}
                 className="h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded"
@@ -244,36 +246,31 @@ export default function AddLessonPage() {
               </label>
             </div>
 
-            {/* Tags Input */}
-            <TagsInput
-              tags={tags}
-              onTagsChange={setTags}
-              maxTags={10}
-              label="Tags"
-              placeholder="Type a tag and press Enter"
-              suggestedTags={[
-                "9th", "10th", "11th", "12th", "ESL,EFL and ELL",
-                "Online Courses", "Vocational Training",
-                "Adult Education", "Higher Education",
-                "AP", "IB", "IGCSE",
-                "Beginner", "Intermediate", "Advanced",
-                "Case Study", "Group Work", "Individual Work",
-                "Critical Thinking", "Writing Practice",
-                "Geography", "History", "Economics",
-                "Mathematics", "Science", "English",
-                "Introduction", "Practical", "Theory",
-              ]}
-              disabled={loading}
-            />
+            {/* Tags (paid lessons only) */}
+            {!formData.isFreeLesson && (
+              <TagsInput
+                tags={tags}
+                onTagsChange={setTags}
+                maxTags={10}
+                label="Tags"
+                placeholder="Type a tag and press Enter"
+                suggestedTags={[
+                  "9th", "10th", "11th", "12th", "ESL/EFL/ELL", "Online Courses", "Vocational Training",
+                  "Adult Education", "Higher Education", "AP", "IB", "IGCSE", "Beginner", "Intermediate",
+                  "Advanced", "Case Study", "Group Work", "Individual Work", "Critical Thinking",
+                  "Writing Practice", "Geography", "History", "Economics", "Mathematics", "Science",
+                  "English", "Introduction", "Practical", "Theory"
+                ]}
+                disabled={loading}
+              />
+            )}
 
-            {/* Price (only if not free lesson) */}
+            {/* Price (paid lessons only) */}
             {!formData.isFreeLesson && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Price
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Price</label>
                 <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
-                  <div className="flex-shrink-0 flex items-center justify-center bg-sky-500 px-4">
+                  <div className="flex items-center justify-center bg-sky-500 px-4">
                     <span className="text-white text-sm font-medium">$</span>
                   </div>
                   <input
@@ -290,42 +287,40 @@ export default function AddLessonPage() {
               </div>
             )}
 
-            {/* Study Guide PDF Upload */}
-            <div data-field="studyGuideUrl" className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Upload Study Guide PDF <span className="text-red-500">*</span>
-              </label>
-              <FileDropZone
-                label="Upload Study Guide PDF"
-                acceptedTypes="application/pdf"
-                onFileUpload={(url) => updateField('studyGuideUrl', url)}
-              />
-              {formData.studyGuideUrl && (
-                <p className="text-xs text-gray-500 mt-2 break-all">
-                  URL: {formData.studyGuideUrl}
-                </p>
-              )}
-            </div>
+            {/* Study Guide & Preview uploads (paid lessons only) */}
+            {!formData.isFreeLesson && (
+              <>
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Upload Study Guide PDF <span className="text-red-500">*</span>
+                  </label>
+                  <FileDropZone
+                    label="Upload Study Guide PDF"
+                    acceptedTypes="application/pdf"
+                    onFileUpload={(url) => updateField('studyGuideUrl', url)}
+                  />
+                  {formData.studyGuideUrl && (
+                    <p className="text-xs text-gray-500 mt-2 break-all">URL: {formData.studyGuideUrl}</p>
+                  )}
+                </div>
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Upload Preview PDF <span className="text-red-500">*</span>
+                  </label>
+                  <FileDropZone
+                    label="Upload Preview PDF"
+                    acceptedTypes="application/pdf"
+                    onFileUpload={(url) => updateField('previewUrl', url)}
+                  />
+                  {formData.previewUrl && (
+                    <p className="text-xs text-gray-500 mt-2 break-all">URL: {formData.previewUrl}</p>
+                  )}
+                </div>
+              </>
+            )}
 
-            {/* Preview PDF Upload */}
-            <div data-field="previewUrl" className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Upload Preview PDF <span className="text-red-500">*</span>
-              </label>
-              <FileDropZone
-                label="Upload Preview PDF"
-                acceptedTypes="application/pdf"
-                onFileUpload={(url) => updateField('previewUrl', url)}
-              />
-              {formData.previewUrl && (
-                <p className="text-xs text-gray-500 mt-2 break-all">
-                  URL: {formData.previewUrl}
-                </p>
-              )}
-            </div>
-
-            {/* Digital PDF Upload */}
-            <div data-field="digitalUrl" className="mb-6">
+            {/* Digital PDF (always) */}
+            <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Upload Digital PDF <span className="text-red-500">*</span>
               </label>
@@ -335,14 +330,12 @@ export default function AddLessonPage() {
                 onFileUpload={(url) => updateField('digitalUrl', url)}
               />
               {formData.digitalUrl && (
-                <p className="text-xs text-gray-500 mt-2 break-all">
-                  URL: {formData.digitalUrl}
-                </p>
+                <p className="text-xs text-gray-500 mt-2 break-all">URL: {formData.digitalUrl}</p>
               )}
             </div>
           </div>
 
-          {/* Image Upload */}
+          {/* RIGHT COLUMN: Image & Preview */}
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -358,7 +351,7 @@ export default function AddLessonPage() {
             </div>
 
             {/* Preview Card */}
-            {(formData.title || formData.imageUrl || tags.length > 0) && (
+            {(formData.title || formData.imageUrl || (!formData.isFreeLesson && tags.length > 0)) && (
               <div className="bg-gray-50 border rounded-lg p-4">
                 <h3 className="text-sm font-medium text-gray-700 mb-3">Preview:</h3>
                 <div className="bg-white rounded-lg border p-3 shadow-sm">
@@ -369,19 +362,14 @@ export default function AddLessonPage() {
                         alt="Lesson preview"
                         fill
                         className="object-cover rounded"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                        }}
+                        onError={(e) => (e.currentTarget.style.display = 'none')}
                       />
                     </div>
                   )}
-                  {tags.length > 0 && (
+                  {!formData.isFreeLesson && tags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2 mb-2">
-                      {tags.slice(0, 3).map((tag, index) => (
-                        <span key={index} className="px-2 py-1 text-xs bg-sky-100 text-sky-700 rounded">
-                          {tag}
-                        </span>
+                      {tags.slice(0, 3).map((t, i) => (
+                        <span key={i} className="px-2 py-1 text-xs bg-sky-100 text-sky-700 rounded">{t}</span>
                       ))}
                       {tags.length > 3 && (
                         <span className="px-2 py-1 text-xs bg-gray-100 text-gray-500 rounded">
@@ -393,49 +381,39 @@ export default function AddLessonPage() {
                   <h4 className="font-medium text-gray-900 text-sm">
                     {formData.title || 'Lesson Title'}
                   </h4>
-                  {!formData.isFreeLesson && formData.price > 0 && (
-                    <p className="text-sm text-green-600 font-medium mt-1">
-                      ${formData.price.toFixed(2)}
-                    </p>
-                  )}
-                  {formData.isFreeLesson && (
-                    <p className="text-sm text-blue-600 font-medium mt-1">
-                      Free Lesson
-                    </p>
-                  )}
-                  {formData.description && (
+                  {formData.isFreeLesson ? (
+                    <p className="text-sm text-blue-600 font-medium mt-1">Free Lesson</p>
+                  ) : formData.price > 0 ? (
+                    <p className="text-sm text-green-600 font-medium mt-1">${formData.price.toFixed(2)}</p>
+                  ) : null}
+                  {!formData.isFreeLesson && formData.description && (
                     <p className="text-xs text-gray-500 mt-2 line-clamp-2">
-                      {formData.description.replace(/<[^>]*>/g, '').substring(0, 80)}
+                      {formData.description.replace(/<[^>]*>/g, '').substring(0, 80)}{' '}
                       {formData.description.length > 80 && '...'}
                     </p>
                   )}
-
-                  {/* What’s Included Preview */}
-                  {formData.learningActivities.trim() && (
+                  {!formData.isFreeLesson && formData.learningActivities && (
                     <div
                       className="text-xs text-gray-500 mt-2 prose prose-sm max-w-none line-clamp-7"
                       dangerouslySetInnerHTML={{ __html: formData.learningActivities }}
                     />
                   )}
-
                 </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Form Actions */}
+        {/* ACTIONS */}
         <div className="flex justify-end gap-4 pt-6 border-t">
           <button
-            type="button"
-            className="rounded-md border border-gray-300 bg-white px-6 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={() => router.push('/dashboard/course-manage')}
             disabled={loading}
+            className="rounded-md border border-gray-300 bg-white px-6 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
           >
             Cancel
           </button>
           <button
-            type="button"
             onClick={handleSave}
             disabled={loading || !isFormValid}
             className={`rounded-md px-8 py-2 text-sm font-medium transition-colors ${loading || !isFormValid

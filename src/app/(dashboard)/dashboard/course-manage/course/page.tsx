@@ -17,6 +17,7 @@ interface CreateCourseData {
   digitalUrl: string;
   imageUrl: string;
   colorButton: string;
+  type: string;
 }
 
 export default function AddCoursePage() {
@@ -32,6 +33,7 @@ export default function AddCoursePage() {
     digitalUrl: '',
     imageUrl: '',
     colorButton: '#3E724A',
+    type: 'COURSE',
   });
 
   const updateField = (field: keyof CreateCourseData, value: string | number) => {
@@ -39,7 +41,7 @@ export default function AddCoursePage() {
   };
 
   const createCourse = async (data: CreateCourseData) => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/courses`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
