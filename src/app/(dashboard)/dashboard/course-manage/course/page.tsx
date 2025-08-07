@@ -1,112 +1,117 @@
 'use client';
 
-import DashboardTabs from "../../components/DashboardTabs";
-import ImageDropZone from "../../components/ImageDropZone";
+import DashboardTabs from '../../components/DashboardTabs';
 import TiptapEditor from '../../components/TiptapEditor';
+import FileDropZone from '../../components/FileDropZone';
+import ImageDropZone from '../../components/ImageDropZone';
+import ButtonColorPicker from '../../components/ButtonColorPicker';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useCourseActions, CreateCourseData } from '../../../../../hooks/useProducts';
-import FileDropZone from "../../components/FileDropZone";
-
-function isColorDark(hex: string): boolean {
-  const cleanHex = hex.replace('#', '');
-  const r = parseInt(cleanHex.slice(0, 2), 16);
-  const g = parseInt(cleanHex.slice(2, 4), 16);
-  const b = parseInt(cleanHex.slice(4, 6), 16);
-  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-  return brightness < 128;
-}
-
-interface FormData {
+import Image from 'next/image';
+interface CreateCourseData {
   title: string;
   description: string;
   courseIncluded: string;
   price: number;
-  digitalUrl: string;
   previewUrl: string;
+  digitalUrl: string;
   imageUrl: string;
   colorButton: string;
 }
 
-type FormField = keyof FormData;
-type FormValue = string | number;
-
 export default function AddCoursePage() {
   const router = useRouter();
-  const { createCourse, loading } = useCourseActions();
+  const [loading, setLoading] = useState(false);
 
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<CreateCourseData>({
     title: '',
     description: '',
     courseIncluded: '',
     price: 0,
-    digitalUrl: '',
     previewUrl: '',
+    digitalUrl: '',
     imageUrl: '',
     colorButton: '#3E724A',
   });
 
-  const updateField = (field: FormField, value: FormValue) => {
+  const updateField = (field: keyof CreateCourseData, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const createCourse = async (data: CreateCourseData) => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/courses`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || 'Failed to create course');
+    return result.data;
+  };
+
+
   const handleSave = async () => {
-    if (!formData.title.trim()) {
-      alert('Please enter a course title');
-      return;
-    }
+    // Validation
+    if (!formData.title.trim()) { alert('Title is required'); return; }
+    if (!formData.description.trim()) { alert('Description is required'); return; }
+    if (!formData.courseIncluded.trim()) { alert('What’s Included is required'); return; }
+    if (formData.price <= 0) { alert('Price must be greater than 0'); return; }
+    if (!formData.previewUrl.trim()) { alert('Preview file is required'); return; }
+    if (!formData.digitalUrl.trim()) { alert('Digital file is required'); return; }
+    if (!formData.imageUrl.trim()) { alert('Course image is required'); return; }
+    if (!/^#[0-9A-Fa-f]{6}$/.test(formData.colorButton)) { alert('Button color is invalid'); return; }
 
-    const courseData: CreateCourseData = {
-      ...formData,
-      ProductType: 'COURSE',
-    };
-
-    const result = await createCourse(courseData);
-
-    if (result) {
+    try {
+      setLoading(true);
+      await createCourse(formData);
       alert('Course created successfully!');
       router.push('/dashboard/course-manage');
+    } catch (err) {
+      console.error(err);
+      alert(err instanceof Error ? err.message : 'Failed to create course');
+    } finally {
+      setLoading(false);
     }
   };
 
+  const isFormValid =
+    formData.title.trim() &&
+    formData.description.trim() &&
+    formData.courseIncluded.trim() &&
+    formData.price > 0 &&
+    formData.previewUrl.trim() &&
+    formData.digitalUrl.trim() &&
+    formData.imageUrl.trim() &&
+    /^#[0-9A-Fa-f]{6}$/.test(formData.colorButton);
   return (
     <div className="p-8">
       <header className="space-y-1">
-        <div className="flex items-center gap-4 mb-4">
-          <button
-            onClick={() => router.push('/dashboard/course-manage')}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Course Management
-          </button>
-        </div>
         <h1 className="text-2xl font-semibold">Course Management</h1>
-        <p className="text-sm text-gray-500">
-          Add/Edit your course, unit, sub‑unit, and lesson.
-        </p>
+        <p className="text-sm text-gray-500">Add a new course.</p>
       </header>
 
       <DashboardTabs />
 
       <section className="mt-10 space-y-6">
-        <h2 className="text-lg font-semibold">Add Course</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Add Course</h2>
+        </div>
 
         <div className="grid gap-6 md:grid-cols-3">
           <div className="md:col-span-2 space-y-5">
-            {/* Course Title */}
+            {/* Title */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Course Title *
+                Course Title <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 placeholder="Enter course title"
                 value={formData.title}
-                onChange={(e) => updateField('title', e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
+                onChange={e => updateField('title', e.target.value)}
+                className={`w-full rounded-md border px-4 py-2.5 text-sm outline-none 
+                  focus:ring-2 focus:ring-sky-400 
+                  ${'border-gray-300'}`}
                 required
               />
             </div>
@@ -114,148 +119,162 @@ export default function AddCoursePage() {
             {/* Description */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Course Description
+                Description <span className="text-red-500">*</span>
               </label>
               <textarea
+                rows={6}
                 placeholder="Add course description..."
                 value={formData.description}
-                onChange={(e) => updateField('description', e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
-                rows={4}
+                onChange={e => updateField('description', e.target.value)}
+                className={`w-full rounded-md border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400 ${!formData.description.trim()
+                  ? 'border-gray-300 bg-gray-50'
+                  : 'border-gray-300'
+                  }`}
+                required
               />
             </div>
 
-            {/* Course Included */}
+            {/* What’s Included */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Whats Included in This Course
+                What’s Included <span className="text-red-500">*</span>
               </label>
-              <TiptapEditor
-                content={formData.courseIncluded}
-                onChange={(value) => updateField('courseIncluded', value)}
-                placeholder="List Course Included"
-              />
-            </div>
-
-            {/* Color Theme */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Button Color Theme
-              </label>
-              <div className="flex items-center gap-4 border border-gray-300 rounded-lg px-4 py-2 h-12">
-                <div className="w-6 h-6 rounded-full" style={{ backgroundColor: formData.colorButton }} />
-                <label className="text-sm text-gray-600 whitespace-nowrap">
-                  Change Color Template (for button)
-                </label>
-                <input
-                  type="color"
-                  value={formData.colorButton}
-                  onChange={(e) => updateField('colorButton', e.target.value)}
-                  className="ml-auto h-6 w-6 border-none cursor-pointer bg-transparent"
+              <div className="rounded-md bg-white">
+                <TiptapEditor
+                  content={formData.courseIncluded}
+                  onChange={value => updateField('courseIncluded', value)}
+                  placeholder="List what's included..."
                 />
-              </div>
-
-              {/* Live Button Preview */}
-              <div className="pt-2">
-                <label className="text-sm text-gray-600">Live Button Preview:</label>
-                <div className="mt-2">
-                  <button
-                    type="button"
-                    className={`mb-4 px-8 py-3 rounded-lg font-semibold hover:opacity-90 ${isColorDark(formData.colorButton) ? 'text-white' : 'text-black'
-                      }`}
-                    style={{ backgroundColor: formData.colorButton }}
-                  >
-                    Buy Now
-                  </button>
-                </div>
               </div>
             </div>
 
             {/* Price */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Course Price (USD)
+                Price <span className="text-red-500">*</span>
               </label>
-              <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
-                <div className="flex-shrink-0 flex items-center justify-center border-2 border-sky-500 bg-sky-100 px-4 m-2 rounded-md">
+              <div className={`flex h-12 overflow-hidden rounded-lg border focus-within:ring-2 ${formData.price <= 0
+                ? 'border-gray-300 focus-within:ring-sky-400'
+                : 'border-gray-300 focus-within:ring-sky-400'
+                }`}
+              >
+                <div className="flex items-center justify-center border-2 border-sky-500 bg-sky-100 px-4 m-2 rounded-md">
                   <span className="text-sky-500 text-sm font-bold">$</span>
                 </div>
                 <input
                   type="number"
-                  placeholder="0.00 (price for all units)"
-                  value={formData.price || ''}
-                  onChange={(e) => updateField('price', parseFloat(e.target.value) || 0)}
-                  className="flex-1 px-4 py-2 text-sm placeholder:text-gray-500 outline-none border-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  min="0"
-                  step="0.01"
+                  placeholder="0.00"
+                  value={formData.price === 0 ? '' : formData.price}
+                  onChange={e => updateField('price', parseFloat(e.target.value) || 0)}
+                  className="flex-1 px-4 py-2 text-sm placeholder:text-gray-500 outline-none border-none"
+                  min={0}
+                  step={0.01}
+                  required
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1">Set to 0 for free course</p>
             </div>
 
-            {/* Preview URL*/}
+            {/* Button Color */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Upload Preview File
+                Button Color <span className="text-red-500">*</span>
+              </label>
+              <ButtonColorPicker
+                value={formData.colorButton}
+                onChange={value => updateField('colorButton', value)}
+              />
+            </div>
+
+            {/* Preview File */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Upload Preview File <span className="text-red-500">*</span>
               </label>
               <FileDropZone
-                onFileUpload={(url) => updateField('previewUrl', url)}
-                label="Upload preview content"
+                label="Preview File"
+                onFileUpload={url => updateField('previewUrl', url)}
                 acceptedTypes="video/*,application/pdf"
               />
-              {formData.previewUrl && (
-                <p className="text-xs text-gray-500 mt-2 break-all">
-                  URL: {formData.previewUrl}
-                </p>
-              )}
             </div>
 
-            {/* Access Link After Purchase */}
+            {/* Digital File */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Upload Digital File
+                Upload Digital File <span className="text-red-500">*</span>
               </label>
               <FileDropZone
-                onFileUpload={(url) => updateField('digitalUrl', url)}
-                label="Upload access file"
+                label="Digital File"
+                onFileUpload={url => updateField('digitalUrl', url)}
                 acceptedTypes="application/zip,application/pdf"
               />
-              {formData.digitalUrl && (
-                <p className="text-xs text-gray-500 mt-2 break-all">
-                  URL: {formData.digitalUrl}
-                </p>
-              )}
             </div>
-
-
           </div>
 
-
-
-
-
-          {/* Image Upload Section */}
+          {/* Sidebar */}
           <div className="space-y-4">
+            {/* Course Image */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Course Image
+                Course Image <span className="text-red-500">*</span>
               </label>
               <ImageDropZone
                 currentImageUrl={formData.imageUrl}
-                onImageUpload={(url) => updateField('imageUrl', url)}
+                onImageUpload={url => updateField('imageUrl', url)}
               />
-              <p className="text-xs text-gray-500 mt-2">
-                Upload an image for your course. Recommended size: 800x600px
-              </p>
+              {!formData.imageUrl.trim() && <p className="text-xs text-red-500 mt-1">Image is required</p>}
             </div>
+
+
+
+            {/* Preview Card */}
+            {(formData.title || formData.imageUrl) && (
+              <div className="bg-gray-50 border rounded-lg p-4">
+                <h3 className="text-sm font-medium text-gray-700 mb-3">Preview:</h3>
+                <div className="bg-white rounded-lg border p-3 shadow-sm">
+                  {/* Gambar */}
+                  {formData.imageUrl && (
+                    <div className="relative w-full h-50 mb-3">
+                      <Image
+                        src={formData.imageUrl}
+                        alt="Course preview"
+                        fill
+                        className="object-cover rounded"
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Judul */}
+                  <h4 className="font-medium text-gray-900 text-sm">
+                    {formData.title || 'Course Title'}
+                  </h4>
+
+                  {/* Deskripsi */}
+                  {formData.description && (
+                    <p className="text-xs text-gray-500 mt-2 line-clamp-2">
+                      {formData.description.replace(/<[^>]*>/g, '').substring(0, 80)}...
+                    </p>
+                  )}
+
+                  {/* What’s Included Preview */}
+                  {formData.courseIncluded.trim() && (
+                    <div
+                      className="text-xs text-gray-500 mt-2 prose prose-sm max-w-none line-clamp-7"
+                      dangerouslySetInnerHTML={{ __html: formData.courseIncluded }}
+                    />
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="flex justify-end gap-4">
+        {/* Actions */}
+        <div className="flex justify-end gap-4 pt-6 border-t">
           <button
             type="button"
-            className="rounded-md border border-gray-300 bg-white px-6 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
             onClick={() => router.push('/dashboard/course-manage')}
+            className="rounded-md border border-gray-300 bg-white px-6 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
             disabled={loading}
           >
             Cancel
@@ -263,13 +282,13 @@ export default function AddCoursePage() {
           <button
             type="button"
             onClick={handleSave}
-            disabled={loading || !formData.title.trim()}
-            className={`rounded-md px-8 py-2 text-sm font-medium transition-colors ${loading || !formData.title.trim()
+            disabled={loading || !isFormValid}
+            className={`rounded-md px-8 py-2 text-sm font-medium transition-colors ${loading || !isFormValid
               ? 'bg-gray-400 cursor-not-allowed text-gray-200'
               : 'bg-sky-500 hover:bg-sky-600 text-white'
               }`}
           >
-            {loading ? "Saving..." : "Save"}
+            {loading ? 'Creating...' : 'Create Course'}
           </button>
         </div>
       </section>

@@ -59,8 +59,6 @@ export default function UnitDetailClient({
 
     const unitPrice = parseFloat(unit?.price || '0');
 
-    const displayTag = unit?.tags?.[0] || unit?.lessons?.[0]?.tags?.[0] || 'No tag';
-
     const totalLessons = unit?.lessons?.length || 0;
     const totalPages = Math.ceil(totalLessons / LESSONS_PER_PAGE);
 
@@ -164,12 +162,6 @@ export default function UnitDetailClient({
                 <aside className="w-full lg:w-[420px] pr-6 h-fit">
                     <p className="text-sm text-gray-600 mb-4 leading-relaxed">{unit.description}</p>
 
-                    <div className="mb-4">
-                        <p className="font-medium mb-1">Total Lessons:</p>
-                        <div className="text-lg font-semibold text-gray-700">{totalLessons} lessons</div>
-                    </div>
-
-
                     <AnimatedAddToCartButton
                         productId={unit.id}
                         productType="UNIT"
@@ -259,9 +251,12 @@ export default function UnitDetailClient({
                                             )}
                                         </div>
 
-                                        <span className="text-xs text-text ml-1 mb-2">
-                                            {lesson.tags?.[0] || displayTag}
-                                        </span>
+                                        {lesson.tags && lesson.tags.length > 0 && (
+                                            <span className="text-xs text-text  mb-2">
+                                                {lesson.tags.slice(0, 3).join(', ')}
+                                                {lesson.tags.length > 3 && '...'}
+                                            </span>
+                                        )}
                                         <h3 className="text-lg font-bold mb-3 line-clamp-2">{lesson.title}</h3>
                                         <p className="text-sm text-gray-500 flex-1 mb-4 line-clamp-3">{lesson.description}</p>
 

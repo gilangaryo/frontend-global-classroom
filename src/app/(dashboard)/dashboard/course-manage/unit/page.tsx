@@ -1,56 +1,77 @@
 'use client';
 
-import DashboardTabs from "../../components/DashboardTabs";
-import ImageDropZone from "../../components/ImageDropZone";
+import DashboardTabs from '../../components/DashboardTabs';
+import ImageDropZone from '../../components/ImageDropZone';
+import FileDropZone from '../../components/FileDropZone';
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useProducts, useProductActions, CreateProductData } from '../../../../../hooks/useProducts';
-import Image from "next/image";
-import FileDropZone from "../../components/FileDropZone";
 
 interface FormData {
+  parentId: string;
   title: string;
   description: string;
   price: number;
-  digitalUrl: string;
   previewUrl: string;
+  digitalUrl: string;
   imageUrl: string;
-  parentId: string;
 }
 
 type FormField = keyof FormData;
-type FormValue = string | number;
 
 export default function AddUnitPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const preselectedCourseId = searchParams.get('courseId');
+  const preselectedCourseId = searchParams.get('courseId') || '';
 
   const { createProduct, loading } = useProductActions();
   const { products: courses, loading: coursesLoading } = useProducts({ type: 'COURSE' });
 
   const [formData, setFormData] = useState<FormData>({
+    parentId: preselectedCourseId,
     title: '',
     description: '',
     price: 0,
-    digitalUrl: '',
     previewUrl: '',
+    digitalUrl: '',
     imageUrl: '',
-    parentId: preselectedCourseId || '',
   });
 
-  const updateField = (field: FormField, value: FormValue) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+  const [errors, setErrors] = useState<Partial<Record<FormField, string>>>({});
 
-  const handleSave = async () => {
-    if (!formData.parentId) {
-      alert('Please select a course!');
-      return;
+  function updateField(field: FormField, value: string | number) {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error for this field when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+  }
+
+  function validateForm(): boolean {
+    const newErrors: Partial<Record<FormField, string>> = {};
+
+    if (!formData.parentId.trim()) {
+      newErrors.parentId = 'Please select a course';
+    }
+    if (!formData.title.trim()) {
+      newErrors.title = 'Unit title is required';
+    }
+    if (!formData.imageUrl.trim()) {
+      newErrors.imageUrl = 'Cover image is required';
+    }
+    if (!formData.previewUrl.trim()) {
+      newErrors.previewUrl = 'Preview URL or file is required';
+    }
+    if (!formData.digitalUrl.trim()) {
+      newErrors.digitalUrl = 'Digital URL or file is required';
     }
 
-    if (!formData.title.trim()) {
-      alert('Please enter a unit title');
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
+
+  async function handleSave() {
+    if (!validateForm()) {
       return;
     }
 
@@ -59,21 +80,24 @@ export default function AddUnitPage() {
       ProductType: 'UNIT',
     };
 
-    const result = await createProduct(productData);
-
-    if (result) {
-      alert('Unit created successfully!');
-      router.push('/dashboard/course-manage');
-    }
-  };
-
-  const copyToClipboard = async (text: string) => {
     try {
-      await navigator.clipboard.writeText(text);
+      const result = await createProduct(productData);
+      if (result) {
+        alert('Unit created successfully!');
+        router.push('/dashboard/course-manage');
+      }
     } catch (err) {
-      console.error('Failed to copy text: ', err);
+      console.error('Error creating unit:', err);
+      alert(err instanceof Error ? err.message : 'Failed to create unit');
     }
-  };
+  }
+
+  const isFormValid =
+    !!formData.parentId.trim() &&
+    !!formData.title.trim() &&
+    !!formData.imageUrl.trim() &&
+    !!formData.previewUrl.trim() &&
+    !!formData.digitalUrl.trim();
 
   return (
     <div className="p-8">
@@ -97,9 +121,10 @@ export default function AddUnitPage() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
+          {/* Main Form */}
           <div className="md:col-span-2 space-y-5">
-            {/* Course Selection */}
-            <div>
+            {/* Select Course */}
+            <div data-field="parentId" className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Select Course <span className="text-red-500">*</span>
               </label>
@@ -111,26 +136,27 @@ export default function AddUnitPage() {
               ) : (
                 <select
                   value={formData.parentId}
-                  onChange={(e) => updateField('parentId', e.target.value)}
-                  className={`w-full rounded-md border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400 ${!formData.parentId ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                  onChange={e => updateField('parentId', e.target.value)}
+                  className={`w-full rounded-md px-4 py-2.5 text-sm outline-none focus:ring-2 border ${errors.parentId
+                    ? 'border-red-300 bg-red-50 focus:ring-red-400'
+                    : 'border-gray-300 focus:ring-sky-400'
                     }`}
-                  required
                 >
                   <option value="">-- Select Course --</option>
-                  {courses.map((course) => (
+                  {courses?.map(course => (
                     <option key={course.id} value={course.id}>
                       {course.title}
                     </option>
                   ))}
                 </select>
               )}
-              {!formData.parentId && (
-                <p className="text-xs text-red-500 mt-1">Please select a course</p>
+              {errors.parentId && (
+                <p className="text-xs text-red-500 mt-1">{errors.parentId}</p>
               )}
             </div>
 
             {/* Unit Title */}
-            <div>
+            <div data-field="title" className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Unit Title <span className="text-red-500">*</span>
               </label>
@@ -138,224 +164,167 @@ export default function AddUnitPage() {
                 type="text"
                 placeholder="Enter unit title"
                 value={formData.title}
-                onChange={(e) => updateField('title', e.target.value)}
-                className={`w-full rounded-md border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400 ${!formData.title.trim() ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                  }`}
-                required
+                onChange={e => updateField('title', e.target.value)}
                 maxLength={255}
+                className={`w-full rounded-md px-4 py-2.5 text-sm outline-none focus:ring-2 border ${errors.title
+                  ? 'border-red-300 bg-red-50 focus:ring-red-400'
+                  : 'border-gray-300 focus:ring-sky-400'
+                  }`}
               />
               <div className="flex justify-between items-center mt-1">
-                {!formData.title.trim() && (
-                  <p className="text-xs text-red-500">Title is required</p>
+                {errors.title && (
+                  <p className="text-xs text-red-500">{errors.title}</p>
                 )}
-                <p className="text-xs text-gray-500 ml-auto">{formData.title.length}/255</p>
+                <p className="text-xs text-gray-500 ml-auto">
+                  {formData.title.length}/255
+                </p>
               </div>
             </div>
 
             {/* Description */}
-            <div>
+            <div data-field="description" className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
+                Description <span className="text-red-500">*</span>
               </label>
               <textarea
+                rows={4}
                 placeholder="Describe what this unit covers..."
                 value={formData.description}
-                onChange={(e) => updateField('description', e.target.value)}
+                onChange={e => updateField('description', e.target.value)}
                 className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
-                rows={4}
               />
             </div>
 
             {/* Price */}
-            <div>
+            <div data-field="price" className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Price
+                Price <span className="text-red-500">*</span>
               </label>
               <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
-                <div className="flex-shrink-0 flex items-center justify-center bg-sky-500 px-4">
+                <div className="flex items-center justify-center bg-sky-500 px-4">
                   <span className="text-white text-sm font-medium">$</span>
                 </div>
                 <input
                   type="number"
                   placeholder="0.00"
-                  value={formData.price || ''}
-                  min="0"
-                  step="0.01"
-                  onChange={(e) => updateField('price', parseFloat(e.target.value) || 0)}
-                  className="flex-1 px-4 py-2 text-sm placeholder:text-gray-500 outline-none border-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  value={formData.price === 0 ? '' : formData.price}
+                  min={0}
+                  step={0.01}
+                  onChange={e => updateField('price', parseFloat(e.target.value) || 0)}
+                  className="flex-1 px-4 py-2 text-sm placeholder-gray-500 outline-none border-none"
                 />
               </div>
             </div>
 
             {/* Preview URL */}
-            <div>
+            <div data-field="previewUrl" className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Preview Content URL
+                Preview Content URL <span className="text-red-500">*</span>
               </label>
-              <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
+              <div className={`flex h-12 overflow-hidden rounded-lg focus-within:ring-2 border ${errors.previewUrl
+                ? 'border-red-300 bg-red-50 focus-within:ring-red-400'
+                : 'border-gray-300 focus-within:ring-sky-400'
+                }`}>
                 <span className="flex w-12 items-center justify-center text-gray-700">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  <svg className="w-4 h-4" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
                 </span>
                 <input
                   type="url"
                   placeholder="https://example.com/preview-content"
                   value={formData.previewUrl}
-                  onChange={(e) => updateField('previewUrl', e.target.value)}
-                  className="flex-1 h-full px-4 text-sm placeholder:text-gray-600 outline-none"
+                  onChange={e => updateField('previewUrl', e.target.value)}
+                  className="flex-1 px-4 text-sm placeholder-gray-600 outline-none border-none"
                 />
               </div>
-
-              <div className="p-4 flex items-center text-sm text-gray-600 bg-gray-50 rounded-md mt-2">
-                <span className="flex-1 font-mono text-xs break-all">
-                  https://res.cloudinary.com/dla5fna8n/image/upload/v1754141514/PREVIEW_bzgt9b.pdf
-                </span>
-                <button
-                  type="button"
-                  className="ml-2 text-gray-500 hover:text-gray-700 focus:outline-none flex-shrink-0"
-                  onClick={() => copyToClipboard('https://res.cloudinary.com/dla5fna8n/image/upload/v1754141514/PREVIEW_bzgt9b.pdf')}
-                  title="Copy to clipboard"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002-2v1h2a2 2 0 002 2h-1V5m-1 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </button>
-              </div>
+              {errors.previewUrl && (
+                <p className="text-xs text-red-500 mt-1">{errors.previewUrl}</p>
+              )}
             </div>
 
             {/* Digital URL */}
-            <div>
+            <div data-field="digitalUrl" className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Digital Content URL
+                Digital Content URL <span className="text-red-500">*</span>
               </label>
-              <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
+              <div className={`flex h-12 overflow-hidden rounded-lg focus-within:ring-2 border ${errors.digitalUrl
+                ? 'border-red-300 bg-red-50 focus-within:ring-red-400'
+                : 'border-gray-300 focus-within:ring-sky-400'
+                }`}>
                 <span className="flex w-12 items-center justify-center text-gray-700">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  <svg className="w-4 h-4" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M10.172 13.828a4 4 0 015.656 0l4-4a4 4 0 10-5.656-5.656l-1.102 1.101" />
                   </svg>
                 </span>
                 <input
                   type="url"
                   placeholder="https://example.com/unit-content"
                   value={formData.digitalUrl}
-                  onChange={(e) => updateField('digitalUrl', e.target.value)}
-                  className="flex-1 h-full px-4 text-sm placeholder:text-gray-600 outline-none"
+                  onChange={e => updateField('digitalUrl', e.target.value)}
+                  className="flex-1 px-4 text-sm placeholder-gray-600 outline-none border-none"
                 />
               </div>
-              <div className="p-4 flex items-center text-sm text-gray-600 bg-gray-50 rounded-md mt-2">
-                <span className="flex-1 font-mono text-xs break-all">
-                  https://res.cloudinary.com/dla5fna8n/image/upload/v1754141513/ASLI_q4cik2.pdf
-                </span>
-                <button
-                  type="button"
-                  className="ml-2 text-gray-500 hover:text-gray-700 focus:outline-none flex-shrink-0"
-                  onClick={() => copyToClipboard('https://res.cloudinary.com/dla5fna8n/image/upload/v1754141513/ASLI_q4cik2.pdf')}
-                  title="Copy to clipboard"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002-2v1h2a2 2 0 002 2h-1V5m-1 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </button>
-              </div>
+              {errors.digitalUrl && (
+                <p className="text-xs text-red-500 mt-1">{errors.digitalUrl}</p>
+              )}
             </div>
 
-            {/* UPLOAD  */}
-            {/* Preview URL*/}
-            <div>
+            {/* Upload Preview File */}
+            <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Upload Preview File
+                Upload Preview File <span className="text-red-500">*</span>
               </label>
               <FileDropZone
-                onFileUpload={(url) => updateField('previewUrl', url)}
-                label="Upload preview content"
+                label="Upload preview"
                 acceptedTypes="video/*,application/pdf"
+                onFileUpload={url => updateField('previewUrl', url)}
               />
-              {formData.previewUrl && (
-                <p className="text-xs text-gray-500 mt-2 break-all">
-                  URL: {formData.previewUrl}
-                </p>
-              )}
             </div>
 
-            {/* UPLOAD  */}
-            {/* Access Link After Purchase */}
-            <div>
+            {/* Upload Digital File */}
+            <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Upload Digital File
+                Upload Digital File <span className="text-red-500">*</span>
               </label>
               <FileDropZone
-                onFileUpload={(url) => updateField('digitalUrl', url)}
-                label="Upload access file"
+                label="Upload digital"
                 acceptedTypes="application/zip,application/pdf"
+                onFileUpload={url => updateField('digitalUrl', url)}
               />
-              {formData.digitalUrl && (
-                <p className="text-xs text-gray-500 mt-2 break-all">
-                  URL: {formData.digitalUrl}
-                </p>
-              )}
             </div>
           </div>
 
-          {/* Image Upload */}
-          <div className="space-y-4">
-            <div>
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Cover Image */}
+            <div data-field="imageUrl">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Unit Cover Image
+                Unit Cover Image <span className="text-red-500">*</span>
               </label>
               <ImageDropZone
                 currentImageUrl={formData.imageUrl}
-                onImageUpload={(url) => updateField('imageUrl', url)}
+                onImageUpload={url => updateField('imageUrl', url)}
               />
-              <p className="text-xs text-gray-500 mt-2">
-                Upload an image to represent this unit
-              </p>
+              {errors.imageUrl && (
+                <p className="text-xs text-red-500 mt-1">{errors.imageUrl}</p>
+              )}
             </div>
-
-            {/* Preview Card */}
-            {(formData.title || formData.imageUrl) && (
-              <div className="bg-gray-50 border rounded-lg p-4">
-                <h3 className="text-sm font-medium text-gray-700 mb-3">Preview:</h3>
-                <div className="bg-white rounded-lg border p-3 shadow-sm">
-                  {formData.imageUrl && (
-                    <div className="relative w-full h-32 mb-3">
-                      <Image
-                        src={formData.imageUrl}
-                        alt="Unit preview"
-                        fill
-                        className="object-cover rounded"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
-                  <h4 className="font-medium text-gray-900 text-sm">
-                    {formData.title || 'Unit Title'}
-                  </h4>
-                  {formData.price > 0 && (
-                    <p className="text-sm text-green-600 font-medium mt-1">
-                      ${formData.price.toFixed(2)}
-                    </p>
-                  )}
-                  {formData.description && (
-                    <p className="text-xs text-gray-500 mt-2 line-clamp-2">
-                      {formData.description.replace(/<[^>]*>/g, '').substring(0, 80)}...
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Form Actions */}
+        {/* Actions */}
         <div className="flex justify-end gap-4 pt-6 border-t">
           <button
             type="button"
-            className="rounded-md border border-gray-300 bg-white px-6 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
             onClick={() => router.push('/dashboard/course-manage')}
+            className="rounded-md border border-gray-300 bg-white px-6 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={loading}
           >
             Cancel
@@ -363,20 +332,13 @@ export default function AddUnitPage() {
           <button
             type="button"
             onClick={handleSave}
-            disabled={loading || !formData.title.trim() || !formData.parentId}
-            className={`rounded-md px-8 py-2 text-sm font-medium transition-colors ${loading || !formData.title.trim() || !formData.parentId
+            disabled={loading || !isFormValid}
+            className={`rounded-md px-8 py-2 text-sm font-medium transition-colors ${loading || !isFormValid
               ? 'bg-gray-400 cursor-not-allowed text-gray-200'
               : 'bg-sky-500 hover:bg-sky-600 text-white'
               }`}
           >
-            {loading ? (
-              <span className="flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Creating...
-              </span>
-            ) : (
-              'Create Unit'
-            )}
+            {loading ? 'Creating...' : 'Create Unit'}
           </button>
         </div>
       </section>

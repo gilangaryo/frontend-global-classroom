@@ -12,7 +12,6 @@ export default function ImageDropZone({ onImageUpload, currentImageUrl }: ImageD
     const [uploading, setUploading] = useState(false);
     const [imageError, setImageError] = useState(false);
     const [localPreview, setLocalPreview] = useState<string | null>(null);
-    const [debugInfo, setDebugInfo] = useState<string>('');
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -44,8 +43,8 @@ export default function ImageDropZone({ onImageUpload, currentImageUrl }: ImageD
             alert('Please upload an image file');
             return;
         }
-        if (file.size > 50 * 1024 * 1024) {
-            alert('File size should be less than 50MB');
+        if (file.size > 15 * 1024 * 1024) {
+            alert('File size should be less than 15MB');
             return;
         }
 
@@ -55,7 +54,6 @@ export default function ImageDropZone({ onImageUpload, currentImageUrl }: ImageD
 
         setUploading(true);
         setImageError(false);
-        setDebugInfo('Uploading to server...');
 
         try {
             const formData = new FormData();
@@ -71,14 +69,11 @@ export default function ImageDropZone({ onImageUpload, currentImageUrl }: ImageD
             if (res.ok && result.success && result.file?.url) {
                 onImageUpload(result.file.url);
                 setLocalPreview(null);
-                setDebugInfo(`✅ Upload successful: ${result.file.filename}`);
             } else {
                 throw new Error(result.error || result.message || 'Upload failed');
             }
         } catch (err: unknown) {
             console.error('Upload error:', err);
-            const message = err instanceof Error ? err.message : String(err);
-            setDebugInfo(`❌ Upload failed: ${message}`);
             setLocalPreview(null);
         } finally {
             setUploading(false);
@@ -90,7 +85,6 @@ export default function ImageDropZone({ onImageUpload, currentImageUrl }: ImageD
         e.stopPropagation();
         setLocalPreview(null);
         setImageError(false);
-        setDebugInfo('Image removed');
         onImageUpload('');
     };
 
@@ -98,11 +92,6 @@ export default function ImageDropZone({ onImageUpload, currentImageUrl }: ImageD
 
     return (
         <div className="w-full">
-            {debugInfo && (
-                <div className="mb-2 p-2 bg-[var(--color-alt2)] rounded text-xs text-[var(--color-text)] font-mono">
-                    Debug: {debugInfo}
-                </div>
-            )}
             <div
                 className={`
           relative border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
@@ -125,17 +114,15 @@ export default function ImageDropZone({ onImageUpload, currentImageUrl }: ImageD
                             width={400}
                             height={240}
                             unoptimized
-                            className="w-full h-full max-h-[240px] object-contain rounded-lg bg-[var(--color-white)]"
+                            className="w-full h-full max-h-[240px] object-contain rounded-lg bg-white"
                             onError={() => {
                                 setImageError(true);
-                                setDebugInfo(`❌ Load failed`);
                             }}
                             onLoad={() => {
                                 setImageError(false);
-                                setDebugInfo(`✅ Image loaded successfully`);
                             }}
                         />
-                        <div className="absolute inset-0 group-hover:bg-black group-hover:bg-opacity-20 transition-all duration-200 rounded-lg flex items-center justify-center">
+                        <div className="absolute inset-0 group-hover:bg-black/50 group-hover:bg-opacity-20 transition-all duration-200 rounded-lg flex items-center justify-center">
                             <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-2">
                                 <button
                                     type="button"
@@ -179,7 +166,7 @@ export default function ImageDropZone({ onImageUpload, currentImageUrl }: ImageD
                                 </div>
                                 <div>
                                     <p className="text-lg font-medium text-[var(--color-primary)]">Click or Drop image</p>
-                                    <p className="text-sm text-[var(--color-text)] mt-1">PNG, JPG, GIF up to 50MB</p>
+                                    <p className="text-sm text-[var(--color-text)] mt-1">Image up to 15MB</p>
                                     {imageError && (
                                         <p className="text-xs text-red-500 mt-2">
                                             Previous image failed to load. Please try again.

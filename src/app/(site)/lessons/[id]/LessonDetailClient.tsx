@@ -18,6 +18,7 @@ interface Lesson {
     imageUrl: string;
     price: string;
     previewUrl: string | null;
+    studyGuideUrl?: string | null;      // ← tambahkan field ini
     digitalUrl: string | null;
     isFreeLesson?: boolean;
     tags?: string[];
@@ -49,8 +50,11 @@ export default function LessonDetailClient() {
     const params = useParams();
     const [lesson, setLesson] = useState<Lesson | null>(null);
     const [loading, setLoading] = useState(true);
+
     const [openPreviewPdf, setOpenPreviewPdf] = useState(false);
+    const [openStudyGuidePdf, setOpenStudyGuidePdf] = useState(false); // ← state baru
     const [openThumbnail, setOpenThumbnail] = useState(false);
+
     const [emailInput, setEmailInput] = useState('');
     const [sending, setSending] = useState(false);
 
@@ -61,7 +65,6 @@ export default function LessonDetailClient() {
                 ? params.id[0]
                 : '';
 
-    // Tambahkan setelah fetch data
     useEffect(() => {
         const fetchLesson = async () => {
             try {
@@ -75,7 +78,7 @@ export default function LessonDetailClient() {
                 }
                 const json = await res.json();
 
-                const parsedLesson = json.data;
+                const parsedLesson = json.data as Lesson;
                 if (parsedLesson.metadata && typeof parsedLesson.metadata === 'string') {
                     try {
                         parsedLesson.metadata = JSON.parse(parsedLesson.metadata);
@@ -146,14 +149,14 @@ export default function LessonDetailClient() {
 
     return (
         <main className="font-body bg-white text-[#363F36]">
-            <div className='px-6 md:px-16 py-10 '>
+            <div className="px-6 md:px-16 py-10 ">
                 <Link href={getBackLink()} className="text-sm text-[#346046] font-semibold mb-6 inline-block">
                     {getBackText()}
                 </Link>
 
                 <div className=" grid grid-cols-1 md:grid-cols-2 gap-12 ">
                     {/* LEFT SIDE */}
-                    <div className='max-w-lg'>
+                    <div className="max-w-lg">
                         <h1 className="text-2xl md:text-3xl font-bold mb-4">{lesson.title}</h1>
                         <p className="text-sm text-text mb-4 leading-6">{lesson.description}</p>
 
@@ -185,18 +188,10 @@ export default function LessonDetailClient() {
                             </div>
                         )}
 
-                        {/* Price (hanya jika tidak gratis) */}
-                        {/* {!lesson.isFreeLesson && (
-                        <div className="mb-6">
-                            <p className="text-sm text-gray-600 mb-1">Price:</p>
-                            <div className="text-2xl font-bold text-primary">${parseFloat(lesson.price).toFixed(2)}</div>
-                        </div>
-                    )} */}
-
                         <div className="flex gap-4 mb-6 mt-8">
                             <div className="flex flex-row gap-4 w-full md:w-auto">
                                 <button
-                                    onClick={() => setOpenPreviewPdf(true)}
+                                    onClick={() => setOpenStudyGuidePdf(true)}
                                     disabled={!lesson.previewUrl}
                                     className={`px-6 py-3 rounded-lg border font-bold text-base transition-colors ${lesson.previewUrl
                                         ? 'border-[#363F36] text-[#363F36] bg-white hover:bg-primary hover:text-white'
@@ -238,7 +233,6 @@ export default function LessonDetailClient() {
                             </div>
                         </div>
 
-
                         {lesson.previewUrl && (
                             <Link
                                 href="#"
@@ -251,6 +245,8 @@ export default function LessonDetailClient() {
                                 Preview Lesson Overview →
                             </Link>
                         )}
+
+
                     </div>
 
                     {/* RIGHT SIDE */}
@@ -280,9 +276,9 @@ export default function LessonDetailClient() {
 
                         <LessonBundleSection lessonId={lesson.id} />
                     </div>
-
                 </div>
             </div>
+
             <LessonPdfThumbnailModal
                 open={openThumbnail}
                 onClose={() => setOpenThumbnail(false)}
@@ -297,8 +293,16 @@ export default function LessonDetailClient() {
                 open={openPreviewPdf}
                 onClose={() => setOpenPreviewPdf(false)}
                 pdfUrl={lesson.previewUrl || ''}
-                title="Preview PDF"
+                title="Preview Lesson"
             />
+
+            <ModalPreviewPdf
+                open={openStudyGuidePdf}
+                onClose={() => setOpenStudyGuidePdf(false)}
+                pdfUrl={lesson.studyGuideUrl || ''}
+                title="Preview Study Guide"
+            />
+
             <YouMayAlsoLike />
         </main>
     );

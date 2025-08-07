@@ -385,11 +385,11 @@ export default function EditLessonPage() {
                                         }`}
                                     required
                                 >
-                                    <option value="">-- Select Parent Unit/Subunit --</option>
+                                    <option value="">-- Select Parent Unit--</option>
                                     {parentOptions.map((option) => (
                                         <option key={option.id} value={option.id}>
                                             {option.type === 'UNIT' ? '📚' : '📑'} {option.title}
-                                            {option.parentTitle && ` (in ${option.parentTitle})`}
+                                            {/* {option.parentTitle && ` (in ${option.parentTitle})`} */}
                                         </option>
                                     ))}
                                 </select>

@@ -109,7 +109,7 @@ export default function LoginPage() {
                         </button>
                     </div>
 
-                    <div className="w-full flex items-center justify-start text-sm">
+                    {/* <div className="w-full flex items-center justify-start text-sm">
                         <label className="flex items-center gap-2">
                             <input
                                 type="checkbox"
@@ -118,7 +118,7 @@ export default function LoginPage() {
                             />
                             Remember me
                         </label>
-                    </div>
+                    </div> */}
 
                     <button
                         type="submit"

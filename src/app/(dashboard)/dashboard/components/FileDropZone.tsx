@@ -59,7 +59,7 @@ export default function FileDropZone({
 
     return (
         <div
-            className="w-full border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-[var(--color-primary)]"
+            className="w-full border-2 border-dashed rounded-lg py-20 text-center cursor-pointer hover:border-primary"
             onClick={onClick}
             onDragOver={(e) => e.preventDefault()}
             onDrop={handleDrop}

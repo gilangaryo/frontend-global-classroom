@@ -15,13 +15,11 @@ export default function LessonsPage() {
         const fetchData = async () => {
             setLoading(true);
             try {
-                // Fetch courses (products with type COURSE)
                 const coursesRes = await fetch(
                     `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products?type=COURSE&isActive=true`
                 );
                 const coursesJson = await coursesRes.json();
 
-                // Fetch units (products with type UNIT)
                 const unitsRes = await fetch(
                     `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products?type=UNIT&isActive=true`
                 );

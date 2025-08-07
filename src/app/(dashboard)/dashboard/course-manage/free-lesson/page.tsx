@@ -2,9 +2,9 @@
 
 import DashboardTabs from "../../components/DashboardTabs";
 import ImageDropZone from "../../components/ImageDropZone";
+import FileDropZone from "../../components/FileDropZone";
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from "next/image";
 
 interface CreateFreeLessonData {
   title: string;
@@ -52,29 +52,43 @@ export default function AddFreeLessonPage() {
     }
   };
 
-  const handleSave = async () => {
+  const validateForm = (): boolean => {
     if (!formData.title.trim()) {
       alert('Please enter a lesson title');
-      return;
+      return false;
     }
 
     if (formData.title.trim().length < 3) {
       alert('Title must be at least 3 characters long!');
-      return;
+      return false;
     }
 
     if (!formData.description.trim()) {
       alert('Please enter a description');
-      return;
+      return false;
     }
 
     if (!formData.url.trim()) {
-      alert('Please enter a URL for the free lesson');
-      return;
+      alert('Please enter a URL or upload a PDF for the free lesson');
+      return false;
+    }
+
+    // Only validate URL format if it's not a file upload URL
+    if (!formData.url.includes('cloudinary.com') && !isValidUrl(formData.url.trim())) {
+      alert('Please enter a valid URL');
+      return false;
     }
 
     if (!formData.imageUrl.trim()) {
       alert('Please upload a cover image');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSave = async () => {
+    if (!validateForm()) {
       return;
     }
 
@@ -152,20 +166,17 @@ export default function AddFreeLessonPage() {
                 placeholder="Enter lesson title (minimum 3 characters)"
                 value={formData.title}
                 onChange={(e) => updateField('title', e.target.value)}
-                className={`w-full rounded-md border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400 ${formData.title.trim().length > 0 && formData.title.trim().length < 3
-                  ? 'border-red-300 bg-red-50'
-                  : !formData.title.trim()
-                    ? 'border-red-300 bg-red-50'
-                    : 'border-gray-300'
-                  }`}
+                className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
                 required
                 maxLength={255}
               />
               <div className="flex justify-between items-center mt-1">
-                {formData.title.trim().length > 0 && formData.title.trim().length < 3 && (
-                  <p className="text-xs text-red-500">Title must be at least 3 characters</p>
-                )}
-                <p className="text-xs text-gray-500 ml-auto">{formData.title.length}/255</p>
+                <div className="flex-1">
+                  {formData.title.trim().length > 0 && formData.title.trim().length < 3 && (
+                    <p className="text-xs text-gray-500">Title must be at least 3 characters</p>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500">{formData.title.length}/255</p>
               </div>
             </div>
 
@@ -179,7 +190,8 @@ export default function AddFreeLessonPage() {
                 placeholder="Describe what this lesson covers..."
                 value={formData.description}
                 onChange={(e) => updateField('description', e.target.value)}
-                className="w-full rounded-md border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
+                className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
+                required
               />
             </div>
 
@@ -191,7 +203,8 @@ export default function AddFreeLessonPage() {
               <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
                 <span className="flex w-12 items-center justify-center text-gray-700">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.172 13.828a4 4 0 515.656 0l4-4a4 4 0 10-5.656-5.656l-1.102 1.101" />
                   </svg>
                 </span>
                 <input
@@ -199,14 +212,35 @@ export default function AddFreeLessonPage() {
                   placeholder="https://example.com/free-lesson"
                   value={formData.url}
                   onChange={(e) => updateField('url', e.target.value)}
-                  className={`flex-1 h-full px-4 text-sm placeholder:text-gray-600 outline-none ${!formData.url.trim() ? 'bg-red-50' : ''
-                    }`}
+                  className="flex-1 h-full px-4 text-sm placeholder:text-gray-600 outline-none"
                   required
                 />
               </div>
               {formData.url.trim() && !isValidUrl(formData.url.trim()) && (
-                <p className="text-xs text-red-500 mt-1">Please enter a valid URL</p>
+                <p className="text-xs text-gray-500 mt-1">Please enter a valid URL</p>
               )}
+            </div>
+
+            {/* OR Separator */}
+            <div className="flex items-center gap-4 my-6">
+              <div className="flex-1 h-px bg-gray-300"></div>
+              <span className="text-sm text-gray-500 font-medium">OR</span>
+              <div className="flex-1 h-px bg-gray-300"></div>
+            </div>
+
+            {/* PDF Upload */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Upload Lesson PDF <span className="text-red-500">*</span>
+              </label>
+              <FileDropZone
+                label="Upload PDF file"
+                acceptedTypes="application/pdf"
+                onFileUpload={(url) => updateField('url', url)}
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Upload a PDF file for this free lesson (alternative to URL)
+              </p>
             </div>
           </div>
 
@@ -220,46 +254,12 @@ export default function AddFreeLessonPage() {
                 currentImageUrl={formData.imageUrl}
                 onImageUpload={(url) => updateField('imageUrl', url)}
               />
-              {!formData.imageUrl.trim() && (
-                <p className="text-xs text-red-500 mt-1">Cover image is required</p>
-              )}
               <p className="text-xs text-gray-500 mt-2">
                 Upload an image to represent this lesson
               </p>
             </div>
 
-            {/* Preview Card */}
-            {(formData.title || formData.imageUrl) && (
-              <div className="bg-gray-50 border rounded-lg p-4">
-                <h3 className="text-sm font-medium text-gray-700 mb-3">Preview:</h3>
-                <div className="bg-white rounded-lg border p-3 shadow-sm">
-                  {formData.imageUrl && (
-                    <div className="relative w-full h-32 mb-3">
-                      <Image
-                        src={formData.imageUrl}
-                        alt="Lesson preview"
-                        fill
-                        className="object-cover rounded"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
-                  <h4 className="font-medium text-gray-900 text-sm">
-                    {formData.title || 'Lesson Title'}
-                  </h4>
-                  <p className="text-sm text-blue-600 font-medium mt-1">
-                    Free Lesson
-                  </p>
-                  {formData.description && (
-                    <p className="text-xs text-gray-500 mt-2 line-clamp-2">
-                      {formData.description.replace(/<[^>]*>/g, '').substring(0, 80)}...
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
+
           </div>
         </div>
 
@@ -267,7 +267,7 @@ export default function AddFreeLessonPage() {
         <div className="flex justify-end gap-4 pt-6 border-t">
           <button
             type="button"
-            className="rounded-md border border-gray-300 bg-white px-6 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+            className="rounded-md border border-gray-300 bg-white px-6 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={() => router.push('/dashboard/course-manage')}
             disabled={loading}
           >

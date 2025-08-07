@@ -339,7 +339,7 @@ export default function LessonList({
                     {/* Loading state for tags */}
                     {tagsLoading && (
                         <div className="text-sm text-gray-500 mb-2">
-                            Loading available tags...
+                            Loading...
                         </div>
                     )}
 

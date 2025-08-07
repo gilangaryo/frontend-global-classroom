@@ -1,13 +1,14 @@
 // hooks/useProducts.ts
 import { useState, useEffect, useCallback } from 'react';
 
-export type ProductType = 'COURSE' | 'UNIT' | 'SUBUNIT' | 'LESSON';
+export type ProductType = 'COURSE' | 'UNIT' | 'LESSON';
 
 export interface Product {
     id: string;
     title: string;
     description?: string;
     price?: number;
+    studyGuideUrl?: string;
     digitalUrl?: string;
     previewUrl?: string;
     imageUrl?: string;
@@ -25,6 +26,7 @@ export interface CreateCourseData {
     description?: string;
     courseIncluded?: string;
     price?: number;
+    studyGuideUrl?: string;
     digitalUrl?: string;
     previewUrl?: string;
     imageUrl?: string;
@@ -36,6 +38,7 @@ export interface CreateProductData {
     title: string;
     description?: string;
     price?: number;
+    studyGuideUrl?: string;
     digitalUrl?: string;
     previewUrl?: string;
     imageUrl?: string;

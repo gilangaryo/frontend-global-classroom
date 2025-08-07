@@ -79,10 +79,10 @@ export default async function CoursePage() {
                             </div>
 
                             <div className="p-6 flex flex-col flex-1">
-                                <div className='mb-4 h-12/12'>
+                                <div className='mb-4 '>
                                     <h3 className="text-4xl font-semibold text-primary mb-2 leading-normal ">{c.title}</h3>
                                 </div>
-                                <p className="text-[#8E8E8E] text-sm mb-4 flex-1 leading-relaxed">{c.description}</p>
+                                <p className="text-[#8E8E8E] text-sm mb-4 leading-relaxed">{c.description}</p>
 
                                 <div className="mb-6">
                                     <p className="font-medium text-[#4E3D34] mb-2">This course includes:</p>

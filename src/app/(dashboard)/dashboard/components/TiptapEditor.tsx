@@ -22,6 +22,7 @@ interface TiptapEditorProps {
 export default function TiptapEditor({ content, onChange, placeholder }: TiptapEditorProps) {
     const [mounted, setMounted] = useState(false);
 
+
     useEffect(() => {
         setMounted(true);
     }, []);
@@ -61,10 +62,33 @@ export default function TiptapEditor({ content, onChange, placeholder }: TiptapE
         immediatelyRender: false,
     });
 
+
+    const [editorChanged, setEditorChanged] = useState(0);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    useEffect(() => {
+        if (!editor) return;
+
+        const updateHandler = () => {
+            setEditorChanged(prev => prev + 1);
+        };
+
+        editor.on('selectionUpdate', updateHandler);
+        editor.on('transaction', updateHandler);
+
+        return () => {
+            editor.off('selectionUpdate', updateHandler);
+            editor.off('transaction', updateHandler);
+        };
+    }, [editor]);
+
     if (!mounted || !editor) return null;
 
     return (
-        <div className="border border-gray-300 rounded-md">
+        <div className="border border-gray-300 rounded-md focus-within:ring-1 focus-within:ring-sky-400">
             <div className="flex gap-2 p-3 border-b border-gray-200 flex-wrap">
                 <button
                     type="button"
@@ -107,16 +131,8 @@ export default function TiptapEditor({ content, onChange, placeholder }: TiptapE
                 >
                     •  List
                 </button>
-                {/* <button
-                    type="button"
-                    onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                    className={`text-xs px-3 py-1.5 rounded transition-colors ${editor.isActive('orderedList')
-                        ? 'bg-sky-500 text-white'
-                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                        }`}
-                >
-                    1. List
-                </button> */}
+                <span className="hidden">{editorChanged}</span>
+
             </div>
             <div className="p-3">
                 <EditorContent editor={editor} />

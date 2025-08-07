@@ -8,6 +8,8 @@ import { useProducts, useProductActions, CreateProductData } from '../../../../.
 import Image from "next/image";
 import TiptapEditor from "../../components/TiptapEditor";
 import FileDropZone from "../../components/FileDropZone";
+import TagsInput from "../../components/form/TagsInput";
+
 interface CreateLessonData extends CreateProductData {
   tags?: string[];
 }
@@ -22,6 +24,7 @@ export default function AddLessonPage() {
     title: '',
     description: '',
     price: 0,
+    studyGuideUrl: '',
     digitalUrl: '',
     previewUrl: '',
     imageUrl: '',
@@ -31,110 +34,105 @@ export default function AddLessonPage() {
   });
 
   const [tags, setTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState("");
-
-  const suggestedTags = [
-    "9th", "10th", "11th", "12th", "ESL,EFL and ELL",
-    "Online Courses", "Vocational Training",
-    "Adult Education", "Higher Education",
-    "AP", "IB", "IGCSE",
-    "Beginner", "Intermediate", "Advanced",
-    "Case Study", "Group Work", "Individual Work",
-    "Critical Thinking", "Writing Practice",
-    "Geography", "History", "Economics",
-    "Mathematics", "Science", "English",
-    "Introduction", "Practical", "Theory",
-  ];
 
   const updateField = (field: string, value: string | number | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const addTag = (tag: string) => {
-    const trimmedTag = tag.trim();
-    if (trimmedTag && !tags.includes(trimmedTag) && tags.length < 10) {
-      setTags([...tags, trimmedTag]);
-    }
-    setTagInput("");
-  };
-
-  const removeTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
-  };
-
-  const handleTagInputKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      addTag(tagInput);
-    } else if (e.key === 'Backspace' && tagInput === '' && tags.length > 0) {
-      removeTag(tags[tags.length - 1]);
-    }
-  };
-
-  const handleSave = async () => {
+  const validateForm = (): boolean => {
     if (!formData.parentId) {
       alert('Please select a unit!');
-      return;
+      return false;
     }
 
     if (!formData.title.trim()) {
       alert('Please enter a lesson title');
-      return;
+      return false;
     }
 
     if (formData.title.trim().length < 3) {
       alert('Title must be at least 3 characters long!');
+      return false;
+    }
+
+    if (!formData.description.trim()) {
+      alert('Please enter a lesson description');
+      return false;
+    }
+
+    if (!formData.learningActivities.trim()) {
+      alert('Please enter learning activities');
+      return false;
+    }
+
+    if (!formData.studyGuideUrl.trim()) {
+      alert('Please upload a study guide PDF');
+      return false;
+    }
+
+    if (!formData.previewUrl.trim()) {
+      alert('Please upload a preview PDF');
+      return false;
+    }
+
+    if (!formData.digitalUrl.trim()) {
+      alert('Please upload a digital PDF');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSave = async () => {
+    if (!validateForm()) {
       return;
     }
 
-    const lessonData: CreateLessonData = {
-      ...formData,
-      ProductType: 'LESSON',
-      tags: tags,
-    };
-
-    const result = await createProduct(lessonData);
-
-    if (result) {
-      alert('Lesson created successfully!');
-
-      // Reset form
-      setFormData({
-        title: '',
-        description: '',
-        price: 0,
-        digitalUrl: '',
-        previewUrl: '',
-        imageUrl: '',
-        parentId: '',
-        isFreeLesson: false,
-        learningActivities: '',
-      });
-      setTags([]);
-      setTagInput('');
-
-      router.push('/dashboard/course-manage');
-    }
-  };
-
-  const isValidUrl = (string: string) => {
     try {
-      new URL(string);
-      return true;
-    } catch {
-      return false;
-    }
-  };
+      const lessonData: CreateLessonData = {
+        ...formData,
+        ProductType: 'LESSON',
+        tags: tags,
+      };
 
-  const isFormValid = formData.parentId !== "" && formData.title.trim().length >= 3;
+      const result = await createProduct(lessonData);
 
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
+      if (result) {
+        alert('Lesson created successfully!');
+
+        // Reset form
+        setFormData({
+          title: '',
+          description: '',
+          price: 0,
+          studyGuideUrl: '',
+          digitalUrl: '',
+          previewUrl: '',
+          imageUrl: '',
+          parentId: '',
+          isFreeLesson: false,
+          learningActivities: '',
+        });
+        setTags([]);
+
+        router.push('/dashboard/course-manage');
+      }
     } catch (err) {
-      console.error('Failed to copy text: ', err);
+      console.error('Error creating lesson:', err);
+      alert(err instanceof Error ? err.message : 'Failed to create lesson');
     }
   };
+
+  const isFormValid =
+    !!formData.parentId &&
+    !!formData.title.trim() &&
+    formData.title.trim().length >= 3 &&
+    !!formData.description.trim() &&
+    !!formData.learningActivities.trim() &&
+    !!formData.studyGuideUrl.trim() &&
+    !!formData.previewUrl.trim() &&
+    !!formData.digitalUrl.trim();
+
   return (
     <div className="p-8">
       <header className="space-y-1">
@@ -167,20 +165,16 @@ export default function AddLessonPage() {
                 <select
                   value={formData.parentId}
                   onChange={(e) => updateField('parentId', e.target.value)}
-                  className={`w-full rounded-md border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400 ${!formData.parentId ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                    }`}
+                  className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
                   required
                 >
                   <option value="">-- Select Unit --</option>
-                  {units.map((unit) => (
+                  {units?.map((unit) => (
                     <option key={unit.id} value={unit.id}>
                       {unit.title}
                     </option>
                   ))}
                 </select>
-              )}
-              {!formData.parentId && (
-                <p className="text-xs text-red-500 mt-1">Please select a unit</p>
               )}
             </div>
 
@@ -194,30 +188,25 @@ export default function AddLessonPage() {
                 placeholder="Enter lesson title (minimum 3 characters)"
                 value={formData.title}
                 onChange={(e) => updateField('title', e.target.value)}
-                className={`w-full rounded-md border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400 ${formData.title.trim().length > 0 && formData.title.trim().length < 3
-                  ? 'border-red-300 bg-red-50'
-                  : !formData.title.trim()
-                    ? 'border-red-300 bg-red-50'
-                    : 'border-gray-300'
-                  }`}
+                className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
                 required
                 maxLength={255}
               />
               <div className="flex justify-between items-center mt-1">
-                {formData.title.trim().length > 0 && formData.title.trim().length < 3 && (
-                  <p className="text-xs text-red-500">Title must be at least 3 characters</p>
-                )}
-                {!formData.title.trim() && (
-                  <p className="text-xs text-red-500">Title is required</p>
-                )}
-                <p className="text-xs text-gray-500 ml-auto">{formData.title.length}/255</p>
+                <div className="flex-1">
+                  {formData.title.trim().length > 0 && formData.title.trim().length < 3 && (
+                    <p className="text-xs text-red-500">Title must be at least 3 characters</p>
+                  )}
+
+                </div>
+                <p className="text-xs text-gray-500">{formData.title.length}/255</p>
               </div>
             </div>
 
             {/* Description */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
+                Description <span className="text-red-500">*</span>
               </label>
               <textarea
                 rows={5}
@@ -225,12 +214,14 @@ export default function AddLessonPage() {
                 value={formData.description}
                 onChange={(e) => updateField('description', e.target.value)}
                 className="w-full resize-none rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
+                required
               />
             </div>
 
+            {/* Learning Activities */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Learning Activities
+                Learning Activities <span className="text-red-500">*</span>
               </label>
               <TiptapEditor
                 content={formData.learningActivities}
@@ -253,73 +244,27 @@ export default function AddLessonPage() {
               </label>
             </div>
 
-            {/* Tags Input Section - FIXED VERSION */}
-            <div className="space-y-3">
-              <label className="block text-sm font-medium text-gray-700">
-                Tags
-              </label>
-
-              {/* Tags Display */}
-              <div className="flex flex-wrap gap-2 min-h-[40px] p-3 border border-gray-300 rounded-md bg-gray-50">
-                {tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-sky-700 bg-sky-100 rounded-full animate-in fade-in duration-200"
-                  >
-                    {tag}
-                    <button
-                      type="button"
-                      onClick={() => removeTag(tag)}
-                      className="ml-1 text-sky-500 hover:text-sky-700 hover:bg-sky-200 rounded-full w-4 h-4 flex items-center justify-center transition-colors"
-                      title="Remove tag"
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
-                {tags.length === 0 && (
-                  <span className="text-gray-400 text-sm">No tags added yet</span>
-                )}
-              </div>
-
-              {/* Tag Input */}
-              <input
-                type="text"
-                placeholder={
-                  tags.length >= 10
-                    ? "Maximum 10 tags reached"
-                    : "Type a tag and press Enter"
-                }
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={handleTagInputKeyDown}
-                disabled={tags.length >= 10}
-                className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400 disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
-
-              {/* Suggested Tags */}
-              {suggestedTags.filter(tag => !tags.includes(tag)).length > 0 && tags.length < 10 && (
-                <div className="space-y-2">
-                  <p className="text-xs text-gray-500">Suggested tags (click to add):</p>
-                  <div className="flex flex-wrap gap-2">
-                    {suggestedTags.filter(tag => !tags.includes(tag)).slice(0, 15).map((tag) => (
-                      <button
-                        key={tag}
-                        type="button"
-                        onClick={() => addTag(tag)}
-                        className="px-2 py-1 text-xs text-gray-600 bg-gray-200 rounded hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400"
-                      >
-                        + {tag}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="text-xs text-gray-500">
-                Tags: {tags.length}/10
-              </div>
-            </div>
+            {/* Tags Input */}
+            <TagsInput
+              tags={tags}
+              onTagsChange={setTags}
+              maxTags={10}
+              label="Tags"
+              placeholder="Type a tag and press Enter"
+              suggestedTags={[
+                "9th", "10th", "11th", "12th", "ESL,EFL and ELL",
+                "Online Courses", "Vocational Training",
+                "Adult Education", "Higher Education",
+                "AP", "IB", "IGCSE",
+                "Beginner", "Intermediate", "Advanced",
+                "Case Study", "Group Work", "Individual Work",
+                "Critical Thinking", "Writing Practice",
+                "Geography", "History", "Economics",
+                "Mathematics", "Science", "English",
+                "Introduction", "Practical", "Theory",
+              ]}
+              disabled={loading}
+            />
 
             {/* Price (only if not free lesson) */}
             {!formData.isFreeLesson && (
@@ -334,109 +279,43 @@ export default function AddLessonPage() {
                   <input
                     type="number"
                     placeholder="0.00"
-                    value={formData.price || ''}
+                    value={formData.price === 0 ? '' : formData.price}
                     min="0"
                     step="0.01"
                     onChange={(e) => updateField('price', parseFloat(e.target.value) || 0)}
-                    className="flex-1 px-4 py-2 text-sm placeholder:text-gray-500 outline-none border-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="flex-1 px-4 py-2 text-sm placeholder:text-gray-500 outline-none border-none focus:ring-0"
+                    style={{ appearance: 'textfield' }}
                   />
                 </div>
               </div>
             )}
 
-            {/* Preview URL */}
-            <div>
+            {/* Study Guide PDF Upload */}
+            <div data-field="studyGuideUrl" className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Preview Content URL
-              </label>
-              <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
-                <span className="flex w-12 items-center justify-center text-gray-700">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                </span>
-                <input
-                  type="url"
-                  placeholder="https://example.com/lesson-preview"
-                  value={formData.previewUrl}
-                  onChange={(e) => updateField('previewUrl', e.target.value)}
-                  className="flex-1 h-full px-4 text-sm placeholder:text-gray-600 outline-none"
-                />
-              </div>
-              {formData.previewUrl.trim() && !isValidUrl(formData.previewUrl.trim()) && (
-                <p className="text-xs text-red-500 mt-1">Please enter a valid preview URL</p>
-              )}
-              <p className="text-xs text-gray-500 mt-1">
-                Link to preview content or demo version for users to see before purchasing
-              </p>
-              <div className="p-4 flex items-center text-sm text-gray-600 bg-gray-50 rounded-md mt-2">
-                <span className="flex-1 font-mono text-xs break-all">
-                  https://res.cloudinary.com/dla5fna8n/image/upload/v1754141514/PREVIEW_bzgt9b.pdf
-                </span>
-                <button
-                  type="button"
-                  className="ml-2 text-gray-500 hover:text-gray-700 focus:outline-none flex-shrink-0"
-                  onClick={() => copyToClipboard('https://res.cloudinary.com/dla5fna8n/image/upload/v1754141514/PREVIEW_bzgt9b.pdf')}
-                  title="Copy to clipboard"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002-2v1h2a2 2 0 002 2h-1V5m-1 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            {/* Digital URL */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Digital Content URL
-              </label>
-              <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
-                <span className="flex w-12 items-center justify-center text-gray-700">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                  </svg>
-                </span>
-                <input
-                  type="url"
-                  placeholder="https://example.com/lesson-content"
-                  value={formData.digitalUrl}
-                  onChange={(e) => updateField('digitalUrl', e.target.value)}
-                  className="flex-1 h-full px-4 text-sm placeholder:text-gray-600 outline-none"
-                />
-              </div>
-              {formData.digitalUrl.trim() && !isValidUrl(formData.digitalUrl.trim()) && (
-                <p className="text-xs text-red-500 mt-1">Please enter a valid digital URL</p>
-              )}
-            </div>
-
-            <div className="p-4 flex items-center text-sm text-gray-600 bg-gray-50 rounded-md mt-2">
-              <span className="flex-1 font-mono text-xs break-all">
-                https://res.cloudinary.com/dla5fna8n/image/upload/v1754141513/ASLI_q4cik2.pdf
-              </span>
-              <button
-                type="button"
-                className="ml-2 text-gray-500 hover:text-gray-700 focus:outline-none flex-shrink-0"
-                onClick={() => copyToClipboard('https://res.cloudinary.com/dla5fna8n/image/upload/v1754141513/ASLI_q4cik2.pdf')}
-                title="Copy to clipboard"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002-2v1h2a2 2 0 002 2h-1V5m-1 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </button>
-            </div>
-
-            {/* UPLOAD  */}
-            {/* Preview URL*/}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Upload Preview File
+                Upload Study Guide PDF <span className="text-red-500">*</span>
               </label>
               <FileDropZone
+                label="Upload Study Guide PDF"
+                acceptedTypes="application/pdf"
+                onFileUpload={(url) => updateField('studyGuideUrl', url)}
+              />
+              {formData.studyGuideUrl && (
+                <p className="text-xs text-gray-500 mt-2 break-all">
+                  URL: {formData.studyGuideUrl}
+                </p>
+              )}
+            </div>
+
+            {/* Preview PDF Upload */}
+            <div data-field="previewUrl" className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Upload Preview PDF <span className="text-red-500">*</span>
+              </label>
+              <FileDropZone
+                label="Upload Preview PDF"
+                acceptedTypes="application/pdf"
                 onFileUpload={(url) => updateField('previewUrl', url)}
-                label="Upload preview content"
-                acceptedTypes="video/*,application/pdf"
               />
               {formData.previewUrl && (
                 <p className="text-xs text-gray-500 mt-2 break-all">
@@ -445,16 +324,15 @@ export default function AddLessonPage() {
               )}
             </div>
 
-            {/* UPLOAD  */}
-            {/* Access Link After Purchase */}
-            <div>
+            {/* Digital PDF Upload */}
+            <div data-field="digitalUrl" className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Upload Digital File
+                Upload Digital PDF <span className="text-red-500">*</span>
               </label>
               <FileDropZone
+                label="Upload Digital PDF"
+                acceptedTypes="application/pdf"
                 onFileUpload={(url) => updateField('digitalUrl', url)}
-                label="Upload access file"
-                acceptedTypes="application/zip,application/pdf"
               />
               {formData.digitalUrl && (
                 <p className="text-xs text-gray-500 mt-2 break-all">
@@ -492,9 +370,24 @@ export default function AddLessonPage() {
                         fill
                         className="object-cover rounded"
                         onError={(e) => {
-                          e.currentTarget.style.display = 'none';
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
                         }}
                       />
+                    </div>
+                  )}
+                  {tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2 mb-2">
+                      {tags.slice(0, 3).map((tag, index) => (
+                        <span key={index} className="px-2 py-1 text-xs bg-sky-100 text-sky-700 rounded">
+                          {tag}
+                        </span>
+                      ))}
+                      {tags.length > 3 && (
+                        <span className="px-2 py-1 text-xs bg-gray-100 text-gray-500 rounded">
+                          +{tags.length - 3} more
+                        </span>
+                      )}
                     </div>
                   )}
                   <h4 className="font-medium text-gray-900 text-sm">
@@ -512,23 +405,19 @@ export default function AddLessonPage() {
                   )}
                   {formData.description && (
                     <p className="text-xs text-gray-500 mt-2 line-clamp-2">
-                      {formData.description.replace(/<[^>]*>/g, '').substring(0, 80)}...
+                      {formData.description.replace(/<[^>]*>/g, '').substring(0, 80)}
+                      {formData.description.length > 80 && '...'}
                     </p>
                   )}
-                  {tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {tags.slice(0, 3).map((tag, index) => (
-                        <span key={index} className="px-2 py-1 text-xs bg-sky-100 text-sky-700 rounded">
-                          {tag}
-                        </span>
-                      ))}
-                      {tags.length > 3 && (
-                        <span className="px-2 py-1 text-xs bg-gray-100 text-gray-500 rounded">
-                          +{tags.length - 3} more
-                        </span>
-                      )}
-                    </div>
+
+                  {/* What’s Included Preview */}
+                  {formData.learningActivities.trim() && (
+                    <div
+                      className="text-xs text-gray-500 mt-2 prose prose-sm max-w-none line-clamp-7"
+                      dangerouslySetInnerHTML={{ __html: formData.learningActivities }}
+                    />
                   )}
+
                 </div>
               </div>
             )}
@@ -539,7 +428,7 @@ export default function AddLessonPage() {
         <div className="flex justify-end gap-4 pt-6 border-t">
           <button
             type="button"
-            className="rounded-md border border-gray-300 bg-white px-6 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+            className="rounded-md border border-gray-300 bg-white px-6 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={() => router.push('/dashboard/course-manage')}
             disabled={loading}
           >
