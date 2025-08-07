@@ -217,7 +217,7 @@ export default function AddUnitPage() {
             </div>
 
             {/* Preview URL */}
-            <div data-field="previewUrl" className="mb-6">
+            {/* <div data-field="previewUrl" className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Preview Content URL <span className="text-red-500">*</span>
               </label>
@@ -244,10 +244,10 @@ export default function AddUnitPage() {
               {errors.previewUrl && (
                 <p className="text-xs text-red-500 mt-1">{errors.previewUrl}</p>
               )}
-            </div>
+            </div> */}
 
             {/* Digital URL */}
-            <div data-field="digitalUrl" className="mb-6">
+            {/* <div data-field="digitalUrl" className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Digital Content URL <span className="text-red-500">*</span>
               </label>
@@ -274,7 +274,7 @@ export default function AddUnitPage() {
               {errors.digitalUrl && (
                 <p className="text-xs text-red-500 mt-1">{errors.digitalUrl}</p>
               )}
-            </div>
+            </div> */}
 
             {/* Upload Preview File */}
             <div className="mb-6">
