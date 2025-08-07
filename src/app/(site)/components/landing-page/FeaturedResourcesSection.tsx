@@ -12,6 +12,7 @@ type Resource = {
     imageUrl: string;
     createdAt: string;
     type: string;
+    tags?: string[]; // Added tags property
 };
 
 type ResourceCardProps = {
@@ -45,7 +46,6 @@ function getCleanDescription(htmlString?: string, maxLength: number = 100): stri
 
     return cleanText;
 }
-
 
 function ResourceCard({
     id,
@@ -85,9 +85,8 @@ function ResourceCard({
                 )}
             </div>
 
-
             <div className="flex flex-wrap gap-1 mb-2 mt-5">
-                {tags.length > 0 && (
+                {tags && tags.length > 0 && (
                     <span className="text-sm text-tag font-normals">
                         {tags.join(', ')}
                     </span>
@@ -95,14 +94,12 @@ function ResourceCard({
             </div>
             <h4 className="text-xl font-bold text-primary uppercase leading-relaxed">{title}</h4>
             <p className="text-xs text-text mt-3">{subtitle}</p>
-
         </Link>
     );
 }
 
 export default function FeaturedResourcesSection() {
     const [featured, setFeatured] = useState<(Resource & { source: 'best' | 'new' })[]>([]);
-
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -237,7 +234,10 @@ export default function FeaturedResourcesSection() {
                                         subtitle={getCleanDescription(item.description, 80)}
                                         badge={item.source === 'best' ? 'Best Seller' : 'New Lesson'}
                                         badgeColor={item.source === 'best' ? 'bg-orange-500' : 'bg-blue-600'}
-                                        tags={["11th - 12th", "Adult Education", "Higher Education"]}
+                                        tags={item.tags && item.tags.length > 2
+                                            ? [...item.tags.slice(0, 2), '....']
+                                            : item.tags || []
+                                        }
                                     />
                                 ))
                             ) : (
@@ -255,12 +255,11 @@ export default function FeaturedResourcesSection() {
                                     src="/landing-page/cover-featured.jpg"
                                     alt="Featured Resources Cover"
                                     fill
-                                    className="object-cover "
+                                    className="object-cover"
                                 />
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
         </section>
