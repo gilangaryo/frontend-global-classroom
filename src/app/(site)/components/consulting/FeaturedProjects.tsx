@@ -40,6 +40,18 @@ export default function FeaturedProjects() {
         setSwiperKey((k) => k + 1);
     }, []);
 
+    const getCleanDescription = (htmlString: string, maxLength: number = 120): string => {
+        if (!htmlString) return '';
+
+        const cleanText = htmlString.replace(/<[^>]*>/g, '');
+
+        if (cleanText.length > maxLength) {
+            return cleanText.substring(0, maxLength) + '...';
+        }
+
+        return cleanText;
+    };
+
     return (
         <section className="py-8 md:py-40 px-4 md:px-20  max-w-full">
             <div className="mx-auto">
@@ -90,8 +102,24 @@ export default function FeaturedProjects() {
                         {featured.map((item) => (
                             <SwiperSlide key={item.id}>
                                 <div className="relative flex flex-col items-center">
-                                    <div className="relative w-[300px] h-[390px] md:w-[340px] md:h-[440px] overflow-hidden shadow border border-[#D9C7BF] bg-[#fdfdfd]">
-                                        <Image src={item.image} alt={item.title} fill className="object-cover" />
+                                    <div className="relative w-[300px] h-[390px] md:w-[340px] md:h-[440px] overflow-hidden shadow border border-[#D9C7BF] bg-[#fdfdfd] group/card cursor-pointer">
+                                        <Image
+                                            src={item.image}
+                                            alt={item.title}
+                                            fill
+                                            className="object-cover transition-all duration-300 group-hover/card:scale-102"
+                                        />
+
+                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex items-center justify-center p-6">
+                                            <div className="text-center text-white transform translate-y-4 group-hover/card:translate-y-0 transition-transform duration-300">
+                                                <h3 className="text-xl md:text-2xl font-bold mb-3 text-white">
+                                                    {item.title}
+                                                </h3>
+                                                <p className="text-xs md:text-sm text-gray-200 leading-relaxed">
+                                                    {getCleanDescription(item.description)}
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </SwiperSlide>
