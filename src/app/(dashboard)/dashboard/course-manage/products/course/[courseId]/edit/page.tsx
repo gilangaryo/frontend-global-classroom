@@ -1,37 +1,51 @@
 'use client';
 
+import FileDropZone from '@/app/(dashboard)/dashboard/components/FileDropZone';
+import ButtonColorPicker from '@/app/(dashboard)/dashboard/components/ButtonColorPicker';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import ImageDropZone from '@/app/(dashboard)/dashboard/components/ImageDropZone';
-import TiptapEditor from '@/app/(dashboard)/dashboard/components/TiptapEditor'; // pastikan path ini sesuai
+import TiptapEditor from '@/app/(dashboard)/dashboard/components/TiptapEditor';
+import Image from 'next/image';
 
-function isColorDark(hex: string): boolean {
-    const cleanHex = hex.replace('#', '');
-    const r = parseInt(cleanHex.slice(0, 2), 16);
-    const g = parseInt(cleanHex.slice(2, 4), 16);
-    const b = parseInt(cleanHex.slice(4, 6), 16);
-    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-    return brightness < 128;
+interface UpdateCourseData {
+    title: string;
+    description: string;
+    courseIncluded: string;
+    price: number;
+    previewUrl: string;
+    digitalUrl: string;
+    imageUrl: string;
+    colorButton: string;
 }
 
 export default function EditCoursePage() {
     const router = useRouter();
     const { courseId } = useParams<{ courseId: string }>();
-
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [courseIncluded, setCourseIncluded] = useState(''); // ← NEW
-    const [price, setPrice] = useState<number>(0);
-    const [digitalUrl, setDigitalUrl] = useState('');
-    const [previewUrl, setPreviewUrl] = useState('');
-    const [colorButton, setColorButton] = useState('#3E724A');
-    const [imageUrl, setImageUrl] = useState('');
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const [initialLoading, setInitialLoading] = useState(true);
     const [error, setError] = useState('');
 
+    const [formData, setFormData] = useState<UpdateCourseData>({
+        title: '',
+        description: '',
+        courseIncluded: '',
+        price: 0,
+        previewUrl: '',
+        digitalUrl: '',
+        imageUrl: '',
+        colorButton: '#3E724A',
+    });
+
+    const updateField = (field: keyof UpdateCourseData, value: string | number) => {
+        setFormData((prev: UpdateCourseData) => ({ ...prev, [field]: value }));
+    };
+
+    // Fetch existing course data
     useEffect(() => {
         const fetchData = async () => {
             try {
+                setInitialLoading(true);
                 const token = localStorage.getItem('token');
                 const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/${courseId}`, {
                     headers: {
@@ -51,14 +65,16 @@ export default function EditCoursePage() {
                         throw new Error('This product is not a course');
                     }
 
-                    setTitle(course.title || '');
-                    setDescription(course.description || '');
-                    setCourseIncluded(course.courseIncluded || ''); // ← NEW
-                    setPrice(parseFloat(course.price) || 0);
-                    setDigitalUrl(course.digitalUrl || '');
-                    setPreviewUrl(course.previewUrl || '');
-                    setColorButton(course.colorButton || '#3E724A');
-                    setImageUrl(course.imageUrl || '');
+                    setFormData({
+                        title: course.title || '',
+                        description: course.description || '',
+                        courseIncluded: course.courseIncluded || '',
+                        price: parseFloat(course.price) || 0,
+                        previewUrl: course.previewUrl || '',
+                        digitalUrl: course.digitalUrl || '',
+                        imageUrl: course.imageUrl || '',
+                        colorButton: course.colorButton || '#3E724A',
+                    });
                 } else {
                     throw new Error(data.message || 'Invalid response format');
                 }
@@ -66,66 +82,64 @@ export default function EditCoursePage() {
                 console.error('Error fetching course:', err);
                 setError(err instanceof Error ? err.message : 'Failed to load course');
             } finally {
-                setLoading(false);
+                setInitialLoading(false);
             }
         };
 
         if (courseId) fetchData();
     }, [courseId]);
 
-    const handleImageUpload = (url: string) => {
-        setImageUrl(url);
+    const updateCourse = async (data: UpdateCourseData) => {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/${courseId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(data),
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.message || 'Failed to update course');
+        return result.data;
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setError('');
+    const handleSave = async () => {
+        // Validation
+        if (!formData.title.trim()) { alert('Title is required'); return; }
+        if (!formData.description.trim()) { alert('Description is required'); return; }
+        if (!formData.courseIncluded.trim()) { alert('What&apos;s Included is required'); return; }
+        if (formData.price <= 0) { alert('Price must be greater than 0'); return; }
+        if (!formData.previewUrl.trim()) { alert('Preview file is required'); return; }
+        if (!formData.digitalUrl.trim()) { alert('Digital file is required'); return; }
+        if (!formData.imageUrl.trim()) { alert('Course image is required'); return; }
+        if (!/^#[0-9A-Fa-f]{6}$/.test(formData.colorButton)) { alert('Button color is invalid'); return; }
 
         try {
-            const token = localStorage.getItem('token');
-
-            const updateData = {
-                title: title.trim(),
-                description: description.trim(),
-                courseIncluded: courseIncluded.trim(), // ← NEW
-                price,
-                digitalUrl: digitalUrl.trim(),
-                previewUrl: previewUrl.trim(),
-                colorButton,
-                imageUrl: imageUrl.trim(),
-            };
-
-            if (!updateData.title) throw new Error('Course title is required');
-
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/${courseId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(updateData),
-            });
-
-            const data = await res.json();
-
-            if (res.ok && data.status === 'success') {
-                alert('Course updated successfully!');
-                router.push('/dashboard/course-manage/');
-            } else {
-                throw new Error(data.message || 'Failed to update course');
-            }
+            setLoading(true);
+            await updateCourse(formData);
+            alert('Course updated successfully!');
+            router.push('/dashboard/course-manage');
         } catch (err) {
-            console.error('Error updating course:', err);
-            const message = err instanceof Error ? err.message : 'Failed to update course';
-            setError(message);
-            alert(message);
+            console.error(err);
+            alert(err instanceof Error ? err.message : 'Failed to update course');
         } finally {
             setLoading(false);
         }
     };
 
-    if (loading) {
+    const isFormValid =
+        formData.title.trim() &&
+        formData.description.trim() &&
+        formData.courseIncluded.trim() &&
+        formData.price > 0 &&
+        formData.previewUrl.trim() &&
+        formData.digitalUrl.trim() &&
+        formData.imageUrl.trim() &&
+        /^#[0-9A-Fa-f]{6}$/.test(formData.colorButton);
+
+    // Loading state
+    if (initialLoading) {
         return (
             <div className="p-8">
                 <div className="flex items-center justify-center py-12">
@@ -138,6 +152,7 @@ export default function EditCoursePage() {
         );
     }
 
+    // Error state
     if (error) {
         return (
             <div className="p-8">
@@ -145,10 +160,10 @@ export default function EditCoursePage() {
                     <div className="text-red-600 text-lg font-semibold mb-2">Error</div>
                     <p className="text-red-700 mb-4">{error}</p>
                     <button
-                        onClick={() => router.back()}
+                        onClick={() => router.push('/dashboard/course-manage')}
                         className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
                     >
-                        Go Back
+                        Back to Course Management
                     </button>
                 </div>
             </div>
@@ -157,7 +172,7 @@ export default function EditCoursePage() {
 
     return (
         <div className="p-8">
-            <header className="space-y-1 mb-8">
+            <header className="space-y-1">
                 <div className="flex items-center gap-4 mb-4">
                     <button
                         onClick={() => router.push('/dashboard/course-manage')}
@@ -173,146 +188,214 @@ export default function EditCoursePage() {
                 <p className="text-sm text-gray-500">Edit your course information and settings.</p>
             </header>
 
-            <section className="space-y-6">
-                <h2 className="text-lg font-semibold">Edit Course</h2>
+            <section className="mt-10 space-y-6">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-semibold">Edit Course</h2>
+                </div>
 
-                <form onSubmit={handleSubmit}>
-                    <div className="grid gap-6 md:grid-cols-3">
-                        <div className="md:col-span-2 space-y-5">
-                            {/* Course Title */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Course Title *</label>
-                                <input
-                                    type="text"
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
-                                    required
-                                    className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
-                                />
-                            </div>
+                <div className="grid gap-6 md:grid-cols-3">
+                    <div className="md:col-span-2 space-y-5">
+                        {/* Title */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Course Title <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="Enter course title"
+                                value={formData.title}
+                                onChange={e => updateField('title', e.target.value)}
+                                className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
+                                required
+                            />
+                        </div>
 
-                            {/* Description */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                                <textarea
-                                    rows={4}
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
-                                />
-                            </div>
+                        {/* Description */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Description <span className="text-red-500">*</span>
+                            </label>
+                            <textarea
+                                rows={6}
+                                placeholder="Add course description..."
+                                value={formData.description}
+                                onChange={e => updateField('description', e.target.value)}
+                                className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
+                                required
+                            />
+                        </div>
 
-                            {/* Course Included */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Whats Included in This Course
-                                </label>
+                        {/* What's Included */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                What&apos;s Included <span className="text-red-500">*</span>
+                            </label>
+                            <div className="rounded-md bg-white">
                                 <TiptapEditor
-                                    content={courseIncluded}
-                                    onChange={setCourseIncluded}
-                                    placeholder="List what students will get (e.g., videos, guides, certificates)..."
+                                    content={formData.courseIncluded}
+                                    onChange={value => updateField('courseIncluded', value)}
+                                    placeholder="List what's included..."
                                 />
                             </div>
+                        </div>
 
-                            {/* Color */}
-                            {/* Color */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Button Color Theme</label>
-                                <div className="flex items-center gap-4 border border-gray-300 rounded-lg px-4 py-2 h-12">
-                                    <div className="w-6 h-6 rounded-full" style={{ backgroundColor: colorButton }} />
-                                    <label className="text-sm text-gray-600">Change Color Template</label>
-                                    <input
-                                        type="color"
-                                        value={colorButton}
-                                        onChange={(e) => setColorButton(e.target.value)}
-                                        className="ml-auto h-6 w-6 cursor-pointer bg-transparent"
-                                    />
+                        {/* Price */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Price <span className="text-red-500">*</span>
+                            </label>
+                            <div className="flex h-12 overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-sky-400">
+                                <div className="flex items-center justify-center border-2 border-sky-500 bg-sky-100 px-4 m-2 rounded-md">
+                                    <span className="text-sky-500 text-sm font-bold">$</span>
                                 </div>
-
-                                {/* Live Button Preview */}
-                                <div className="pt-2">
-                                    <label className="text-sm text-gray-600">Live Button Preview:</label>
-                                    <div className="mt-2">
-                                        <button
-                                            type="button"
-                                            className={`px-8 py-3 rounded-lg font-semibold hover:opacity-90 ${isColorDark(colorButton) ? 'text-white' : 'text-black'
-                                                }`}
-                                            style={{ backgroundColor: colorButton }}
-                                        >
-                                            Buy Now
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-
-                            {/* Price */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Course Price (USD)</label>
                                 <input
                                     type="number"
-                                    min="0"
-                                    step="0.01"
-                                    value={price}
-                                    onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
-                                    className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
-                                />
-                            </div>
-
-                            {/* Preview URL */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Preview URL</label>
-                                <input
-                                    type="url"
-                                    value={previewUrl}
-                                    onChange={(e) => setPreviewUrl(e.target.value)}
-                                    className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
-                                />
-                            </div>
-
-                            {/* Digital URL */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Access Link</label>
-                                <input
-                                    type="url"
-                                    value={digitalUrl}
-                                    onChange={(e) => setDigitalUrl(e.target.value)}
-                                    className="w-full rounded-md border border-gray-300 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400"
+                                    placeholder="0.00"
+                                    value={formData.price === 0 ? '' : formData.price}
+                                    onChange={e => updateField('price', parseFloat(e.target.value) || 0)}
+                                    className="flex-1 px-4 py-2 text-sm placeholder:text-gray-500 outline-none border-none"
+                                    min={0}
+                                    step={0.01}
+                                    required
                                 />
                             </div>
                         </div>
 
-                        {/* Image */}
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Course Image</label>
-                                <ImageDropZone currentImageUrl={imageUrl} onImageUpload={handleImageUpload} />
-                            </div>
+                        {/* Button Color */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Button Color <span className="text-red-500">*</span>
+                            </label>
+                            <ButtonColorPicker
+                                value={formData.colorButton}
+                                onChange={value => updateField('colorButton', value)}
+                            />
+                        </div>
+
+                        {/* Preview File */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Upload Preview File <span className="text-red-500">*</span>
+                            </label>
+                            <FileDropZone
+                                label="Preview File"
+                                onFileUpload={url => updateField('previewUrl', url)}
+                                acceptedTypes="video/*,application/pdf"
+                            />
+                            {formData.previewUrl && (
+                                <p className="text-xs text-gray-500 mt-2 break-all">
+                                    Current: {formData.previewUrl}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Digital File */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Upload Digital File <span className="text-red-500">*</span>
+                            </label>
+                            <FileDropZone
+                                label="Digital File"
+                                onFileUpload={url => updateField('digitalUrl', url)}
+                                acceptedTypes="application/zip,application/pdf"
+                            />
+                            {formData.digitalUrl && (
+                                <p className="text-xs text-gray-500 mt-2 break-all">
+                                    Current: {formData.digitalUrl}
+                                </p>
+                            )}
                         </div>
                     </div>
 
-                    {/* Buttons */}
-                    <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
-                        <button
-                            type="button"
-                            onClick={() => router.back()}
-                            className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-                            disabled={loading}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={loading || !title.trim()}
-                            className={`px-8 py-2.5 text-sm font-medium transition-colors ${loading || !title.trim()
-                                ? 'bg-gray-400 cursor-not-allowed text-gray-200'
-                                : 'bg-sky-500 hover:bg-sky-600 text-white'
-                                } rounded-md`}
-                        >
-                            {loading ? 'Saving...' : 'Save Changes'}
-                        </button>
+                    {/* Sidebar */}
+                    <div className="space-y-4">
+                        {/* Course Image */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Course Image <span className="text-red-500">*</span>
+                            </label>
+                            <ImageDropZone
+                                currentImageUrl={formData.imageUrl}
+                                onImageUpload={url => updateField('imageUrl', url)}
+                            />
+                        </div>
+
+                        {/* Preview Card */}
+                        {(formData.title || formData.imageUrl) && (
+                            <div className="bg-gray-50 border rounded-lg p-4">
+                                <h3 className="text-sm font-medium text-gray-700 mb-3">Preview:</h3>
+                                <div className="bg-white rounded-lg border p-3 shadow-sm">
+                                    {/* Image */}
+                                    {formData.imageUrl && (
+                                        <div className="relative w-full h-40 mb-3">
+                                            <Image
+                                                src={formData.imageUrl}
+                                                alt="Course preview"
+                                                fill
+                                                className="object-cover rounded"
+                                                onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.style.display = 'none';
+                                                }}
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* Title */}
+                                    <h4 className="font-medium text-gray-900 text-sm">
+                                        {formData.title || 'Course Title'}
+                                    </h4>
+
+                                    {/* Price */}
+                                    {formData.price > 0 && (
+                                        <p className="text-sm text-green-600 font-medium mt-1">
+                                            ${formData.price.toFixed(2)}
+                                        </p>
+                                    )}
+
+                                    {/* Description */}
+                                    {formData.description && (
+                                        <p className="text-xs text-gray-500 mt-2 line-clamp-2">
+                                            {formData.description.replace(/<[^>]*>/g, '').substring(0, 80)}
+                                            {formData.description.length > 80 && '...'}
+                                        </p>
+                                    )}
+
+                                    {/* What's Included Preview */}
+                                    {formData.courseIncluded.trim() && (
+                                        <div
+                                            className="text-xs text-gray-500 mt-2 prose prose-sm max-w-none line-clamp-3"
+                                            dangerouslySetInnerHTML={{ __html: formData.courseIncluded }}
+                                        />
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
-                </form>
+                </div>
+
+                {/* Actions */}
+                <div className="flex justify-end gap-4 pt-6 border-t">
+                    <button
+                        type="button"
+                        onClick={() => router.push('/dashboard/course-manage')}
+                        className="rounded-md border border-gray-300 bg-white px-6 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={loading}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleSave}
+                        disabled={loading || !isFormValid}
+                        className={`rounded-md px-8 py-2 text-sm font-medium transition-colors ${loading || !isFormValid
+                            ? 'bg-gray-400 cursor-not-allowed text-gray-200'
+                            : 'bg-sky-500 hover:bg-sky-600 text-white'
+                            }`}
+                    >
+                        {loading ? 'Updating...' : 'Update Course'}
+                    </button>
+                </div>
             </section>
         </div>
     );
