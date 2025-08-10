@@ -2,7 +2,7 @@
 
 import DashboardTabs from "../../components/DashboardTabs";
 import ImageDropZone from "../../components/ImageDropZone";
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useProducts, useProductActions, CreateProductData } from '../../../../../hooks/useProducts';
 import Image from "next/image";
@@ -33,6 +33,11 @@ export default function AddLessonPage() {
   });
 
   const [tags, setTags] = useState<string[]>([]);
+
+  // Memoize fallback tags to prevent unnecessary re-renders
+  const fallbackTags = useMemo(() => [
+    'beginner', 'intermediate', 'advanced', 'tutorial', 'practice'
+  ], []);
 
   const updateField = (field: string, value: string | number | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -256,9 +261,9 @@ export default function AddLessonPage() {
                 disabled={loading}
                 renderMode="inline"
                 showInitialSuggestions={true}
+                fallbackSuggestedTags={fallbackTags}
               />
             )}
-
 
             {/* Price (paid lessons only) */}
             {!formData.isFreeLesson && (
@@ -294,7 +299,6 @@ export default function AddLessonPage() {
                     acceptedTypes="application/pdf"
                     onFileUpload={(url) => updateField('studyGuideUrl', url)}
                   />
-
                 </div>
                 <div className="mb-6">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -319,7 +323,6 @@ export default function AddLessonPage() {
                 acceptedTypes="application/pdf"
                 onFileUpload={(url) => updateField('digitalUrl', url)}
               />
-
             </div>
           </div>
 
