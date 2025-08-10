@@ -77,7 +77,7 @@ export default function AddUnitPage() {
 
     const productData: CreateProductData = {
       ...formData,
-      ProductType: 'UNIT',
+      type: 'UNIT',
     };
 
     try {
