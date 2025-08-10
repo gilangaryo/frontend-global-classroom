@@ -148,24 +148,24 @@ export default function ImageDropZone({ onImageUpload, currentImageUrl }: ImageD
                     <div className="space-y-4 min-h-[200px] flex flex-col justify-center">
                         {uploading ? (
                             <div className="flex flex-col items-center">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]"></div>
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]" />
                                 <p className="mt-2 text-sm text-[var(--color-text)]">Uploading to server...</p>
                             </div>
                         ) : (
                             <>
-                                <div className="mx-auto w-16 h-16 text-[var(--color-tertiary)]">
-                                    <svg
-                                        className="w-full h-full"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 48 48"
-                                    >
-                                        <path d="M24 36V20M24 20l-6 6M24 20l6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                        <path d="M8 38a10 10 0 0 1 2-19.8A12 12 0 0 1 34.6 9.8 10 10 0 0 1 40 38H8Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
+                                <div className="relative mx-auto h-16 w-16">
+                                    <Image
+                                        src="/dashboard/upload-icon.png"
+                                        alt="Upload to cloud"
+                                        fill
+                                        sizes="64px"
+                                        className="object-contain"
+                                        priority={false}
+                                    />
                                 </div>
+
                                 <div>
-                                    <p className="text-lg font-medium text-[var(--color-primary)]">Click or Drop image</p>
+                                    <p className="text-lg font-medium text-primary">Click or Drop image</p>
                                     <p className="text-sm text-[var(--color-text)] mt-1">Image up to 15MB</p>
                                     {imageError && (
                                         <p className="text-xs text-red-500 mt-2">
@@ -176,6 +176,7 @@ export default function ImageDropZone({ onImageUpload, currentImageUrl }: ImageD
                             </>
                         )}
                     </div>
+
                 )}
             </div>
         </div>

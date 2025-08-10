@@ -138,6 +138,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             height={32}
                             className="rounded-full"
                         />
+
                         {!collapsed && <span className="ml-2 text-sm"></span>}
                     </div>
                     <button

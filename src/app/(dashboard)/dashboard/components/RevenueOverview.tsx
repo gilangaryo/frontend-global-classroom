@@ -119,12 +119,9 @@ export function RevenueOverview({ data: propData }: RevenueOverviewProps = {}) {
                 <p className="text-3xl font-bold text-gray-900">
                     {formatCurrency(revenueData.thisMonth)}
                 </p>
-                <p className="text-sm text-gray-500 mt-1">
-                    vs {formatCurrency(revenueData.lastMonth)} last month
-                </p>
             </div>
 
-            {/* Real chart with data */}
+            {/* al chart with data */}
             {revenueData.chartData.length > 0 && (
                 <div className="space-y-3">
                     <div className="flex items-center justify-between">

@@ -283,7 +283,7 @@ export default function AddUnitPage() {
               </label>
               <FileDropZone
                 label="Upload preview"
-                acceptedTypes="video/*,application/pdf"
+                acceptedTypes="application/pdf"
                 onFileUpload={url => updateField('previewUrl', url)}
               />
             </div>
@@ -295,7 +295,7 @@ export default function AddUnitPage() {
               </label>
               <FileDropZone
                 label="Upload digital"
-                acceptedTypes="application/zip,application/pdf"
+                acceptedTypes="application/pdf"
                 onFileUpload={url => updateField('digitalUrl', url)}
               />
             </div>

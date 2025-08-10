@@ -1,23 +1,27 @@
 import { useState, useEffect } from 'react';
 import { dashboardApi, ApiError } from '../app/utils/api';
 import type { Stats, User, Payment, Purchase, Course } from '../app/utils/api';
+type UseDashboardStatsOptions = {
+    enabled?: boolean; // default true
+};
+export function useDashboardStats(options: UseDashboardStatsOptions = {}) {
+    const { enabled = true } = options;
 
-export function useDashboardStats() {
     const [stats, setStats] = useState<Stats | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(enabled);
     const [error, setError] = useState<string | null>(null);
 
     const fetchStats = async (): Promise<void> => {
         try {
             setLoading(true);
             setError(null);
-
             const data = await dashboardApi.getStats();
             setStats(data);
         } catch (err) {
             console.error('Error fetching dashboard stats:', err);
-            const errorMessage = err instanceof ApiError ? err.message :
-                err instanceof Error ? err.message : 'Unknown error occurred';
+            const errorMessage =
+                err instanceof ApiError ? err.message :
+                    err instanceof Error ? err.message : 'Unknown error occurred';
             setError(errorMessage);
         } finally {
             setLoading(false);
@@ -25,15 +29,11 @@ export function useDashboardStats() {
     };
 
     useEffect(() => {
-        fetchStats();
-    }, []);
+        if (!enabled) return;
+        void fetchStats();
+    }, [enabled]);
 
-    return {
-        stats,
-        loading,
-        error,
-        refetch: fetchStats
-    };
+    return { stats, loading, error, refetch: fetchStats };
 }
 
 interface DashboardData {

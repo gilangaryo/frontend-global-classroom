@@ -280,7 +280,7 @@ export default function EditCoursePage() {
                             <FileDropZone
                                 label="Preview File"
                                 onFileUpload={url => updateField('previewUrl', url)}
-                                acceptedTypes="video/*,application/pdf"
+                                acceptedTypes="application/pdf"
                             />
                             {formData.previewUrl && (
                                 <p className="text-xs text-gray-500 mt-2 break-all">
@@ -297,7 +297,7 @@ export default function EditCoursePage() {
                             <FileDropZone
                                 label="Digital File"
                                 onFileUpload={url => updateField('digitalUrl', url)}
-                                acceptedTypes="application/zip,application/pdf"
+                                acceptedTypes="application/pdf"
                             />
                             {formData.digitalUrl && (
                                 <p className="text-xs text-gray-500 mt-2 break-all">

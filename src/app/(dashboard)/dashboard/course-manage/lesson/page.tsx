@@ -97,7 +97,7 @@ export default function AddLessonPage() {
     try {
       const lessonData: CreateLessonData = {
         ...formData,
-        ProductType: 'LESSON',
+        type: 'LESSON',
         tags: formData.isFreeLesson ? [] : tags,
       };
 
@@ -246,7 +246,6 @@ export default function AddLessonPage() {
               </label>
             </div>
 
-            {/* Tags (paid lessons only) */}
             {!formData.isFreeLesson && (
               <TagsInput
                 tags={tags}
@@ -254,16 +253,12 @@ export default function AddLessonPage() {
                 maxTags={10}
                 label="Tags"
                 placeholder="Type a tag and press Enter"
-                suggestedTags={[
-                  "9th", "10th", "11th", "12th", "ESL/EFL/ELL", "Online Courses", "Vocational Training",
-                  "Adult Education", "Higher Education", "AP", "IB", "IGCSE", "Beginner", "Intermediate",
-                  "Advanced", "Case Study", "Group Work", "Individual Work", "Critical Thinking",
-                  "Writing Practice", "Geography", "History", "Economics", "Mathematics", "Science",
-                  "English", "Introduction", "Practical", "Theory"
-                ]}
                 disabled={loading}
+                renderMode="inline"
+                showInitialSuggestions={true}
               />
             )}
+
 
             {/* Price (paid lessons only) */}
             {!formData.isFreeLesson && (
@@ -299,9 +294,7 @@ export default function AddLessonPage() {
                     acceptedTypes="application/pdf"
                     onFileUpload={(url) => updateField('studyGuideUrl', url)}
                   />
-                  {formData.studyGuideUrl && (
-                    <p className="text-xs text-gray-500 mt-2 break-all">URL: {formData.studyGuideUrl}</p>
-                  )}
+
                 </div>
                 <div className="mb-6">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -312,9 +305,6 @@ export default function AddLessonPage() {
                     acceptedTypes="application/pdf"
                     onFileUpload={(url) => updateField('previewUrl', url)}
                   />
-                  {formData.previewUrl && (
-                    <p className="text-xs text-gray-500 mt-2 break-all">URL: {formData.previewUrl}</p>
-                  )}
                 </div>
               </>
             )}
@@ -329,9 +319,7 @@ export default function AddLessonPage() {
                 acceptedTypes="application/pdf"
                 onFileUpload={(url) => updateField('digitalUrl', url)}
               />
-              {formData.digitalUrl && (
-                <p className="text-xs text-gray-500 mt-2 break-all">URL: {formData.digitalUrl}</p>
-              )}
+
             </div>
           </div>
 

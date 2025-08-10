@@ -1,36 +1,73 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { KpiCard } from './KpiCard';
-import { TrendingUp, Users, BookOpen, Eye, RefreshCw } from 'lucide-react';
+import { TrendingUp, BookOpen, Eye, Package, RefreshCw } from 'lucide-react';
 import { useDashboardStats } from '../../../../hooks/useDashboardStats';
 import type { Stats } from '../../../utils/api';
 
-// Props interface untuk jika ingin pass stats dari parent
 export interface OverviewSectionProps {
-    stats?: Stats;
+    stats?: Stats;        // jika disediakan, skip fetch
+    showRefresh?: boolean; // default true saat stats tidak disediakan
 }
 
-// Card data interface
 interface CardData {
     title: string;
     value: string;
-    change: string;
-    trend: 'up' | 'down';
     icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-    color: string;
+    colorClass: string;
 }
 
-export function OverviewSection({ stats: propStats }: OverviewSectionProps = {}) {
-    const { stats: hookStats, loading, error, refetch } = useDashboardStats();
+export function OverviewSection({ stats: propStats, showRefresh }: OverviewSectionProps = {}) {
+    const { stats: hookStats, loading, error, refetch } = useDashboardStats({ enabled: !propStats });
+    const stats = propStats ?? hookStats;
+    const shouldShowRefresh = showRefresh ?? !propStats;
 
-    // Use props stats if provided, otherwise use hook stats
-    const stats = propStats || hookStats;
+    const cards: CardData[] = useMemo(() => {
+        const formatCurrency = (amount: number): string =>
+            new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
+
+        if (!stats) {
+            return [
+                { title: 'Total Revenue', value: formatCurrency(0), icon: TrendingUp, colorClass: 'text-[#3E724A] bg-[#EFE9E9]' },
+                { title: 'Courses', value: '0', icon: BookOpen, colorClass: 'text-[#4E3D34] bg-[#EFE9E9]' },
+                { title: 'Units', value: '0', icon: Package, colorClass: 'text-[#363F36] bg-[#EFE9E9]' },
+                { title: 'Lessons', value: '0', icon: Eye, colorClass: 'text-[#D9C7BF] bg-[#191919]/5' },
+            ];
+        }
+
+        return [
+            {
+                title: 'Total Revenue',
+                value: formatCurrency(Number(stats.revenue ?? 0)),
+                icon: TrendingUp,
+                colorClass: 'text-[#3E724A] bg-[#EFE9E9]',
+            },
+            {
+                title: 'Courses',
+                value: String(stats.courses ?? 0),
+                icon: BookOpen,
+                colorClass: 'text-[#4E3D34] bg-[#EFE9E9]',
+            },
+            {
+                title: 'Units',
+                value: String(stats.units ?? 0),
+                icon: Package,
+                colorClass: 'text-[#363F36] bg-[#EFE9E9]',
+            },
+            {
+                title: 'Lessons',
+                value: String(stats.lessons ?? 0),
+                icon: Eye,
+                colorClass: 'text-[#D9C7BF] bg-[#191919]/5',
+            },
+        ];
+    }, [stats]);
 
     if (loading) {
         return (
             <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Overview</h2>
+                <h2 className="text-2xl font-bold mb-6" style={{ color: '#363F36' }}>Overview</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[1, 2, 3, 4].map((i) => (
                         <div key={i} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -52,20 +89,22 @@ export function OverviewSection({ stats: propStats }: OverviewSectionProps = {})
     if (error) {
         return (
             <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Overview</h2>
+                <h2 className="text-2xl font-bold mb-6" style={{ color: '#363F36' }}>Overview</h2>
                 <div className="bg-red-50 border border-red-200 rounded-lg p-6">
                     <div className="flex items-center justify-between">
                         <div>
                             <h3 className="text-red-800 font-semibold">Failed to load data</h3>
                             <p className="text-red-600 text-sm mt-1">{error}</p>
                         </div>
-                        <button
-                            onClick={refetch}
-                            className="flex items-center px-3 py-2 text-red-600 border border-red-300 rounded-md hover:bg-red-100 transition-colors"
-                        >
-                            <RefreshCw className="w-4 h-4 mr-2" />
-                            Retry
-                        </button>
+                        {shouldShowRefresh && (
+                            <button
+                                onClick={refetch}
+                                className="flex items-center px-3 py-2 text-red-600 border border-red-300 rounded-md hover:bg-red-100 transition-colors"
+                            >
+                                <RefreshCw className="w-4 h-4 mr-2" />
+                                Retry
+                            </button>
+                        )}
                     </div>
                 </div>
             </section>
@@ -75,62 +114,23 @@ export function OverviewSection({ stats: propStats }: OverviewSectionProps = {})
     if (!stats) {
         return (
             <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Overview</h2>
-                <div className="text-gray-500 text-center py-8">No data available</div>
+                <h2 className="text-2xl font-bold mb-6" style={{ color: '#363F36' }}>Overview</h2>
+                <div className="text-center py-8" style={{ color: '#8E8E8E' }}>No data available</div>
             </section>
         );
     }
 
-    const cards: CardData[] = [
-        {
-            title: 'Total Revenue',
-            value: new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                maximumFractionDigits: 0
-            }).format(stats.revenue ?? 0),
-            change: '+12.5%',
-            trend: 'up',
-            icon: TrendingUp,
-            color: 'text-green-600 bg-green-50'
-        },
-        {
-            title: 'Active Users',
-            value: (stats.users ?? 0).toLocaleString(),
-            change: '+8.2%',
-            trend: 'up',
-            icon: Users,
-            color: 'text-blue-600 bg-blue-50'
-        },
-        {
-            title: 'Courses',
-            value: (stats.courses ?? 0).toString(),
-            change: '+2.1%',
-            trend: 'up',
-            icon: BookOpen,
-            color: 'text-purple-600 bg-purple-50'
-        },
-        {
-            title: 'Total Lessons',
-            value: (stats.lessons ?? 0).toString(),
-            change: '+15.3%',
-            trend: 'up',
-            icon: Eye,
-            color: 'text-orange-600 bg-orange-50'
-        }
-    ];
-
     return (
         <section>
             <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Overview</h2>
-                {!propStats && (
+                <h2 className="text-2xl font-bold" style={{ color: '#363F36' }}>Overview</h2>
+                {shouldShowRefresh && (
                     <button
                         onClick={refetch}
-                        className="flex items-center px-3 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                        disabled={loading}
+                        className="flex items-center px-3 py-2 border rounded-md hover:bg-gray-50 transition-colors"
+                        style={{ color: '#363F36', borderColor: '#D9C7BF' }}
                     >
-                        <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                        <RefreshCw className="w-4 h-4 mr-2" />
                         Refresh
                     </button>
                 )}
@@ -138,7 +138,13 @@ export function OverviewSection({ stats: propStats }: OverviewSectionProps = {})
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {cards.map((card, i) => (
-                    <KpiCard key={i} {...card} />
+                    <KpiCard
+                        key={i}
+                        title={card.title}
+                        value={card.value}
+                        icon={card.icon}
+                        color={card.colorClass}
+                    />
                 ))}
             </div>
         </section>

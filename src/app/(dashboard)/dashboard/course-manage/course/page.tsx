@@ -195,7 +195,7 @@ export default function AddCoursePage() {
               <FileDropZone
                 label="Preview File"
                 onFileUpload={url => updateField('previewUrl', url)}
-                acceptedTypes="video/*,application/pdf"
+                acceptedTypes="application/pdf"
               />
             </div>
 
@@ -207,7 +207,7 @@ export default function AddCoursePage() {
               <FileDropZone
                 label="Digital File"
                 onFileUpload={url => updateField('digitalUrl', url)}
-                acceptedTypes="application/zip,application/pdf"
+                acceptedTypes="application/pdf"
               />
             </div>
           </div>

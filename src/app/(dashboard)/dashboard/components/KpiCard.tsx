@@ -2,21 +2,16 @@
 'use client';
 
 import React from 'react';
-import { ArrowUpIcon, ArrowDownIcon } from 'lucide-react';
 
 export interface KpiCardProps {
     title: string;
     value: string;
-    change: string;
-    trend: 'up' | 'down';
+    change?: string;
     icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
     color: string;
 }
 
-export function KpiCard({ title, value, change, trend, icon: Icon, color }: KpiCardProps) {
-    const trendColor = trend === 'up' ? 'text-green-600' : 'text-red-600';
-    const TrendIcon = trend === 'up' ? ArrowUpIcon : ArrowDownIcon;
-
+export function KpiCard({ title, value, icon: Icon, color }: KpiCardProps) {
     return (
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
@@ -27,13 +22,7 @@ export function KpiCard({ title, value, change, trend, icon: Icon, color }: KpiC
             </div>
 
             <div className="flex items-end justify-between">
-                <div>
-                    <p className="text-2xl font-bold text-gray-900">{value}</p>
-                </div>
-                <div className={`flex items-center text-sm font-medium ${trendColor}`}>
-                    <TrendIcon className="w-4 h-4 mr-1" />
-                    {change}
-                </div>
+                <p className="text-2xl font-bold text-gray-900">{value}</p>
             </div>
         </div>
     );

@@ -18,8 +18,6 @@ export default function LoginPage() {
         setLoading(true);
 
         try {
-            console.log('Attempting login with:', { email, password: '***' });
-
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: {
@@ -28,12 +26,7 @@ export default function LoginPage() {
                 },
                 body: JSON.stringify({ email, password }),
             });
-
-            console.log('Response status:', res.status);
-            console.log('Response ok:', res.ok);
-
             const data = await res.json();
-            console.log('Response data:', data);
 
             if (res.ok && data.status === 'success' && data.data?.token && data.data?.refreshToken) {
                 localStorage.setItem('token', data.data.token);
@@ -42,9 +35,6 @@ export default function LoginPage() {
                 localStorage.setItem('userEmail', data.data.user.email);
                 localStorage.setItem('userName', data.data.user.name || '');
                 localStorage.setItem('userRole', data.data.user.role || 'USER');
-
-                console.log('Login successful, redirecting to dashboard');
-
                 router.replace('/dashboard');
             } else {
                 console.error('Login failed:', data);
@@ -60,13 +50,11 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen flex flex-col justify-between items-center bg-white text-green-active px-4">
-            {/* Main Content: Centered Form */}
             <div className="flex-grow flex flex-col justify-center items-center w-full">
                 <form
                     onSubmit={handleLogin}
                     className="w-full max-w-sm bg-white px-8 py-10 shadow border rounded-md flex flex-col items-center space-y-6"
                 >
-                    {/* Logo and title */}
                     <div className="flex flex-col items-center space-y-2">
                         <Image src="/logo_navbar.png" alt="Logo" width={90} height={90} />
                         <h2 className="text-2xl font-bold text-green-active">SIGN IN</h2>
@@ -109,17 +97,6 @@ export default function LoginPage() {
                         </button>
                     </div>
 
-                    {/* <div className="w-full flex items-center justify-start text-sm">
-                        <label className="flex items-center gap-2">
-                            <input
-                                type="checkbox"
-                                className="accent-[#3E724A]"
-                                disabled={loading}
-                            />
-                            Remember me
-                        </label>
-                    </div> */}
-
                     <button
                         type="submit"
                         disabled={loading || !email || !password}
@@ -135,16 +112,8 @@ export default function LoginPage() {
                         )}
                     </button>
 
-                    {/* Debug info in development */}
-                    {process.env.NODE_ENV === 'development' && (
-                        <div className="w-full text-xs text-gray-500 text-center">
-                            <p>API URL: {process.env.NEXT_PUBLIC_API_BASE_URL}</p>
-                        </div>
-                    )}
                 </form>
             </div>
-
-            {/* Footer: Bawah sendiri */}
             <div className="pb-4">
                 <Image src="/dashboard/power-by.png" alt="Powered by" width={90} height={90} />
             </div>

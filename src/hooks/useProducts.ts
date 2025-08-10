@@ -43,7 +43,7 @@ export interface CreateProductData {
     previewUrl?: string;
     imageUrl?: string;
     parentId?: string;
-    ProductType: ProductType;
+    type: ProductType;
     tags?: string[];
 }
 
@@ -284,10 +284,36 @@ export const useProductActions = () => {
         try {
             setLoading(true);
 
-            const { ProductType, ...requestData } = data;
+            // Legacy support: terima ProductType, tapi utamakan data.type
+            const anyData = data as any;
+            const { ProductType, ...requestData } = anyData;
+            const type: ProductType | undefined = (requestData.type as ProductType) ?? ProductType;
+
+            // Normalisasi tag biar aman
+            const tags: string[] = Array.isArray(requestData.tags)
+                ? requestData.tags
+                    .filter((t: unknown): t is string => typeof t === 'string')
+                    .map((t) => t.trim())
+                    .filter(Boolean)
+                : [];
+
+            // Pastikan price number
+            const price =
+                typeof requestData.price === 'number'
+                    ? requestData.price
+                    : Number.isFinite(Number(requestData.price))
+                        ? Number(requestData.price)
+                        : 0;
+
+            if (!type) {
+                throw new Error('type is required (COURSE | UNIT | LESSON)');
+            }
+
             const finalData = {
                 ...requestData,
-                type: ProductType,
+                type,   // <- JANGAN ditimpa ProductType undefined
+                tags,
+                price,
             };
 
             const response = await fetch(
@@ -300,20 +326,25 @@ export const useProductActions = () => {
             );
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `Failed to create ${ProductType.toLowerCase()}`);
+                const errorData = await response.json().catch(() => null);
+                const label = String(type).toLowerCase?.() || 'product';
+                throw new Error(errorData?.message || `Failed to create ${label}`);
             }
 
             const result = await response.json();
-            return result.data;
+            return result.data as Product;
         } catch (err) {
-            const message = err instanceof Error ? err.message : 'Unknown error';
-            alert(`Error creating ${data.ProductType.toLowerCase()}: ${message}`);
+            const label =
+                (typeof (data as any)?.type === 'string' && (data as any).type.toLowerCase?.()) ||
+                (typeof (data as any)?.ProductType === 'string' && (data as any).ProductType.toLowerCase?.()) ||
+                'product';
+            alert(`Error creating ${label}: ${err instanceof Error ? err.message : 'Unknown error'}`);
             return null;
         } finally {
             setLoading(false);
         }
     };
+
 
     const updateProduct = async (id: string, data: UpdateProductData): Promise<Product | null> => {
         try {

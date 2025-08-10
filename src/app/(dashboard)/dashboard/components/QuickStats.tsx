@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { BookOpen, Users, Eye, Package } from 'lucide-react';
+import { BookOpen, Eye, Package } from 'lucide-react';
 import type { Stats } from '../../../../types/dashboard';
 
 export interface QuickStatsProps {
@@ -28,12 +28,6 @@ export function QuickStats({ stats }: QuickStatsProps) {
             icon: Eye,
             color: 'text-green-600'
         },
-        {
-            name: 'Active Users',
-            value: stats.users?.toString() || '0',
-            icon: Users,
-            color: 'text-orange-600'
-        }
     ];
 
     return (

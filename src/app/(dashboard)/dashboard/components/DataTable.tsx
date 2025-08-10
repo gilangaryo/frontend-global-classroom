@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { ArrowRight } from 'lucide-react';
 
 export interface DataTableColumn<T> {
     header: string;
@@ -21,10 +20,16 @@ export function DataTable<T>({ title, data, columns, onViewAll }: DataTableProps
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+                    {onViewAll && (
+                        <button
+                            onClick={onViewAll}
+                            className="text-sm font-medium px-3 py-1.5 rounded-md border border-gray-300 hover:bg-gray-50"
+                        >
+                            View all
+                        </button>
+                    )}
                 </div>
-                <div className="text-center py-8 text-gray-500">
-                    No data available
-                </div>
+                <div className="text-center py-8 text-gray-500">No data available</div>
             </div>
         );
     }
@@ -36,10 +41,9 @@ export function DataTable<T>({ title, data, columns, onViewAll }: DataTableProps
                 {onViewAll && (
                     <button
                         onClick={onViewAll}
-                        className="flex items-center text-sm text-blue-600 hover:text-blue-800 font-medium"
+                        className="text-sm font-medium px-3 py-1.5 rounded-md border border-gray-300 hover:bg-gray-50"
                     >
                         View all
-                        <ArrowRight className="w-4 h-4 ml-1" />
                     </button>
                 )}
             </div>
@@ -62,10 +66,7 @@ export function DataTable<T>({ title, data, columns, onViewAll }: DataTableProps
                         {data.map((item, rowIndex) => (
                             <tr key={rowIndex} className="hover:bg-gray-50">
                                 {columns.map((column, colIndex) => (
-                                    <td
-                                        key={colIndex}
-                                        className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-                                    >
+                                    <td key={colIndex} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {column.renderCell(item)}
                                     </td>
                                 ))}

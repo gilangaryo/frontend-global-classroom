@@ -144,7 +144,6 @@ interface FileFieldProps {
 export const FileField: React.FC<FileFieldProps> = ({
     name,
     label,
-    url,
     onUpload,
     acceptedTypes,
     error,
@@ -158,7 +157,6 @@ export const FileField: React.FC<FileFieldProps> = ({
             onFileUpload={onUpload}
             acceptedTypes={acceptedTypes}
         />
-        {url && <p className="text-xs text-gray-500 mt-2 break-all">URL: {url}</p>}
         {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
     </div>
 );
@@ -181,7 +179,6 @@ export const ImageField: React.FC<ImageFieldProps> = ({
     url,
     onUpload,
     error,
-    // recommendedSize = '800×600px',
 }) => (
     <div className="mb-6" data-field={name}>
         <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-2">
@@ -189,8 +186,7 @@ export const ImageField: React.FC<ImageFieldProps> = ({
         </label>
         <ImageDropZone currentImageUrl={url} onImageUpload={onUpload} />
         {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
-        {/* <p className="text-xs text-gray-500 mt-2">Recommended size: {recommendedSize}</p> */}
-    </div>
+ application/pdf    </div>
 );
 
 /** -------------------------------------------------

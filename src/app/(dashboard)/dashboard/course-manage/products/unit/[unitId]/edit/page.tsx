@@ -346,7 +346,7 @@ export default function EditUnitPage() {
                             </label>
                             <FileDropZone
                                 label="Upload preview"
-                                acceptedTypes="video/*,application/pdf"
+                                acceptedTypes="application/pdf"
                                 onFileUpload={url => updateField('previewUrl', url)}
                             />
                             {formData.previewUrl && (
@@ -366,7 +366,7 @@ export default function EditUnitPage() {
                             </label>
                             <FileDropZone
                                 label="Upload digital"
-                                acceptedTypes="application/zip,application/pdf"
+                                acceptedTypes="application/pdf"
                                 onFileUpload={url => updateField('digitalUrl', url)}
                             />
                             {formData.digitalUrl && (
