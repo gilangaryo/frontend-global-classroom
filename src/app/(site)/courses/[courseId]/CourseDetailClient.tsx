@@ -52,6 +52,9 @@ export default function CourseDetailClient() {
     const pdfUrl = course.previewUrl;
     const imgUrl = course.imageUrl;
 
+    console.log(pdfUrl);
+    console.log(imgUrl);
+
     const featuredFreeLesson = freeLessons?.[0];
 
     return (

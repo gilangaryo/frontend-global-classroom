@@ -63,6 +63,16 @@ const nextConfig: NextConfig = {
         hostname: 'api.gilangaryo.site',
         pathname: '/files/**',
       },
+      {
+        protocol: 'http',
+        hostname: 'api.gilangaryo.site',
+        pathname: '/image/upload/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.gilangaryo.site',
+        pathname: '/image/upload/**',
+      },
 
     ],
   },

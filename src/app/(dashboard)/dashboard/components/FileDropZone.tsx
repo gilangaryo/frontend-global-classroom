@@ -3,14 +3,43 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 
-type UploadResult = {
-    success: boolean;
-    file?: { url: string };
-    message?: string;
-};
+// Response type dari Cloudinary server kita
+interface CloudinaryUploadResult {
+    asset_id: string;
+    public_id: string;
+    version: number;
+    version_id: string;
+    signature: string;
+    width: number | null;
+    height: number | null;
+    format: string;
+    resource_type: string;
+    created_at: string;
+    bytes: number;
+    type: string;
+    url: string;
+    secure_url: string;
+    thumbnail_url?: string;
+    original_filename: string;
+    etag: string;
+}
+
+// Extended metadata type
+interface FileMetadata {
+    name: string;
+    size: number;
+    type: string;
+    public_id?: string;
+    version?: number;
+    format?: string;
+    width?: number | null;
+    height?: number | null;
+    thumbnail_url?: string;
+    asset_id?: string;
+}
 
 interface FileDropZoneProps {
-    onFileUpload: (url: string, meta?: { name: string; size: number; type: string }) => void;
+    onFileUpload: (url: string, meta?: FileMetadata) => void;
     label: string;
     acceptedTypes?: string;
     maxSizeMB?: number;
@@ -65,7 +94,6 @@ export default function FileDropZone({
         [acceptList]
     );
 
-    // ⬇️ Rename helper agar tidak tabrakan dengan state setter
     const setUploadingWithNotify = useCallback(
         (val: boolean) => {
             setUploading(val);
@@ -111,6 +139,10 @@ export default function FileDropZone({
         const formData = new FormData();
         formData.append('file', file);
 
+        // Tambahkan folder jika diperlukan
+        // formData.append('folder', 'uploads');
+        // formData.append('public_id', `file_${Date.now()}`);
+
         // Preview lokal: hanya untuk image/*
         if (file.type.startsWith('image/')) {
             const local = URL.createObjectURL(file);
@@ -131,33 +163,91 @@ export default function FileDropZone({
                 signal: controller.signal,
             });
 
-            let result: UploadResult | null = null;
-            try {
-                result = await res.json();
-            } catch {
-                // noop
+            const contentType = res.headers.get('content-type');
+            let result: CloudinaryUploadResult | { error: string } | null = null;
+
+            if (contentType?.includes('application/json')) {
+                try {
+                    result = await res.json();
+                } catch {
+                    throw new Error('Failed to parse server response');
+                }
             }
 
             if (!res.ok) {
-                throw new Error(result?.message || `Upload failed with ${res.status}`);
+                // Handle different error cases with proper typing
+                if (res.status === 400) {
+                    const errorResult = result as { error?: string };
+                    throw new Error(errorResult?.error || 'Bad request - check file type and size');
+                } else if (res.status === 413) {
+                    throw new Error('File too large (max 50MB)');
+                } else if (res.status === 429) {
+                    throw new Error('Too many uploads, please try again later');
+                } else {
+                    const errorResult = result as { error?: string };
+                    throw new Error(errorResult?.error || `Upload failed with status ${res.status}`);
+                }
             }
 
-            if (!result?.success || !result.file?.url) {
-                throw new Error(result?.message || 'Upload failed: bad response');
+            // Validate response structure
+            if (!result || typeof result !== 'object') {
+                throw new Error('Invalid response from server');
             }
 
-            // Sukses
-            const url = result.file.url;
+            // Check if it's an error response
+            if ('error' in result) {
+                throw new Error(result.error);
+            }
 
+            // Type guard to ensure it's a successful upload result
+            const uploadResult = result as CloudinaryUploadResult;
+
+            if (!uploadResult.secure_url) {
+                throw new Error('Upload failed: no file URL returned');
+            }
+
+            // Success - cleanup local preview and use server URL
             if (file.type.startsWith('image/')) {
-                setPreviewUrl(url);
+                // Cleanup local preview URL
+                if (previewUrl && previewUrl.startsWith('blob:')) {
+                    URL.revokeObjectURL(previewUrl);
+                }
+                setPreviewUrl(uploadResult.secure_url);
             }
 
-            onFileUpload(url, { name: file.name, size: file.size, type: file.type });
+            // Create properly typed metadata object
+            const metadata: FileMetadata = {
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                public_id: uploadResult.public_id,
+                version: uploadResult.version,
+                format: uploadResult.format,
+                width: uploadResult.width,
+                height: uploadResult.height,
+                thumbnail_url: uploadResult.thumbnail_url,
+                asset_id: uploadResult.asset_id,
+            };
 
-            // Note SVG inline: sanitize di server kalau nanti di-inline ke DOM.
+            onFileUpload(uploadResult.secure_url, metadata);
+
         } catch (err) {
-            const msg = err instanceof Error ? err.message : 'Upload failed';
+            // Cleanup local preview on error
+            if (previewUrl && previewUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(previewUrl);
+                setPreviewUrl(null);
+            }
+
+            if (err instanceof Error && err.name === 'AbortError') {
+                return; // Upload was cancelled, don't show error
+            }
+
+            let msg = 'Upload failed';
+            if (err instanceof Error) {
+                msg = err.message;
+            }
+
+            console.error('Upload error:', err);
             fail(msg);
         } finally {
             setUploadingWithNotify(false);
@@ -208,6 +298,11 @@ export default function FileDropZone({
         if (uploading) {
             abortRef.current?.abort();
             setUploadingWithNotify(false);
+            // Cleanup preview if it's a blob URL
+            if (previewUrl && previewUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(previewUrl);
+                setPreviewUrl(null);
+            }
             fail('Upload dibatalkan.');
         }
     };
@@ -258,7 +353,6 @@ export default function FileDropZone({
                         />
                     </div>
 
-
                     <p className="text-sm text-gray-700 font-medium">{label}</p>
                     {helperText ? (
                         <p className="text-xs text-gray-500">{helperText}</p>
@@ -298,8 +392,6 @@ export default function FileDropZone({
                                     • {humanSize + " "}
                                 </span> : null}
                             </p>
-                            {/* <span className="font-medium">{fileName + "  "}</span> */}
-
                         </div>
                     )}
 
