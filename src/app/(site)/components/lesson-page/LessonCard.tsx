@@ -16,13 +16,15 @@ export default function LessonCard({
     colorClass?: string;
     onTagClick?: (t: string) => void;
 }) {
+    const safeTrim = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
+    const isStr = (v: unknown): v is string => typeof v === 'string';
     const [openPreviewPdf, setOpenPreviewPdf] = useState(false);
 
     const fallbackImg =
         'https://res.cloudinary.com/dla5fna8n/image/upload/v1753368278/lesson_ighmqy.jpg';
-    const [imgSrc, setImgSrc] = useState<string>(
-        lesson.imageUrl && lesson.imageUrl.trim() ? lesson.imageUrl : fallbackImg
-    );
+
+    const initialImg = safeTrim(lesson.imageUrl) || fallbackImg;
+    const [imgSrc, setImgSrc] = useState<string>(initialImg);
 
     const pdfUrl =
         lesson.previewUrl ||
@@ -33,9 +35,13 @@ export default function LessonCard({
         return Number.isFinite(n) ? n : 0;
     }, [lesson.price]);
 
+
     const { displayTags, moreCount } = useMemo(() => {
         const tags = Array.isArray(lesson.tags)
-            ? lesson.tags.filter((t) => typeof t === 'string' && t.trim()).map((t) => t.trim())
+            ? lesson.tags
+                .filter((t) => isStr(t))       // hanya string
+                .map((t) => t.trim())          // aman
+                .filter(Boolean)
             : [];
         const firstFive = tags.slice(0, 5);
         return { displayTags: firstFive, moreCount: Math.max(0, tags.length - firstFive.length) };

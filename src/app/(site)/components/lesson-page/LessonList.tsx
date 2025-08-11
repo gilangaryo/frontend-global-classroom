@@ -1,4 +1,5 @@
 'use client';
+
 import { useState, useEffect } from 'react';
 import LessonSidebar from './LessonSidebar';
 import LessonCard from './LessonCard';
@@ -11,7 +12,7 @@ export type Lesson = {
     imageUrl?: string | null;
     price: string | number;
     subunit?: { title: string } | null;
-    previewUrl?: string;
+    previewUrl?: string | null;
     tag?: string;
     description?: string | null;
     tags?: string[];
@@ -42,14 +43,15 @@ export type Unit = {
     updatedAt?: string;
 };
 
+type BackendTag = string | { name?: string | null } | null | undefined;
+
 type LessonApi = {
     id: string;
     title: string;
     imageUrl?: string | null;
     price: string | number;
     description?: string | null;
-    // backend bisa kirim string[] atau {name?:string|null}[]
-    tags?: Array<string | { name?: string | null }> | null;
+    tags?: BackendTag[] | null;
     subunit?: { title: string } | null;
     unit?: { id: string; title: string } | null;
     course?: { id: string; title: string } | null;
@@ -64,7 +66,7 @@ function hexToRgba(hex: string, alpha = 1): string {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-// normalize apa saja → string[]
+// Normalize Lesson.tags (string | {name} | null)[] -> string[]
 const toStringTags = (tags: LessonApi['tags']): string[] => {
     if (!Array.isArray(tags)) return [];
     const out: string[] = [];
@@ -73,12 +75,34 @@ const toStringTags = (tags: LessonApi['tags']): string[] => {
             const s = t.trim();
             if (s) out.push(s);
         } else if (t && typeof t === 'object' && 'name' in t) {
-            const name = (t as { name?: string | null }).name ?? '';
-            const s = String(name).trim();
-            if (s) out.push(s);
+            const n = (t as { name?: string | null }).name;
+            if (typeof n === 'string') {
+                const s = n.trim();
+                if (s) out.push(s);
+            }
         }
     }
     return out;
+};
+
+// Normalize /api/products/tags response -> string[]
+const normalizeTagList = (raw: unknown): string[] => {
+    if (!Array.isArray(raw)) return [];
+    const out: string[] = [];
+    for (const t of raw as unknown[]) {
+        if (typeof t === 'string') {
+            const s = t.trim();
+            if (s) out.push(s);
+        } else if (t && typeof t === 'object' && 'name' in (t as { name?: unknown })) {
+            const n = (t as { name?: unknown }).name;
+            if (typeof n === 'string') {
+                const s = n.trim();
+                if (s) out.push(s);
+            }
+        }
+    }
+    // de-dup
+    return Array.from(new Set(out));
 };
 
 export default function LessonList({
@@ -102,7 +126,7 @@ export default function LessonList({
     const [allLessonTags, setAllLessonTags] = useState<string[]>([]);
     const [tagsLoading, setTagsLoading] = useState(false);
 
-    // fetch daftar tag (sekali per perubahan course)
+    // fetch daftar tag (filter by course kalau dipilih)
     useEffect(() => {
         const fetchTags = async () => {
             setTagsLoading(true);
@@ -111,15 +135,15 @@ export default function LessonList({
                 let tagsUrl = `${baseUrl}/api/products/tags?type=LESSON`;
                 if (course) tagsUrl += `&courseId=${course}`;
 
-                const response = await fetch(tagsUrl, { cache: 'no-store' });
-                const data: {
-                    status: string;
-                    data?: { tags?: string[]; count?: number };
+                const res = await fetch(tagsUrl, { cache: 'no-store' });
+                const json: {
+                    status?: string;
+                    data?: { tags?: unknown };
                     message?: string;
-                } = await response.json();
+                } = await res.json();
 
-                if (data.status === 'success') {
-                    setAllLessonTags(data.data?.tags ?? []);
+                if (json?.status === 'success') {
+                    setAllLessonTags(normalizeTagList(json.data?.tags));
                 } else {
                     setAllLessonTags([]);
                 }
@@ -181,7 +205,7 @@ export default function LessonList({
                         unit: l.unit ?? null,
                         course: l.course ?? null,
                         grade: undefined,
-                        previewUrl: l.previewUrl ?? undefined,
+                        previewUrl: l.previewUrl ?? null,
                     };
                 });
 
@@ -192,8 +216,8 @@ export default function LessonList({
                     console.error('Fetch lessons failed:', e);
                 }
             } finally {
-                clearTimeout(loadingDelay);
                 setLoading(false);
+                clearTimeout(loadingDelay);
             }
         };
 
@@ -274,6 +298,7 @@ export default function LessonList({
                     colorClass={initialCourses.find((c) => c.id === course)?.colorButton || '#3E724A'}
                     tag={tag}
                     setTag={setTag}
+                    // kirim string[] bersih
                     allLessonTags={allLessonTags}
                     onTagSearch={handleTagSearch}
                 />
@@ -358,7 +383,6 @@ export default function LessonList({
                                     onTagClick={(t) => {
                                         setTag(t);
                                         setPage(1);
-                                        // scroll up dikit biar kelihatan filter aktif
                                         if (typeof window !== 'undefined') {
                                             window.scrollTo({ top: 0, behavior: 'smooth' });
                                         }
