@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/download/:path*',
+        destination: 'https://api.gilangaryo.site/files/:path*',
+      },
+      {
+        source: '/api/download/:path*',
         destination: 'https://localhost:4200/api/download/:path*',
       },
       {
@@ -35,7 +39,7 @@ const nextConfig: NextConfig = {
         protocol: 'http',
         hostname: '192.168.18.17',
         port: '4200',
-        pathname: '/api/uploads/**', // Add this for the rewrite path
+        pathname: '/api/uploads/**',
       },
       {
         protocol: 'https',
