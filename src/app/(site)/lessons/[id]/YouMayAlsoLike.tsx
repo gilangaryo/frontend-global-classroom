@@ -4,15 +4,54 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-interface Lesson {
+type Lesson = {
     id: string;
     title: string;
     slug: string;
-    imageUrl?: string;
-    description?: string;
-    price: string;
-    tags?: string[];
+    imageUrl?: string | null;
+    description?: string | null;
+    price: string | number;
+    tags?: string[]; // normalized tag names
     createdAt: string;
+};
+
+// backend tag bisa { name?: string|null } atau string
+type BackendTag = { name?: string | null } | string;
+
+type BackendLesson = {
+    id: string;
+    title: string;
+    slug: string;
+    imageUrl?: string | null;
+    description?: string | null;
+    price: string | number;
+    tags?: BackendTag[];
+    createdAt: string;
+};
+
+function isTagObject(v: unknown): v is { name?: string | null } {
+    return (
+        typeof v === 'object' &&
+        v !== null &&
+        'name' in v &&
+        (typeof (v as { name?: unknown }).name === 'string' ||
+            (v as { name?: unknown }).name == null)
+    );
+}
+
+function toStringTags(tags: unknown): string[] {
+    if (!Array.isArray(tags)) return [];
+    const out: string[] = [];
+    for (const t of tags as unknown[]) {
+        if (typeof t === 'string') {
+            const s = t.trim();
+            if (s) out.push(s);
+        } else if (isTagObject(t) && typeof t.name === 'string') {
+            const s = t.name.trim();
+            if (s) out.push(s);
+        }
+    }
+    return out;
 }
 
 export default function YouMayAlsoLike() {
@@ -22,9 +61,36 @@ export default function YouMayAlsoLike() {
     useEffect(() => {
         async function fetchLessons() {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/featured/LESSON?limit=3`);
+                const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/featured/LESSON?limit=3`,
+                    { cache: 'no-store' }
+                );
                 const json = await res.json();
-                setLessons(json.data || []);
+
+                const raw: BackendLesson[] = Array.isArray(json?.data) ? (json.data as BackendLesson[]) : [];
+
+                // normalize tags -> string[] dan pangkas untuk tampilan
+                const mapped: Lesson[] = raw.map((l) => {
+                    const tagNames = toStringTags(l.tags);
+                    const displayTags =
+                        tagNames.length > 4
+                            ? [...tagNames.slice(0, 4), '....']
+                            : tagNames.slice(0, 4);
+
+                    return {
+                        id: l.id,
+                        title: l.title,
+                        slug: l.slug,
+                        imageUrl: l.imageUrl ?? null,
+                        description: l.description ?? null,
+                        price: l.price,
+                        tags: displayTags,
+                        createdAt: l.createdAt,
+                    };
+                });
+
+
+                setLessons(mapped);
             } catch (err) {
                 console.error('Failed to fetch related lessons:', err);
             } finally {
@@ -45,8 +111,11 @@ export default function YouMayAlsoLike() {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
                 {lessons.map((lesson) => (
-                    <Link key={lesson.id} href={`/lessons/${lesson.id}`} className="rounded overflow-hidden transition-all">
-
+                    <Link
+                        key={lesson.id}
+                        href={`/lessons/${lesson.id}`}
+                        className="rounded overflow-hidden transition-all"
+                    >
                         <div className="relative w-full aspect-[4/3] overflow-hidden rounded-md mb-4">
                             <Image
                                 src={lesson.imageUrl || '/dummy/sample-product.png'}
@@ -55,11 +124,21 @@ export default function YouMayAlsoLike() {
                                 className="object-cover"
                             />
                         </div>
-                        <div className="">
-                            <p className="text-sm text-[#4E3D34] mb-2">11th - 12th, Adult Education, Higher Education</p>
-                            <h3 className="text-md md:text-2xl font-semibold text-primary leading-normal mb-3">{lesson.title}</h3>
-                            <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">{lesson.description}</p>
-                        </div>
+
+                        {/* tags dari product */}
+                        {lesson.tags && lesson.tags.length > 0 && (
+                            <p className="text-xs text-[#4E3D34] mb-2">{lesson.tags.join(', ')}</p>
+                        )}
+
+                        <h3 className="text-md md:text-2xl font-semibold text-primary leading-normal mb-3">
+                            {lesson.title}
+                        </h3>
+
+                        {lesson.description && (
+                            <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">
+                                {lesson.description}
+                            </p>
+                        )}
                     </Link>
                 ))}
             </div>

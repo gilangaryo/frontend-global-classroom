@@ -241,7 +241,6 @@ export default function UnitDetailClient({
                                                         type="button"
                                                         onClick={e => {
                                                             e.preventDefault();
-                                                            handlePreview(lesson);
                                                         }}
                                                         className="bg-white/20 backdrop-blur-sm text-white px-14 py-3 rounded-lg text-sm font-normal"
                                                     >

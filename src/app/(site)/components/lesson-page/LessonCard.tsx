@@ -4,46 +4,69 @@ import { Lesson } from './LessonList';
 import Image from 'next/image';
 import Link from 'next/link';
 import AnimatedAddToCartButton from '../AnimatedAddToCartButton';
-import ModalPreviewPdf from "../ModalPreviewPdf";
-import { useState } from "react";
+import ModalPreviewPdf from '../ModalPreviewPdf';
+import { useMemo, useState, MouseEvent } from 'react';
 
 export default function LessonCard({
     lesson,
     colorClass = '#3E724A',
+    onTagClick,
 }: {
     lesson: Lesson;
     colorClass?: string;
+    onTagClick?: (t: string) => void;
 }) {
     const [openPreviewPdf, setOpenPreviewPdf] = useState(false);
 
-    const pdfUrl = lesson.previewUrl || "https://res.cloudinary.com/dla5fna8n/image/upload/v1753374352/data_desqhr.pdf";
+    const fallbackImg =
+        'https://res.cloudinary.com/dla5fna8n/image/upload/v1753368278/lesson_ighmqy.jpg';
+    const [imgSrc, setImgSrc] = useState<string>(
+        lesson.imageUrl && lesson.imageUrl.trim() ? lesson.imageUrl : fallbackImg
+    );
+
+    const pdfUrl =
+        lesson.previewUrl ||
+        'https://res.cloudinary.com/dla5fna8n/image/upload/v1753374352/data_desqhr.pdf';
+
+    const priceNumber = useMemo(() => {
+        const n = typeof lesson.price === 'number' ? lesson.price : parseFloat(lesson.price);
+        return Number.isFinite(n) ? n : 0;
+    }, [lesson.price]);
+
+    const { displayTags, moreCount } = useMemo(() => {
+        const tags = Array.isArray(lesson.tags)
+            ? lesson.tags.filter((t) => typeof t === 'string' && t.trim()).map((t) => t.trim())
+            : [];
+        const firstFive = tags.slice(0, 5);
+        return { displayTags: firstFive, moreCount: Math.max(0, tags.length - firstFive.length) };
+    }, [lesson.tags]);
+
+    const onClickPreview = (e: MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (lesson.previewUrl) setOpenPreviewPdf(true);
+    };
 
     return (
         <div className="rounded-lg overflow-hidden flex flex-col bg-white transition">
-            <Link href={`/lessons/${lesson.id}`}>
+            <Link href={`/lessons/${lesson.id}`} aria-label={`Open lesson ${lesson.title}`}>
                 <div className="relative h-55 w-full bg-[#EFE9E9] cursor-pointer">
                     <Image
-                        src={
-                            lesson.imageUrl ||
-                            'https://res.cloudinary.com/dla5fna8n/image/upload/v1753368278/lesson_ighmqy.jpg'
-                        }
+                        src={imgSrc}
                         alt={lesson.title}
                         width={400}
                         height={900}
                         className="object-cover w-full h-full rounded-lg"
-                        onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = 'https://res.cloudinary.com/dla5fna8n/image/upload/v1753368278/lesson_ighmqy.jpg';
-                        }}
+                        onError={() => setImgSrc(fallbackImg)}
+                        priority={false}
                     />
 
                     {lesson.previewUrl && (
                         <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity duration-200 flex items-center justify-center rounded-lg">
                             <button
-
                                 className="bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-sm font-normal"
+                                aria-label="Preview PDF"
                             >
-
                                 See More
                             </button>
                         </div>
@@ -52,28 +75,37 @@ export default function LessonCard({
             </Link>
 
             <div className="py-4 flex-1 flex flex-col">
-                {lesson.tags && lesson.tags.length > 0 && (
+                {displayTags.length > 0 && (
                     <div className="mb-2">
-                        <div className="flex flex-wrap gap-1">
-                            {lesson.tags.slice(0, 5).map((tag, index) => (
-                                <span
-                                    key={index}
-                                    className="inline-block py-0.5 text-xs text-gray-700"
-                                    title={tag}
+                        <div className="flex flex-wrap gap-1 items-center">
+                            {displayTags.map((t) => (
+                                <button
+                                    key={t}
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        onTagClick?.(t);
+                                    }}
+                                    className="inline-block py-0.5 px-1.5 text-xs text-gray-700 rounded hover:bg-gray-100"
+                                    title={t}
                                 >
-                                    {tag}{index < (lesson.tags?.length ?? 0) - 1 ? ',' : ''}
-                                </span>
+                                    {t}
+                                </button>
                             ))}
-                            {(lesson.tags?.length ?? 0) > 5 && (
-                                <span className="inline-block py-0.5 text-xs bg-gray-200 text-gray-600 rounded-full">
-                                    +{(lesson.tags?.length ?? 0) - 5}
+                            {moreCount > 0 && (
+                                <span
+                                    className="inline-block py-0.5 text-xs bg-gray-200 text-gray-600 rounded-full px-2"
+                                    title={`${moreCount} more tags`}
+                                >
+                                    +{moreCount}
                                 </span>
                             )}
                         </div>
                     </div>
                 )}
 
-                <Link href={`/lessons/${lesson.id}`}>
+                <Link href={`/lessons/${lesson.id}`} aria-label={`Open lesson ${lesson.title}`}>
                     <h3 className="font-semibold text-black mb-2 text-lg leading-snug hover:underline cursor-pointer">
                         {lesson.title}
                     </h3>
@@ -83,27 +115,19 @@ export default function LessonCard({
                     <p className="text-sm text-gray-500 mb-4 line-clamp-3">{lesson.description}</p>
                 )}
 
-                {(lesson.course || lesson.unit) && (
-                    <div className="text-xs text-gray-400 mb-3">
-                        {lesson.course && <span>{lesson.course.title}</span>}
-                        {lesson.course && lesson.unit && <span> • </span>}
-                        {lesson.unit && <span>{lesson.unit.title}</span>}
-                    </div>
-                )}
-
-                <div className="text-lg font-bold text-primary mb-4">
-                    ${parseFloat(lesson.price).toFixed(2)}
-                </div>
+                <div className="text-lg font-bold text-primary mb-4">${priceNumber.toFixed(2)}</div>
 
                 <div className="mt-auto grid grid-cols-2 gap-4">
                     <div className="w-full h-full">
                         <button
-                            onClick={() => setOpenPreviewPdf(true)}
+                            onClick={onClickPreview}
                             disabled={!lesson.previewUrl}
                             className={`h-full rounded-md border font-bold text-base transition-colors w-full ${lesson.previewUrl
                                 ? 'border-[#363F36] text-[#363F36] bg-white hover:bg-primary hover:text-white'
                                 : 'border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed'
                                 }`}
+                            aria-disabled={!lesson.previewUrl}
+                            aria-label={lesson.previewUrl ? 'Open preview' : 'No preview available'}
                         >
                             {lesson.previewUrl ? 'Preview' : 'No Preview'}
                         </button>
@@ -114,9 +138,9 @@ export default function LessonCard({
                             productId={lesson.id}
                             productType="LESSON"
                             itemTitle={lesson.title}
-                            itemImg={lesson.imageUrl ?? '/dummy/sample-product.png'}
+                            itemImg={imgSrc || '/dummy/sample-product.png'}
                             itemDesc={lesson.description ?? ''}
-                            itemPrice={parseFloat(lesson.price)}
+                            itemPrice={priceNumber}
                             colorButton={colorClass}
                         />
                     </div>

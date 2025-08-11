@@ -9,20 +9,14 @@ export type Lesson = {
     title: string;
     grade?: string;
     imageUrl?: string | null;
-    price: string;
+    price: string | number;
     subunit?: { title: string } | null;
     previewUrl?: string;
     tag?: string;
-    description?: string;
+    description?: string | null;
     tags?: string[];
-    unit?: {
-        id: string;
-        title: string;
-    };
-    course?: {
-        id: string;
-        title: string;
-    };
+    unit?: { id: string; title: string } | null;
+    course?: { id: string; title: string } | null;
 };
 
 export type Course = {
@@ -38,7 +32,7 @@ export type Unit = {
     slug?: string;
     previewUrl?: string | null;
     digitalUrl?: string | null;
-    description?: string;
+    description?: string | null;
     price?: string | number;
     imageUrl?: string | null;
     isActive?: boolean;
@@ -48,18 +42,19 @@ export type Unit = {
     updatedAt?: string;
 };
 
-interface LessonApi {
+type LessonApi = {
     id: string;
     title: string;
     imageUrl?: string | null;
-    price: string;
-    description?: string;
-    tags?: string[];
+    price: string | number;
+    description?: string | null;
+    // backend bisa kirim string[] atau {name?:string|null}[]
+    tags?: Array<string | { name?: string | null }> | null;
     subunit?: { title: string } | null;
-    unit?: { id: string; title: string };
-    course?: { id: string; title: string };
-    previewUrl?: string;
-}
+    unit?: { id: string; title: string } | null;
+    course?: { id: string; title: string } | null;
+    previewUrl?: string | null;
+};
 
 function hexToRgba(hex: string, alpha = 1): string {
     const cleanHex = hex.replace('#', '');
@@ -68,6 +63,23 @@ function hexToRgba(hex: string, alpha = 1): string {
     const b = parseInt(cleanHex.slice(4, 6), 16);
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
+
+// normalize apa saja → string[]
+const toStringTags = (tags: LessonApi['tags']): string[] => {
+    if (!Array.isArray(tags)) return [];
+    const out: string[] = [];
+    for (const t of tags) {
+        if (typeof t === 'string') {
+            const s = t.trim();
+            if (s) out.push(s);
+        } else if (t && typeof t === 'object' && 'name' in t) {
+            const name = (t as { name?: string | null }).name ?? '';
+            const s = String(name).trim();
+            if (s) out.push(s);
+        }
+    }
+    return out;
+};
 
 export default function LessonList({
     initialCourses = [],
@@ -90,27 +102,28 @@ export default function LessonList({
     const [allLessonTags, setAllLessonTags] = useState<string[]>([]);
     const [tagsLoading, setTagsLoading] = useState(false);
 
+    // fetch daftar tag (sekali per perubahan course)
     useEffect(() => {
         const fetchTags = async () => {
             setTagsLoading(true);
             try {
                 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
                 let tagsUrl = `${baseUrl}/api/products/tags?type=LESSON`;
-                if (course) {
-                    tagsUrl += `&courseId=${course}`;
-                }
+                if (course) tagsUrl += `&courseId=${course}`;
 
-                const response = await fetch(tagsUrl);
-                const data = await response.json();
+                const response = await fetch(tagsUrl, { cache: 'no-store' });
+                const data: {
+                    status: string;
+                    data?: { tags?: string[]; count?: number };
+                    message?: string;
+                } = await response.json();
 
                 if (data.status === 'success') {
-                    setAllLessonTags(data.data.tags || []);
+                    setAllLessonTags(data.data?.tags ?? []);
                 } else {
-                    console.error('Failed to fetch tags:', data.message);
                     setAllLessonTags([]);
                 }
-            } catch (error) {
-                console.error('Error fetching tags:', error);
+            } catch {
                 setAllLessonTags([]);
             } finally {
                 setTagsLoading(false);
@@ -121,7 +134,7 @@ export default function LessonList({
     }, [course]);
 
     const filteredUnits = course
-        ? initialUnits.filter(unit => String(unit.parentId) === String(course))
+        ? initialUnits.filter((u) => String(u.parentId) === String(course))
         : [];
 
     useEffect(() => {
@@ -133,71 +146,59 @@ export default function LessonList({
         setPage(1);
     }, [search, unit, tag]);
 
+    // fetch lessons
     useEffect(() => {
         const controller = new AbortController();
-        const timeout = setTimeout(() => setLoading(true), 50);
         const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
-        let url = `${baseUrl}/api/products/lessons?page=${page}&limit=6`;
-        if (course) url += `&courseId=${course}`;
-        if (unit) url += `&unitId=${unit}`;
-        if (search) url += `&search=${encodeURIComponent(search)}`;
-        if (tag) url += `&tag=${encodeURIComponent(tag)}`;
+        const run = async () => {
+            const loadingDelay = setTimeout(() => setLoading(true), 60);
+            try {
+                let url = `${baseUrl}/api/products/lessons?page=${page}&limit=6`;
+                if (course) url += `&courseId=${course}`;
+                if (unit) url += `&unitId=${unit}`;
+                if (search) url += `&search=${encodeURIComponent(search)}`;
+                if (tag) url += `&tag=${encodeURIComponent(tag)}`;
 
-        console.log('Fetching lessons from:', url);
+                const res = await fetch(url, { signal: controller.signal, cache: 'no-store' });
+                const json: {
+                    status?: string;
+                    data?: LessonApi[];
+                    pagination?: { totalPages?: number };
+                } = await res.json();
 
-        fetch(url, { signal: controller.signal })
-            .then((res) => res.json())
-            .then((json) => {
-                console.log('Lessons response:', json);
-
-                const transformedLessons: Lesson[] = (json.data || []).map((lesson: LessonApi) => {
-                    let tags: string[] = [];
-                    if (lesson.tags) {
-                        if (typeof lesson.tags === 'string') {
-                            try {
-                                tags = JSON.parse(lesson.tags);
-                            } catch (error) {
-                                console.warn('Failed to parse lesson tags:', lesson.tags, error);
-                            }
-                        } else if (Array.isArray(lesson.tags)) {
-                            tags = lesson.tags;
-                        }
-                    }
-
+                const mapped: Lesson[] = (json.data ?? []).map((l) => {
+                    const tagNames = toStringTags(l.tags);
                     return {
-                        id: lesson.id,
-                        title: lesson.title,
-                        imageUrl: lesson.imageUrl,
-                        price: lesson.price,
-                        description: lesson.description,
-                        tags: tags,
-                        tag: tags[0] || undefined,
-                        subunit: lesson.subunit ? { title: lesson.subunit.title } : null,
-                        unit: lesson.unit,
-                        course: lesson.course,
+                        id: l.id,
+                        title: l.title,
+                        imageUrl: l.imageUrl ?? null,
+                        price: l.price,
+                        description: l.description ?? null,
+                        tags: tagNames,
+                        tag: tagNames[0] || undefined,
+                        subunit: l.subunit ?? null,
+                        unit: l.unit ?? null,
+                        course: l.course ?? null,
                         grade: undefined,
-                        previewUrl: lesson.previewUrl
+                        previewUrl: l.previewUrl ?? undefined,
                     };
                 });
 
-                setLessons(transformedLessons);
-                setTotalPages(json.pagination?.totalPages || 1);
-            })
-            .catch((err) => {
-                if (err.name !== 'AbortError') {
-                    console.error("Fetch error:", err);
+                setLessons(mapped);
+                setTotalPages(json.pagination?.totalPages ?? 1);
+            } catch (e) {
+                if ((e as Error).name !== 'AbortError') {
+                    console.error('Fetch lessons failed:', e);
                 }
-            })
-            .finally(() => {
-                clearTimeout(timeout);
+            } finally {
+                clearTimeout(loadingDelay);
                 setLoading(false);
-            });
-
-        return () => {
-            controller.abort();
-            clearTimeout(timeout);
+            }
         };
+
+        run();
+        return () => controller.abort();
     }, [course, unit, search, page, tag]);
 
     const handleTagSearch = (searchTerm: string) => {
@@ -230,11 +231,9 @@ export default function LessonList({
                         }`}
                     style={{ boxShadow: !course ? '0 0 0 0px #3E724A22' : undefined }}
                 >
-                    <h2>
-
-                        ALL COURSES
-                    </h2>
+                    <h2>ALL COURSES</h2>
                 </button>
+
                 {initialCourses.map((c) => {
                     const isSelected = course === c.id;
                     const isInactive = c.isActive === false;
@@ -256,11 +255,7 @@ export default function LessonList({
                             }}
                             className={`px-4 py-2 rounded border transition text-sm font-bold tracking-wide ${isInactive ? 'cursor-not-allowed opacity-60' : 'hover:opacity-80'
                                 }`}
-                            style={{
-                                backgroundColor,
-                                color: textColor,
-                                borderColor,
-                            }}
+                            style={{ backgroundColor, color: textColor, borderColor }}
                         >
                             {c.title}
                         </button>
@@ -268,7 +263,6 @@ export default function LessonList({
                 })}
             </div>
 
-            {/* Content */}
             <div className="grid grid-cols-1 md:grid-cols-5 px-4 md:px-25 gap-10 bg-white">
                 <LessonSidebar
                     initialUnits={filteredUnits}
@@ -277,16 +271,14 @@ export default function LessonList({
                         setUnit(id);
                         setPage(1);
                     }}
-                    colorClass={(initialCourses.find(c => c.id === course)?.colorButton) || '#3E724A'}
+                    colorClass={initialCourses.find((c) => c.id === course)?.colorButton || '#3E724A'}
                     tag={tag}
                     setTag={setTag}
                     allLessonTags={allLessonTags}
                     onTagSearch={handleTagSearch}
                 />
 
-                {/* LESSON LIST */}
                 <div className="md:col-span-3 md:col-start-3 flex flex-col gap-6">
-                    {/* Active Filters Display */}
                     {activeFiltersCount > 0 && (
                         <div className="flex flex-wrap gap-2 mb-4 p-3 bg-gray-50 rounded-lg">
                             <div className="flex items-center gap-2 w-full mb-2">
@@ -300,35 +292,29 @@ export default function LessonList({
                                     Clear all
                                 </button>
                             </div>
+
                             {search && (
                                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                     Search: &ldquo;{search}&rdquo;
-                                    <button
-                                        onClick={() => setSearch('')}
-                                        className="ml-1 text-blue-600 hover:text-blue-800"
-                                    >
+                                    <button onClick={() => setSearch('')} className="ml-1 text-blue-600 hover:text-blue-800">
                                         ×
                                     </button>
                                 </span>
                             )}
+
                             {tag && (
                                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                     Tag: {tag}
-                                    <button
-                                        onClick={() => setTag('')}
-                                        className="ml-1 text-green-600 hover:text-green-800"
-                                    >
+                                    <button onClick={() => setTag('')} className="ml-1 text-green-600 hover:text-green-800">
                                         ×
                                     </button>
                                 </span>
                             )}
+
                             {unit && (
                                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                    Unit: {initialUnits.find(u => u.id === unit)?.title || unit}
-                                    <button
-                                        onClick={() => setUnit('')}
-                                        className="ml-1 text-purple-600 hover:text-purple-800"
-                                    >
+                                    Unit: {initialUnits.find((u) => u.id === unit)?.title || unit}
+                                    <button onClick={() => setUnit('')} className="ml-1 text-purple-600 hover:text-purple-800">
                                         ×
                                     </button>
                                 </span>
@@ -336,12 +322,7 @@ export default function LessonList({
                         </div>
                     )}
 
-                    {/* Loading state for tags */}
-                    {tagsLoading && (
-                        <div className="text-sm text-gray-500 mb-2">
-                            Loading...
-                        </div>
-                    )}
+                    {tagsLoading && <div className="text-sm text-gray-500 mb-2">Loading...</div>}
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-10 relative min-h-[420px]">
                         {loading && (
@@ -358,9 +339,7 @@ export default function LessonList({
                         {!loading && lessons.length === 0 ? (
                             <div className="col-span-2 text-black text-center py-8">
                                 <p className="text-lg mb-2">No lessons found.</p>
-                                <p className="text-sm text-gray-500 mb-4">
-                                    Try adjusting your filters or search terms.
-                                </p>
+                                <p className="text-sm text-gray-500 mb-4">Try adjusting your filters or search terms.</p>
                                 {activeFiltersCount > 0 && (
                                     <button
                                         onClick={clearAllFilters}
@@ -375,7 +354,15 @@ export default function LessonList({
                                 <LessonCard
                                     key={l.id}
                                     lesson={l}
-                                    colorClass={(initialCourses.find(c => c.id === course)?.colorButton) || '#363F36'}
+                                    colorClass={initialCourses.find((c) => c.id === course)?.colorButton || '#363F36'}
+                                    onTagClick={(t) => {
+                                        setTag(t);
+                                        setPage(1);
+                                        // scroll up dikit biar kelihatan filter aktif
+                                        if (typeof window !== 'undefined') {
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }
+                                    }}
                                 />
                             ))
                         )}
@@ -402,7 +389,6 @@ export default function LessonList({
                             </button>
                         </div>
                     )}
-
                 </div>
             </div>
         </main>

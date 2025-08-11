@@ -1,8 +1,18 @@
 import type { NextConfig } from 'next';
 
-// Extract the full URL instead of just the host
-
 const nextConfig: NextConfig = {
+  async rewrites() {
+    return [
+      {
+        source: '/api/download/:path*',
+        destination: 'https://localhost:4200/api/download/:path*',
+      },
+      {
+        source: '/api/download/:path*',
+        destination: 'https://backend-global-classroom-production.up.railway.app/api/download/:path*',
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {
@@ -48,7 +58,8 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'api.gilangaryo.site',
         pathname: '/files/**',
-      }
+      },
+
     ],
   },
 };

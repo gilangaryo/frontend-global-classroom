@@ -24,7 +24,7 @@ const TagsInput: React.FC<TagsInputProps> = ({
     label = 'Tags',
     fallbackSuggestedTags = [],
     disabled = false,
-    suggestedTags,
+    // suggestedTags,
     className = '',
     renderMode = 'inline',
     showInitialSuggestions = true,
@@ -35,7 +35,7 @@ const TagsInput: React.FC<TagsInputProps> = ({
     const [hasFetched, setHasFetched] = useState(false);
     const boxRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
-    const abortControllerRef = useRef<AbortController | null>(null);
+    // const abortControllerRef = useRef<AbortController | null>(null);
 
     const isMaxReached = tags.length >= maxTags;
     const selectedLower = useMemo(() => new Set(tags.map((t) => t.toLowerCase())), [tags]);
@@ -62,21 +62,14 @@ const TagsInput: React.FC<TagsInputProps> = ({
     };
 
     // Memoize fallback tags to prevent unnecessary re-renders
-    const memoizedFallbackTags = useMemo(() => fallbackSuggestedTags, [fallbackSuggestedTags]);
+    // const memoizedFallbackTags = useMemo(() => fallbackSuggestedTags, [fallbackSuggestedTags]);
 
     useEffect(() => {
-        // Only fetch if we haven't fetched yet or if suggestedTags changed
-        if (hasFetched && !suggestedTags) return;
-
-        // Cancel previous request if it exists
-        if (abortControllerRef.current) {
-            abortControllerRef.current.abort();
-        }
+        if (hasFetched) return; // mencegah fetch ulang
 
         const abortController = new AbortController();
-        abortControllerRef.current = abortController;
 
-        const fetchTags = async () => {
+        async function fetchTags() {
             try {
                 setLoading(true);
                 const base = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -84,21 +77,20 @@ const TagsInput: React.FC<TagsInputProps> = ({
                     signal: abortController.signal
                 });
 
-                if (abortController.signal.aborted) return;
-
                 if (!res.ok) throw new Error(String(res.status));
+
                 const json = await res.json();
-                const items: Array<{ name?: string }> = Array.isArray(json?.data?.items) ? json.data.items : [];
+                const items: Array<{ name?: string }> = Array.isArray(json?.data?.items)
+                    ? json.data.items
+                    : [];
                 const names = items.map((it) => it?.name).filter(Boolean) as string[];
 
-                if (!abortController.signal.aborted) {
-                    setAllTags(names.length ? names : memoizedFallbackTags);
-                    setHasFetched(true);
-                }
+                setAllTags(names.length ? names : fallbackSuggestedTags);
+                setHasFetched(true);
             } catch (error) {
                 if (!abortController.signal.aborted) {
                     console.warn('Failed to fetch tags:', error);
-                    setAllTags(memoizedFallbackTags);
+                    setAllTags(fallbackSuggestedTags);
                     setHasFetched(true);
                 }
             } finally {
@@ -106,14 +98,12 @@ const TagsInput: React.FC<TagsInputProps> = ({
                     setLoading(false);
                 }
             }
-        };
+        }
 
         fetchTags();
 
-        return () => {
-            abortController.abort();
-        };
-    }, [suggestedTags, memoizedFallbackTags, hasFetched]);
+        return () => abortController.abort();
+    }, []);
 
     useEffect(() => {
         if (renderMode !== 'dropdown') return;
