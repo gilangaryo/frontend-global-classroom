@@ -82,12 +82,13 @@ export default async function CoursePage() {
                                 <div className='mb-4 '>
                                     <h3 className="text-4xl font-semibold text-primary mb-2 leading-normal ">{c.title}</h3>
                                 </div>
-                                <p className="text-[#8E8E8E] text-sm mb-4 leading-relaxed">{c.description}</p>
+                                <p className="text-black text-sm mb-4 leading-relaxed">{c.description}</p>
+
 
                                 <div className="mb-6">
-                                    <p className="font-medium text-[#4E3D34] mb-2">This course includes:</p>
+                                    <p className="font-medium text-primary mb-2">This course includes:</p>
                                     <div
-                                        className="text-sm text-[#8E8E8E] leading-relaxed space-y-2"
+                                        className="text-sm text-black leading-relaxed space-y-2"
                                         dangerouslySetInnerHTML={{ __html: c.courseIncluded || '' }}
                                     />
                                 </div>
