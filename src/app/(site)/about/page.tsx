@@ -19,24 +19,24 @@ export default function AboutPage() {
                     <h2 className="text-[#4E3D34] font-semibold uppercase">
                         Rooted in justice. Guided by story. Grounded in practice.
                     </h2>
-                    <p className="text-[#8E8E8E]">
+                    <p className="text-black">
                         A Global Classroom creates interdisciplinary, justice-centered curriculum for high school
                         Social Studies and Humanities classrooms and university-level courses. Grounded in rigorous,
                         interactive pedagogy, our lessons use source-based inquiry, perspective-taking, and scaffolded
                         writing tasks to challenge students to rethink familiar narratives, write with clarity,
                         and engage meaningfully with real-world case studies.
                     </p>
-                    <p className="text-[#8E8E8E]">
+                    <p className="text-black">
                         Unlike many platforms that offer generic or trend-driven materials, all of our resources are
                         thoughtfully designed by experienced Social Studies educators. They are grounded in substance
                         and clarity, and built to meet the demands of the curriculum and the realities of today’s classrooms.
                     </p>
-                    <blockquote className="border-l-4 border-[#4E3D34] pl-4 italic text-[#363F36]">
+                    <blockquote className="border-l-4 border-[#4E3D34] pl-4 italic text-green-active">
                         Our materials are especially useful for teachers and students of IB Global Politics, AP
                         Social Studies courses, and introductory university-level classes exploring global issues,
                         human rights, development, and international relations.
                     </blockquote>
-                    <p className="text-[#8E8E8E]">
+                    <p className="text-black">
                         In addition to curriculum development, A Global Classroom partners with schools, NGOs, and
                         international organizations to design and facilitate field-based learning programs that
                         connect students and educators directly with frontline communities engaged in human rights
@@ -73,7 +73,7 @@ export default function AboutPage() {
                             </div>
                             <h3 className="text-3xl font-bold text-[#363F36] w-full text-left">ABBY MACPHAIL</h3>
                         </div>
-                        <div className="space-y-4 text-[#8E8E8E] text-base leading-relaxed">
+                        <div className="space-y-4 text-primary text-base leading-relaxed">
                             <p>
                                 Abby MacPhail is an educator, curriculum designer, and founder of A Global Classroom.
                                 She specializes in Social Studies, Global Politics, Peace and Conflict, Development and
@@ -107,7 +107,7 @@ export default function AboutPage() {
                     <div className="grid grid-cols-1 md:grid-cols-[1fr_360px] gap-10 items-center">
                         {/* Deskripsi kiri */}
                         <div className="flex flex-col justify-center">
-                            <div className="space-y-4 text-[#363F36] text-base leading-relaxed max-w-xl">
+                            <div className="space-y-4 text-primary text-base leading-relaxed max-w-xl">
                                 <p>
                                     Naila Madina is a communications strategist and sustainability advocate based in Indonesia.
                                     With a background in communications and a passion for environmental and cultural preservation,
@@ -135,7 +135,7 @@ export default function AboutPage() {
                                     className="object-cover "
                                 />
                             </div>
-                            <h3 className="text-2xl font-bold text-[#363F36] w-full text-left mt-4">NAILA MADINA</h3>
+                            <h3 className="text-2xl font-bold text-primary w-full text-left mt-4">NAILA MADINA</h3>
                         </div>
                     </div>
 

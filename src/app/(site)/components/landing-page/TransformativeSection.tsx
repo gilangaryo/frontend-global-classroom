@@ -13,7 +13,7 @@ export default function TransformativeSection() {
           <p className="text-lg  text-navbar ml-10 my-8 border-l-3 pl-4">
             We design digital lessons that are intellectually rigorous, rooted in real-world issues, and built for the realities of today’s high school classrooms.
           </p>
-          <p className="text-lg  text-text">
+          <p className="text-lg ">
             We also partner with schools, NGOs, and frontline communities to create field-based learning programs that connect students and educators directly to global struggles for human rights and climate justice.
           </p>
         </div>

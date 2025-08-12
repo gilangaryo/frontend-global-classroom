@@ -74,7 +74,7 @@ export default function OfferSection() {
                                 Beyond the Classroom
                             </h3>
                             <p className="mb-4">Custom learning experiences that connect students and educators with frontline communities and global justice work</p>
-                            <ul className="list-disc list-inside space-y-2 mb-4 text-text">
+                            <ul className="list-disc list-inside space-y-2 mb-4 ">
                                 {classroomList.map((text, i) => (
                                     <li key={i} className="flex items-start gap-2 my-4">
                                         <CheckIcon className="flex-shrink-0 mt-1 group-hover:text-alt text-primary transition-colors duration-200" />
