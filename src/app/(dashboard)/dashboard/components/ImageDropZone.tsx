@@ -111,6 +111,9 @@ export default function ImageDropZone({
 
             const res = await fetch(`${process.env.NEXT_PUBLIC_UPLOAD_URL}`, {
                 method: 'POST',
+                headers: {
+                    'x-api-key': process.env.NEXT_PUBLIC_UPLOAD_KEY!,
+                },
                 body: formData,
                 signal: controller.signal,
             });
