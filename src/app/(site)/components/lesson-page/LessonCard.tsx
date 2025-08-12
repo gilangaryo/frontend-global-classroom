@@ -93,7 +93,7 @@ export default function LessonCard({
                                         e.stopPropagation();
                                         onTagClick?.(t);
                                     }}
-                                    className="inline-block py-0.5 px-1.5 text-xs text-gray-700 rounded hover:bg-gray-100"
+                                    className="inline-block py-0.5  text-xs text-text rounded hover:bg-gray-100"
                                     title={t}
                                 >
                                     {t}
@@ -112,7 +112,7 @@ export default function LessonCard({
                 )}
 
                 <Link href={`/lessons/${lesson.id}`} aria-label={`Open lesson ${lesson.title}`}>
-                    <h3 className="font-semibold text-black mb-2 text-lg leading-snug hover:underline cursor-pointer">
+                    <h3 className="font-semibold text-black mb-2 text-lg leading-normal hover:underline cursor-pointer min-h-20">
                         {lesson.title}
                     </h3>
                 </Link>
