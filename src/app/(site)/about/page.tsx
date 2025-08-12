@@ -14,7 +14,7 @@ export default function AboutPage() {
                     </h1>
                 </div>
 
-                <div className="space-y-6 col-span-1">
+                <div className="space-y-6 col-span-2 md:col-span-1">
 
                     <h2 className="text-[#4E3D34] font-semibold uppercase">
                         Rooted in justice. Guided by story. Grounded in practice.
@@ -45,7 +45,7 @@ export default function AboutPage() {
                 </div>
 
                 {/* Image */}
-                <div className="relative bg-[#EFE9E9] w-full h-full overflow-hidden ">
+                <div className="relative bg-white w-full h-full overflow-hidden ">
                     <Image
                         src="/about/hero.jpg"
                         alt="Classroom discussion"
