@@ -240,7 +240,7 @@ export default function LessonList({
     const activeFiltersCount = [search, tag, unit].filter(Boolean).length;
 
     return (
-        <main className="font-body max-w-full mx-auto pb-10">
+        <main className="font-body max-w-full mx-auto pb-30 pt-10">
             <LessonSearchBar search={search} setSearch={setSearch} />
 
             <div className="flex items-center gap-4 border-b border-[#EFE9E9] bg-white px-4 md:px-25 pt-8 pb-2 mb-6 overflow-x-auto">
