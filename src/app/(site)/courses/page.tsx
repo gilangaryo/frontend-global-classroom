@@ -74,7 +74,7 @@ export default async function CoursePage() {
                                     src={c.imageUrl?.trim() ? c.imageUrl : '/placeholder.jpg'}
                                     alt={c.title}
                                     fill
-                                    className="object-cover rounded-t-lg grayscale"
+                                    className="object-cover rounded-t-lg "
                                 />
                             </div>
 

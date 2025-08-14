@@ -63,12 +63,12 @@ export default function CourseDetailClient() {
                 </h1>
                 <div className="max-w-full mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-40 items-start">
                     <div className="order-1 md:order-2 col-span-2 flex justify-center md:justify-end">
-                        <div className="relative w-full aspect-[4/3] md:w-[600px] overflow-hidden shadow-md">
+                        <div className="relative w-full aspect-[3/4] md:w-[600px] overflow-hidden shadow-md">
                             <Image
                                 src={course.imageUrl}
                                 alt={course.title}
                                 fill
-                                className="object-cover grayscale"
+                                className="object-cover "
                                 priority
                             />
                         </div>
