@@ -63,12 +63,12 @@ export default function CourseDetailClient() {
                 </h1>
                 <div className="max-w-full mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-40 items-start">
                     <div className="order-1 md:order-2 col-span-2 flex justify-center md:justify-end">
-                        <div className="relative w-[320px] md:w-[800px] aspect-[5/6] overflow-hidden shadow-md">
+                        <div className="relative w-full aspect-[4/3] md:w-[600px] overflow-hidden shadow-md">
                             <Image
                                 src={course.imageUrl}
                                 alt={course.title}
                                 fill
-                                className="object-cover"
+                                className="object-cover grayscale"
                                 priority
                             />
                         </div>
@@ -156,7 +156,7 @@ export default function CourseDetailClient() {
                                             src={unit.imageUrl && unit.imageUrl.trim() !== '' ? unit.imageUrl : '/dummy/sample-product.png'}
                                             alt={unit.title}
                                             fill
-                                            className="object-cover transition duration-300 group-hover:brightness-50"
+                                            className="object-cover transition duration-300 group-hover:brightness-50 grayscale"
                                         />
 
                                         {/* Overlay on Hover */}
@@ -199,7 +199,7 @@ export default function CourseDetailClient() {
                                     src={featuredFreeLesson.imageUrl || '/dummy/sample-product.png'}
                                     alt={featuredFreeLesson.title}
                                     fill
-                                    className="object-cover"
+                                    className="object-cover grayscale"
                                     onError={(e) => {
                                         e.currentTarget.src = '/dummy/sample-product.png';
                                     }}

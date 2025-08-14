@@ -121,7 +121,7 @@ export default function YouMayAlsoLike() {
                                 src={lesson.imageUrl || '/dummy/sample-product.png'}
                                 alt={lesson.title}
                                 fill
-                                className="object-cover"
+                                className="object-cover grayscale"
                             />
                         </div>
 

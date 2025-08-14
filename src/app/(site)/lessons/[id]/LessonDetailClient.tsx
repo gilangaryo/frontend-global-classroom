@@ -154,9 +154,9 @@ export default function LessonDetailClient() {
                     {getBackText()}
                 </Link>
 
-                <div className=" grid grid-cols-1 md:grid-cols-2 gap-12 ">
+                <div className=" grid grid-cols-1 md:grid-cols-2 gap-20  ">
                     {/* LEFT SIDE */}
-                    <div className="max-w-lg">
+                    <div className="max-w-[450px]">
                         <h1 className="text-2xl md:text-3xl font-bold mb-4">{lesson.title}</h1>
                         <p className="text-sm text-text mb-4 leading-6">{lesson.description}</p>
 
@@ -166,7 +166,7 @@ export default function LessonDetailClient() {
                                     Learning Activities
                                 </p>
                                 <div
-                                    className="text-sm text-[#363F36] space-y-5 leading-6"
+                                    className="text-sm text-[#363F36] space-y-5 leading-8"
                                     dangerouslySetInnerHTML={{ __html: lesson.metadata.learningActivities }}
                                 />
                             </div>
@@ -256,7 +256,7 @@ export default function LessonDetailClient() {
                                 src={lesson.imageUrl || '/dummy/sample-product.png'}
                                 alt={lesson.title}
                                 fill
-                                className="object-cover rounded-md shadow"
+                                className="object-cover rounded-md shadow grayscale"
                                 onError={(e) => {
                                     const target = e.target as HTMLImageElement;
                                     target.src = '/dummy/sample-product.png';

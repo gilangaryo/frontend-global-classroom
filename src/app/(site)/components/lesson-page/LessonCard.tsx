@@ -62,7 +62,7 @@ export default function LessonCard({
                         alt={lesson.title}
                         width={400}
                         height={900}
-                        className="object-cover w-full h-full rounded-lg"
+                        className="object-cover w-full h-full rounded-lg grayscale"
                         onError={() => setImgSrc(fallbackImg)}
                         priority={false}
                     />

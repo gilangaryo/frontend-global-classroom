@@ -229,7 +229,7 @@ export default function UnitDetailClient({
                                                 src={lesson.imageUrl || '/placeholder.jpg'}
                                                 alt={lesson.title}
                                                 fill
-                                                className="object-cover z-0 group-hover:scale-101 transition-transform duration-200"
+                                                className="object-cover z-0 group-hover:scale-101 transition-transform duration-200 grayscale"
                                                 onError={(e) => {
                                                     const target = e.target as HTMLImageElement;
                                                     target.src = '/placeholder.jpg';

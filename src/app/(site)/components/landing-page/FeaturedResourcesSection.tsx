@@ -321,8 +321,8 @@ export default function FeaturedResourcesSection() {
                                         title={item.title}
                                         subtitle={getCleanDescription(item.description, 80)}
                                         badge={item.source === 'best' ? 'Best Seller' : 'New Lesson'}
-                                        badgeColor={item.source === 'best' ? 'bg-orange-500' : 'bg-blue-600'}
-                                        tags={item.tags} // <— kirim penuh; ResourceCard yang membatasi jadi 4
+                                        badgeColor={item.source === 'best' ? 'bg-green-active' : 'bg-green-active'}
+                                        tags={item.tags}
                                     />
                                 ))
                             ) : (

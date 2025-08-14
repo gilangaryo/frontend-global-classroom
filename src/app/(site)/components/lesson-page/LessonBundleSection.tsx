@@ -56,7 +56,7 @@ export default function LessonBundleSection({ lessonId }: { lessonId: string }) 
                         <Link
                             key={bundle.id}
                             href={href}
-                            className="border-dashed border-2 p-4 flex items-center gap-4 bg-white rounded-2xl hover:shadow-lg hover:bg-gray-50 transition"
+                            className=" bg-primary border-dashed border-2 p-4 flex items-center gap-4  rounded-2xl hover:shadow-lg hover:bg-gray-50 transition"
                             style={{ textDecoration: 'none' }}
                         >
                             <div className="w-16 h-16 relative flex-shrink-0">
@@ -64,17 +64,17 @@ export default function LessonBundleSection({ lessonId }: { lessonId: string }) 
                                     src={bundle.imageUrl ?? '/dummy/default.jpg'}
                                     alt={bundle.title}
                                     fill
-                                    className="object-cover rounded-md"
+                                    className="object-cover rounded-md grayscale"
                                 />
                             </div>
-                            <div className="flex-grow">
-                                <h2 className="text-sm font-semibold text-heading uppercase tracking-wide">
+                            <div className="flex-grow text-alt">
+                                <h2 className="text-sm font-semibold  uppercase tracking-wide">
                                     Purchase the entire {bundle.type.toLowerCase()}
                                 </h2>
-                                <p className="text-xs text-text line-clamp-2 mt-1 max-w-xl">
+                                <p className="text-xs  line-clamp-2 mt-1 max-w-xl">
                                     {bundle.description}
                                 </p>
-                                <p className="text-lg mt-2 font-bold text-heading">
+                                <p className="text-lg mt-2 font-bold ">
                                     ${parseFloat(bundle.price).toFixed(0)}
                                 </p>
                             </div>
