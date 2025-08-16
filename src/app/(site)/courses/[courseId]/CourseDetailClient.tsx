@@ -58,7 +58,7 @@ export default function CourseDetailClient() {
         <main className="font-body">
             {/* Hero Section */}
             <section className="bg-white px-4 md:px-20 pt-0 pb-20">
-                <h1 className="text-4xl md:text-9xl text-left font-semibold text-black mb-20 leading-tight mt-2 ">
+                <h1 className="text-4xl md:text-9xl text-left font-semibold text-black mb-20 leading-tight mt-4 ">
                     {course.title}
                 </h1>
                 <div className="max-w-full mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-40 items-start">

@@ -24,9 +24,7 @@ interface Lesson {
     isFreeLesson?: boolean;
     tags?: string[];
     colorButton?: string;
-    metadata?: {
-        learningActivities?: string;
-    };
+    metadata?: { learningActivities?: string };
     subunit?: { id: string; title: string; price: string; imageUrl: string } | null;
     unit?: { id: string; title: string; price: string; imageUrl: string } | null;
     course?: { id: string; title: string; price: string; imageUrl: string } | null;
@@ -43,8 +41,6 @@ export default function LessonDetailClient() {
 
     const [emailInput, setEmailInput] = useState('');
     const [sending, setSending] = useState(false);
-
-    // single toggle: chevron beside description controls extra content
     const [activitiesOpen, setActivitiesOpen] = useState(false);
 
     const id =
@@ -69,15 +65,15 @@ export default function LessonDetailClient() {
                 }
                 const json = await res.json();
 
-                const parsedLesson = json.data as Lesson;
-                if (parsedLesson.metadata && typeof parsedLesson.metadata === 'string') {
+                const parsed = json.data as Lesson;
+                if (parsed.metadata && typeof parsed.metadata === 'string') {
                     try {
-                        parsedLesson.metadata = JSON.parse(parsedLesson.metadata);
+                        parsed.metadata = JSON.parse(parsed.metadata);
                     } catch {
-                        parsedLesson.metadata = {};
+                        parsed.metadata = {};
                     }
                 }
-                setLesson(parsedLesson);
+                setLesson(parsed);
             } catch (err) {
                 console.error('Error fetching lesson:', err);
                 setLesson(null);
@@ -91,6 +87,7 @@ export default function LessonDetailClient() {
     if (loading) return <div className="text-center py-20">Loading...</div>;
     if (!lesson) return notFound();
 
+    // ←— FIX: tanpa argumen, baca dari closure
     const getBackLink = () => {
         if (lesson.unit) {
             return `/courses/${lesson.course?.id || 'unknown'}/unit/${lesson.unit.id}`;
@@ -98,10 +95,31 @@ export default function LessonDetailClient() {
         return '/lessons';
     };
 
+    // ←— FIX: tanpa argumen, baca dari closure
     const getBackText = () => {
-        if (lesson.unit) return `← Back to ${lesson.unit.title}`;
-        return '← Back to Lessons';
+        return (
+            <span className="flex items-center gap-2 text-sm font-semibold">
+                {/* Icon panah kiri */}
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                    className="w-4 h-4 text-green-active"
+                >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+
+                <span className="text-green-active uppercase font-bold">
+                    Back to {lesson.unit ? 'Unit' : 'Lessons'}
+                </span>
+
+                <span className="text-gray-700 uppercase font-bold">| Lesson</span>
+            </span>
+        );
     };
+
 
     const handleSubmitFreeLesson = async () => {
         if (!emailInput || !/\S+@\S+\.\S+/.test(emailInput)) {
@@ -132,7 +150,8 @@ export default function LessonDetailClient() {
 
     return (
         <main className="font-body bg-white text-[#363F36]">
-            <div className="px-6 md:px-16 py-10">
+            <div className="px-6 md:px-25 py-10">
+                {/* ←— FIX: pakai helper tanpa argumen */}
                 <Link href={getBackLink()} className="text-sm text-[#346046] font-semibold mb-6 inline-block">
                     {getBackText()}
                 </Link>
@@ -142,20 +161,17 @@ export default function LessonDetailClient() {
                     <div className="max-w-[450px]">
                         <h1 className="text-2xl md:text-3xl font-bold mb-4">{lesson.title}</h1>
 
-                        {/* Description with chevron on the side */}
-                        <div className="mb-3 text-sm text-[#363F36] leading-6">
+                        {/* Description + toggle */}
+                        <div className="mb-3 text-sm text-primary leading-6">
                             <div className="inline-flex items-center gap-2">
-                                <p className="m-0 text-sm text-[#363F36] leading-7">
-                                    {lesson.description}
-                                </p>
+                                <p className="m-0 text-sm text-primary leading-7">{lesson.description}</p>
                                 <div className="mt-3 flex justify-start">
                                     <button
                                         type="button"
                                         aria-expanded={activitiesOpen}
                                         aria-controls="lesson-extra"
                                         onClick={() => setActivitiesOpen(v => !v)}
-                                        className="inline-flex h-8 w-8 items-center justify-center 
-               rounded text-primary hover:bg-[#ded6d6] transition"
+                                        className="inline-flex h-8 w-8 items-center justify-center rounded text-primary hover:bg-[#ded6d6] transition"
                                         title={activitiesOpen ? 'Tutup rincian' : 'Lihat rincian'}
                                     >
                                         <motion.svg
@@ -173,7 +189,20 @@ export default function LessonDetailClient() {
                                 </div>
                             </div>
 
-                            {/* Panel animasi: courseIncluded + Learning Activities */}
+                            {lesson.tags && lesson.tags.length > 0 && (
+                                <div className="mb-4">
+                                    <div className="flex flex-wrap gap-3 mt-4">
+                                        {lesson.tags.map((tag, index) => (
+                                            <span
+                                                key={index}
+                                                className="pr-4 py-1  text-gray-500 text-xs rounded-md"
+                                            >
+                                                {tag}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                             <AnimatePresence initial={false}>
                                 {activitiesOpen && (
                                     <motion.div
@@ -185,10 +214,11 @@ export default function LessonDetailClient() {
                                         transition={{ duration: 0.25, ease: 'easeInOut' }}
                                         className="overflow-hidden"
                                     >
-                                        <div className="mt-3  space-y-4">
-                                            <p className='text-lg text-green-active font-semibold p-2 border-b-2 border-green-active mb-6'>
+                                        <div className="space-y-4">
+                                            <p className="text-lg text-green-active font-semibold p-2 border-b-2 border-green-active mb-6">
                                                 Learning Activities
                                             </p>
+
                                             {lesson.courseIncluded && (
                                                 <div
                                                     className="text-sm leading-7"
@@ -202,15 +232,11 @@ export default function LessonDetailClient() {
                                                     dangerouslySetInnerHTML={{ __html: lesson.metadata.learningActivities }}
                                                 />
                                             )}
-
                                         </div>
                                     </motion.div>
                                 )}
                             </AnimatePresence>
                         </div>
-
-
-
 
                         <div className="flex gap-4 mb-6 mt-8">
                             <div className="flex flex-row gap-4 w-full md:w-auto">

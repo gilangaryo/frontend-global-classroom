@@ -127,7 +127,7 @@ export default function UnitDetailClient({
     };
 
     return (
-        <main className="max-w-7xl mx-auto px-6 py-10 font-body text-primary">
+        <main className="max-w-full mx-auto px-6 md:px-25 py-10 font-body text-primary">
             <nav className="mb-4 text-sm text-gray-500">
                 <Link href={`/courses/${courseId}`} className="hover:underline transition-colors">
                     <h2 className="flex items-center gap-2 font-semibold tracking-wide text-green-active">
