@@ -50,8 +50,6 @@ export default function FreeLessonsSlider() {
           <div className="text-center text-gray-500 py-20">No free lessons found.</div>
         ) : (
           <>
-            {/* Navigation arrows */}
-            {/* Navigation arrows */}
             <div className="swiper-button-prev-custom absolute -left-20 top-1/2 -translate-y-1/2 z-10 
   text-primary h-55 w-16 flex items-center justify-center cursor-pointer">
               <ChevronLeft size={64} strokeWidth={2} />

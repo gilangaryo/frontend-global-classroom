@@ -69,7 +69,6 @@ export default function YouMayAlsoLike() {
 
                 const raw: BackendLesson[] = Array.isArray(json?.data) ? (json.data as BackendLesson[]) : [];
 
-                // normalize tags -> string[] dan pangkas untuk tampilan
                 const mapped: Lesson[] = raw.map((l) => {
                     const tagNames = toStringTags(l.tags);
                     const displayTags =
@@ -105,7 +104,7 @@ export default function YouMayAlsoLike() {
     if (lessons.length === 0) return null;
 
     return (
-        <section className="bg-alt2 px-4 md:px-20 py-16">
+        <section className="bg-alt2 px-4 md:px-20 py-25">
             <h2 className="text-xl md:text-4xl font-bold text-[#4E3D34] mb-10 uppercase tracking-wide">
                 You may also like
             </h2>
@@ -127,16 +126,17 @@ export default function YouMayAlsoLike() {
 
                         {/* tags dari product */}
                         {lesson.tags && lesson.tags.length > 0 && (
-                            <p className="text-xs text-[#4E3D34] mb-2">{lesson.tags.join(', ')}</p>
+                            <p className="text-xs text-[#8D4A26] ">{lesson.tags.join(', ')}</p>
                         )}
 
-                        <h3 className="text-md md:text-2xl font-semibold text-primary leading-normal mb-3">
+                        <h3 className="text-md md:text-2xl font-semibold text-primary leading-normal mb-3 h-18">
                             {lesson.title}
                         </h3>
 
                         {lesson.description && (
-                            <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">
-                                {lesson.description}
+                            <p className="text-sm text-gray-500 line-clamp-2">
+                                {lesson.description.substring(0, 120) +
+                                    (lesson.description.length > 120 ? '.....' : '')}
                             </p>
                         )}
                     </Link>

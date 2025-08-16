@@ -32,7 +32,7 @@ const ModalPreviewPdf: React.FC<ModalPreviewPdfProps> = ({ open, onClose, pdfUrl
                     <div className="mb-3 font-bold text-lg text-primary text-center">{title}</div>
                 )}
 
-                <div className="h-[75vh] w-full">
+                <div className="h-[85vh] w-full">
                     <iframe
                         src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0`}
                         title={title || "PDF Preview"}
@@ -41,7 +41,7 @@ const ModalPreviewPdf: React.FC<ModalPreviewPdfProps> = ({ open, onClose, pdfUrl
                 </div>
 
                 {/* <div className="w-full flex justify-center mt-4 bg-primary hover:opacity-90 px-6 py-3 rounded-md"> */}
-                <div className="w-full flex justify-center mt-4">
+                {/* <div className="w-full flex justify-center mt-4">
                     <a
                         href={pdfUrl}
                         download
@@ -51,7 +51,7 @@ const ModalPreviewPdf: React.FC<ModalPreviewPdfProps> = ({ open, onClose, pdfUrl
                     >
                         Download Preview
                     </a>
-                </div>
+                </div> */}
 
                 {/* </div> */}
             </div>

@@ -28,9 +28,9 @@ export default function Divider() {
                     strokeWidth="2"
                 />
                 {/* Plus vertical */}
-                <rect x="199" y="6" width="2" height="20" rx="0" fill="#3E724A" />
+                <rect x="199" y="7" width="2.5" height="18" rx="0" fill="#3E724A" />
                 {/* Plus horizontal */}
-                <rect x="190" y="15" width="20" height="2" rx="0" fill="#3E724A" />
+                <rect x="187" y="15" width="26" height="2" rx="0" fill="#3E724A" />
             </svg>
         </div>
     );

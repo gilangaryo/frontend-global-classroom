@@ -140,7 +140,7 @@ export default function UnitDetailClient({
 
             <h1 className="text-3xl md:text-8xl font-bold mb-4 leading-normal text-black">{unit.title}</h1>
 
-            <div className="flex gap-6 border-b border-gray-300 mb-6 overflow-x-auto w-full">
+            <div className="flex gap-6 border-b border-gray-300 mb-2 overflow-x-auto w-full">
                 {allUnits.map((u) => (
                     <Link
                         key={u.id}
@@ -157,10 +157,13 @@ export default function UnitDetailClient({
 
             <Divider />
 
-            <div className="flex flex-col lg:flex-row gap-20">
+            <div className="flex flex-col lg:flex-row gap-40">
                 {/* Sidebar */}
-                <aside className="w-full lg:w-[420px] pr-6 h-fit">
-                    <p className="text-sm text-gray-600 mb-4 leading-relaxed">{unit.description}</p>
+                <aside className="w-full lg:w-[320px] pr-6 h-fit ">
+                    <p className="text-sm text-gray-600 mb-8 leading-6 whitespace-pre-line">
+                        {unit.description}
+                    </p>
+
 
                     <AnimatedAddToCartButton
                         productId={unit.id}
@@ -175,7 +178,7 @@ export default function UnitDetailClient({
                     />
 
                     <button
-                        className="w-full bg-white border border-primary text-primary font-bold py-3 rounded hover:bg-primary hover:text-white transition-colors duration-200 mb-3"
+                        className="w-full bg-white border border-primary text-primary font-semibold py-3 rounded hover:bg-primary hover:text-white transition-colors duration-200 mb-3"
                         onClick={() => {
                             if (unit.previewUrl) {
                                 setPdfUrl(unit.previewUrl);
@@ -218,62 +221,66 @@ export default function UnitDetailClient({
                             {/* Lessons Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                                 {paginatedLessons.map((lesson) => (
-                                    <Link
+                                    <div
                                         key={lesson.id}
-                                        href={`/lessons/${lesson.id}`}
-                                        className="rounded-lg p-4 flex flex-col cursor-pointer transition mb-10"
-                                        style={{ textDecoration: 'none' }}
+                                        className="rounded-lg p-4 flex flex-col cursor-pointer transition mb-10 "
                                     >
-                                        <div className="relative w-full h-48 mb-4 rounded overflow-hidden group">
-                                            <Image
-                                                src={lesson.imageUrl || '/placeholder.jpg'}
-                                                alt={lesson.title}
-                                                fill
-                                                className="object-cover z-0 group-hover:scale-101 transition-transform duration-200 grayscale"
-                                                onError={(e) => {
-                                                    const target = e.target as HTMLImageElement;
-                                                    target.src = '/placeholder.jpg';
-                                                }}
-                                            />
-                                            {lesson.previewUrl && (
-                                                <div className=" absolute inset-0 bg-black/50 z-10 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity ease-in duration-200">
-                                                    <button
-                                                        type="button"
-                                                        onClick={e => {
-                                                            e.preventDefault();
-                                                        }}
-                                                        className="bg-white/20 backdrop-blur-sm text-white px-14 py-3 rounded-lg text-sm font-normal"
-                                                    >
-                                                        See More
-                                                    </button>
-                                                </div>
+                                        {/* Bagian yang bisa di-klik ke detail */}
+                                        <Link
+                                            href={`/lessons/${lesson.id}`}
+                                            className="flex flex-col flex-1"
+                                            style={{ textDecoration: 'none' }}
+                                        >
+                                            <div className="relative w-full h-48 mb-4 rounded overflow-hidden group">
+                                                <Image
+                                                    src={lesson.imageUrl || '/placeholder.jpg'}
+                                                    alt={lesson.title}
+                                                    fill
+                                                    className="object-cover z-0 group-hover:scale-101 transition-transform duration-200 grayscale"
+                                                    onError={(e) => {
+                                                        const target = e.target as HTMLImageElement
+                                                        target.src = '/placeholder.jpg'
+                                                    }}
+                                                />
+                                                {lesson.previewUrl && (
+                                                    <div className="absolute inset-0 bg-black/50 z-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ease-in duration-200">
+                                                        <span className="bg-white/20 backdrop-blur-sm text-white px-14 py-3 rounded-lg text-sm font-normal">
+                                                            See More
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {lesson.tags && lesson.tags.length > 0 && (
+                                                <span className="text-xs text-text mb-2">
+                                                    {lesson.tags.slice(0, 3).join(', ')}
+                                                    {lesson.tags.length > 3 && '...'}
+                                                </span>
                                             )}
-                                        </div>
 
-                                        {lesson.tags && lesson.tags.length > 0 && (
-                                            <span className="text-xs text-text  mb-2">
-                                                {lesson.tags.slice(0, 3).join(', ')}
-                                                {lesson.tags.length > 3 && '...'}
-                                            </span>
-                                        )}
-                                        <h3 className="text-lg font-bold mb-3 line-clamp-2">{lesson.title}</h3>
-                                        <p className="text-sm text-gray-500 flex-1 mb-4 line-clamp-3">{lesson.description}</p>
+                                            <h3 className="text-lg font-bold mb-3 line-clamp-2">{lesson.title}</h3>
+                                            <p className="text-sm text-gray-500 flex-1 mb-4 line-clamp-3">
+                                                {lesson.description}
+                                            </p>
+                                        </Link>
 
+                                        {/* Tombol aksi */}
                                         <div className="flex w-full gap-4 items-stretch mt-auto">
                                             <button
                                                 type="button"
-                                                onClick={e => {
-                                                    e.preventDefault();
-                                                    handlePreview(lesson);
+                                                onClick={(e) => {
+                                                    e.preventDefault()
+                                                    handlePreview(lesson)
                                                 }}
                                                 disabled={!lesson.previewUrl}
-                                                className={`w-1/2 border px-4 py-2 text-sm rounded transition-colors ${lesson.previewUrl
-                                                    ? 'border-gray-500 hover:border-gray-700 hover:bg-gray-100'
+                                                className={`w-1/2 border-1 px-4 py-2 text-sm font-semibold rounded transition-colors ${lesson.previewUrl
+                                                    ? 'border-primary hover:border-gray-700 hover:bg-gray-100'
                                                     : 'border-gray-200 text-gray-300 cursor-not-allowed'
                                                     }`}
                                             >
                                                 Preview
                                             </button>
+
                                             <div className="w-1/2">
                                                 <AnimatedAddToCartButton
                                                     productId={lesson.id}
@@ -287,9 +294,10 @@ export default function UnitDetailClient({
                                                 />
                                             </div>
                                         </div>
-                                    </Link>
+                                    </div>
                                 ))}
                             </div>
+
 
 
 
@@ -338,6 +346,6 @@ export default function UnitDetailClient({
                     )}
                 </div>
             </div>
-        </main>
+        </main >
     );
 }

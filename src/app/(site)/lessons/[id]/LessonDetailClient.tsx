@@ -9,6 +9,7 @@ import LessonPdfThumbnailModal from '../../components/LessonPdfThumbnailModal';
 import ModalPreviewPdf from '../../components/ModalPreviewPdf';
 import LessonBundleSection from '../../components/lesson-page/LessonBundleSection';
 import YouMayAlsoLike from './YouMayAlsoLike';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface Lesson {
     id: string;
@@ -18,7 +19,7 @@ interface Lesson {
     imageUrl: string;
     price: string;
     previewUrl: string | null;
-    studyGuideUrl?: string | null;      // ← tambahkan field ini
+    studyGuideUrl?: string | null;
     digitalUrl: string | null;
     isFreeLesson?: boolean;
     tags?: string[];
@@ -26,24 +27,9 @@ interface Lesson {
     metadata?: {
         learningActivities?: string;
     };
-    subunit?: {
-        id: string;
-        title: string;
-        price: string;
-        imageUrl: string;
-    } | null;
-    unit?: {
-        id: string;
-        title: string;
-        price: string;
-        imageUrl: string;
-    } | null;
-    course?: {
-        id: string;
-        title: string;
-        price: string;
-        imageUrl: string;
-    } | null;
+    subunit?: { id: string; title: string; price: string; imageUrl: string } | null;
+    unit?: { id: string; title: string; price: string; imageUrl: string } | null;
+    course?: { id: string; title: string; price: string; imageUrl: string } | null;
 }
 
 export default function LessonDetailClient() {
@@ -52,11 +38,14 @@ export default function LessonDetailClient() {
     const [loading, setLoading] = useState(true);
 
     const [openPreviewPdf, setOpenPreviewPdf] = useState(false);
-    const [openStudyGuidePdf, setOpenStudyGuidePdf] = useState(false); // ← state baru
+    const [openStudyGuidePdf, setOpenStudyGuidePdf] = useState(false);
     const [openThumbnail, setOpenThumbnail] = useState(false);
 
     const [emailInput, setEmailInput] = useState('');
     const [sending, setSending] = useState(false);
+
+    // single toggle: chevron beside description controls extra content
+    const [activitiesOpen, setActivitiesOpen] = useState(false);
 
     const id =
         typeof params.id === 'string'
@@ -68,7 +57,9 @@ export default function LessonDetailClient() {
     useEffect(() => {
         const fetchLesson = async () => {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/lessons/${id}`);
+                const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/lessons/${id}`
+                );
                 if (!res.ok) {
                     if (res.status === 404) {
                         setLesson(null);
@@ -82,12 +73,10 @@ export default function LessonDetailClient() {
                 if (parsedLesson.metadata && typeof parsedLesson.metadata === 'string') {
                     try {
                         parsedLesson.metadata = JSON.parse(parsedLesson.metadata);
-                    } catch (e) {
-                        console.warn('Failed to parse metadata:', e);
+                    } catch {
                         parsedLesson.metadata = {};
                     }
                 }
-
                 setLesson(parsedLesson);
             } catch (err) {
                 console.error('Error fetching lesson:', err);
@@ -110,9 +99,7 @@ export default function LessonDetailClient() {
     };
 
     const getBackText = () => {
-        if (lesson.unit) {
-            return `← Back to ${lesson.unit.title}`;
-        }
+        if (lesson.unit) return `← Back to ${lesson.unit.title}`;
         return '← Back to Lessons';
     };
 
@@ -121,18 +108,14 @@ export default function LessonDetailClient() {
             alert('Masukkan email yang valid.');
             return;
         }
-
         setSending(true);
-
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/free-access`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ lessonId: lesson.id, email: emailInput }),
             });
-
             const data = await res.json();
-
             if (res.ok) {
                 alert('✅ Materi telah dikirim ke email!');
                 setEmailInput('');
@@ -149,44 +132,85 @@ export default function LessonDetailClient() {
 
     return (
         <main className="font-body bg-white text-[#363F36]">
-            <div className="px-6 md:px-16 py-10 ">
+            <div className="px-6 md:px-16 py-10">
                 <Link href={getBackLink()} className="text-sm text-[#346046] font-semibold mb-6 inline-block">
                     {getBackText()}
                 </Link>
 
-                <div className=" grid grid-cols-1 md:grid-cols-2 gap-20  ">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-20 mb-12">
                     {/* LEFT SIDE */}
                     <div className="max-w-[450px]">
                         <h1 className="text-2xl md:text-3xl font-bold mb-4">{lesson.title}</h1>
-                        <p className="text-sm text-text mb-4 leading-6">{lesson.description}</p>
 
-                        {lesson.metadata?.learningActivities && (
-                            <div className="mb-6">
-                                <p className="text-md font-semibold text-[#3E724A] p-2 mb-4 border-b-2 border-[#3E724A] pb-1">
-                                    Learning Activities
+                        {/* Description with chevron on the side */}
+                        <div className="mb-3 text-sm text-[#363F36] leading-6">
+                            <div className="inline-flex items-center gap-2">
+                                <p className="m-0 text-sm text-[#363F36] leading-7">
+                                    {lesson.description}
                                 </p>
-                                <div
-                                    className="text-sm text-[#363F36] space-y-5 leading-8"
-                                    dangerouslySetInnerHTML={{ __html: lesson.metadata.learningActivities }}
-                                />
-                            </div>
-                        )}
-
-                        {/* Tags */}
-                        {lesson.tags && lesson.tags.length > 0 && (
-                            <div className="mb-4">
-                                <div className="flex flex-wrap gap-3">
-                                    {lesson.tags.map((tag, index) => (
-                                        <span
-                                            key={index}
-                                            className="pr-4 py-1  text-gray-500 text-xs rounded-md"
+                                <div className="mt-3 flex justify-start">
+                                    <button
+                                        type="button"
+                                        aria-expanded={activitiesOpen}
+                                        aria-controls="lesson-extra"
+                                        onClick={() => setActivitiesOpen(v => !v)}
+                                        className="inline-flex h-8 w-8 items-center justify-center 
+               rounded text-primary hover:bg-[#ded6d6] transition"
+                                        title={activitiesOpen ? 'Tutup rincian' : 'Lihat rincian'}
+                                    >
+                                        <motion.svg
+                                            initial={false}
+                                            animate={{ rotate: activitiesOpen ? 180 : 0 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="h-4 w-4"
+                                            viewBox="0 0 20 20"
+                                            fill="currentColor"
+                                            aria-hidden="true"
                                         >
-                                            {tag}
-                                        </span>
-                                    ))}
+                                            <path d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.146l3.71-2.915a.75.75 0 1 1 .94 1.17l-4.24 3.33a.75.75 0 0 1-.94 0l-4.24-3.33a.75.75 0 0 1 .02-1.06z" />
+                                        </motion.svg>
+                                    </button>
                                 </div>
                             </div>
-                        )}
+
+                            {/* Panel animasi: courseIncluded + Learning Activities */}
+                            <AnimatePresence initial={false}>
+                                {activitiesOpen && (
+                                    <motion.div
+                                        id="lesson-extra"
+                                        key="lesson-extra"
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.25, ease: 'easeInOut' }}
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="mt-3  space-y-4">
+                                            <p className='text-lg text-green-active font-semibold p-2 border-b-2 border-green-active mb-6'>
+                                                Learning Activities
+                                            </p>
+                                            {lesson.courseIncluded && (
+                                                <div
+                                                    className="text-sm leading-7"
+                                                    dangerouslySetInnerHTML={{ __html: lesson.courseIncluded }}
+                                                />
+                                            )}
+
+                                            {lesson.metadata?.learningActivities && (
+                                                <div
+                                                    className="tiptap-content text-sm text-primary leading-8"
+                                                    dangerouslySetInnerHTML={{ __html: lesson.metadata.learningActivities }}
+                                                />
+                                            )}
+
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
+
+
 
                         <div className="flex gap-4 mb-6 mt-8">
                             <div className="flex flex-row gap-4 w-full md:w-auto">
@@ -245,8 +269,6 @@ export default function LessonDetailClient() {
                                 Preview Lesson Overview →
                             </Link>
                         )}
-
-
                     </div>
 
                     {/* RIGHT SIDE */}
@@ -256,22 +278,12 @@ export default function LessonDetailClient() {
                                 src={lesson.imageUrl || '/dummy/sample-product.png'}
                                 alt={lesson.title}
                                 fill
-                                className="object-cover rounded-md shadow grayscale"
+                                className="object-cover shadow grayscale"
                                 onError={(e) => {
                                     const target = e.target as HTMLImageElement;
                                     target.src = '/dummy/sample-product.png';
                                 }}
                             />
-                            {lesson.previewUrl && (
-                                <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity duration-200 flex items-center justify-center rounded-md">
-                                    <button
-                                        onClick={() => setOpenThumbnail(true)}
-                                        className="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-lg text-sm font-medium"
-                                    >
-                                        Preview
-                                    </button>
-                                </div>
-                            )}
                         </div>
 
                         <LessonBundleSection lessonId={lesson.id} />

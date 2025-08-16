@@ -58,7 +58,7 @@ export default function CourseDetailClient() {
         <main className="font-body">
             {/* Hero Section */}
             <section className="bg-white px-4 md:px-20 pt-0 pb-20">
-                <h1 className="text-4xl md:text-9xl text-left font-semibold text-black mb-20 leading-tight mt-6 md:mt-12">
+                <h1 className="text-4xl md:text-9xl text-left font-semibold text-black mb-20 leading-tight mt-2 ">
                     {course.title}
                 </h1>
                 <div className="max-w-full mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-40 items-start">
@@ -124,7 +124,7 @@ export default function CourseDetailClient() {
             {/* Units Section */}
             <section className="bg-alt2 py-40 px-4 md:px-20 " id="units">
                 <div className="max-w-full mx-auto">
-                    <h2 className="text-3xl md:text-6xl font-bold text-primary mb-16 text-center">
+                    <h2 className="text-3xl md:text-6xl font-bold text-primary mb-18 text-center">
                         EXPLORE THE CORE UNITS
                     </h2>
                     <div className=" text-center mb-6  md:w-1/6 mx-auto text-lg text-black">

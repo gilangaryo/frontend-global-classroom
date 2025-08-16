@@ -19,11 +19,10 @@ type ResourceBase = {
 };
 
 type Resource = ResourceBase & {
-    tags?: string[]; // normalized tag names
+    tags?: string[];
     source: 'best' | 'new';
 };
 
-// Backend may return Tag[] or string[]
 type BackendTag = { name?: string | null } | string;
 
 type BackendProduct = {
@@ -62,11 +61,9 @@ function getCleanDescription(htmlString?: string | null, maxLength: number = 100
     return cleanText.length > maxLength ? cleanText.substring(0, maxLength) + '...' : cleanText;
 }
 
-// runtime guards
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null;
 }
-
 function isBackendTagArray(value: unknown): value is BackendTag[] {
     return Array.isArray(value);
 }
@@ -80,7 +77,6 @@ function isBackendProduct(value: unknown): value is BackendProduct {
         typeof (value as BackendProduct).type === 'string'
     );
 }
-
 function isFeaturedSuccess(value: unknown): value is FeaturedSuccess {
     return (
         isRecord(value) &&
@@ -90,7 +86,6 @@ function isFeaturedSuccess(value: unknown): value is FeaturedSuccess {
         Array.isArray((value as FeaturedSuccess).data.newLessons)
     );
 }
-/** Normalize BackendTag[] (or missing) -> string[] of names */
 function toStringTags(tags: unknown): string[] {
     if (!isBackendTagArray(tags)) return [];
     const names: string[] = [];
@@ -136,7 +131,7 @@ function ResourceCard({
     }, [img]);
 
     return (
-        <Link href={`/lessons/${id}`} className="space-y-2 w-full max-w-[340px]">
+        <Link href={`/lessons/${id}`} className="space-y-2 w-full">
             <div className="w-full relative rounded-lg overflow-hidden aspect-3/2">
                 {imageSrc ? (
                     <Image src={imageSrc} alt={title || 'Resource image'} fill className="object-cover" />
@@ -157,8 +152,8 @@ function ResourceCard({
 
             <div className="flex flex-wrap gap-1 mb-2 mt-5">
                 {tags && tags.length > 0 && (() => {
-                    const display = tags.slice(0, 4);            // tampilkan maksimal 4
-                    const more = tags.length - display.length;   // sisa
+                    const display = tags.slice(0, 4);
+                    const more = tags.length - display.length;
                     return (
                         <>
                             <span className="text-sm text-tag">{display.join(', ')}</span>
@@ -179,7 +174,8 @@ function ResourceCard({
  * =======================*/
 
 export default function FeaturedResourcesSection() {
-    const [featured, setFeatured] = useState<Resource[]>([]);
+    const [best, setBest] = useState<Resource[]>([]);
+    const [news, setNews] = useState<Resource[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -197,13 +193,9 @@ export default function FeaturedResourcesSection() {
                 const json: unknown = await res.json();
 
                 if (isFeaturedSuccess(json)) {
-                    const bestRaw = json.data.bestSellers?.[0];
-                    const newRaw = json.data.newLessons?.[0];
-
                     const adapt = (item: unknown, source: 'best' | 'new'): Resource | null => {
                         if (!isBackendProduct(item)) return null;
                         const tagNames = toStringTags((item as BackendProduct).tags);
-
                         return {
                             id: (item as BackendProduct).id,
                             title: (item as BackendProduct).title,
@@ -212,23 +204,25 @@ export default function FeaturedResourcesSection() {
                             imageUrl: ((item as BackendProduct).imageUrl ?? null) as string | null,
                             createdAt: (item as BackendProduct).createdAt,
                             type: (item as BackendProduct).type,
-                            tags: tagNames, // simpan lengkap; pangkas di UI
+                            tags: tagNames,
                             source,
                         };
                     };
 
-                    const combined = [adapt(bestRaw, 'best'), adapt(newRaw, 'new')].filter(
-                        (x): x is Resource => x !== null
-                    );
+                    const bestList = (json.data.bestSellers ?? []).slice(0, 1).map((b) => adapt(b, 'best'));
+                    const newList = (json.data.newLessons ?? []).slice(0, 2).map((n) => adapt(n, 'new'));
 
-                    setFeatured(combined);
+                    setBest(bestList.filter((x): x is Resource => x !== null));
+                    setNews(newList.filter((x): x is Resource => x !== null));
                 } else {
-                    setFeatured([]);
+                    setBest([]);
+                    setNews([]);
                 }
             } catch (e) {
                 const msg = e instanceof Error ? e.message : 'Failed to fetch featured resources';
                 setError(msg);
-                setFeatured([]);
+                setBest([]);
+                setNews([]);
             } finally {
                 setLoading(false);
             }
@@ -240,33 +234,17 @@ export default function FeaturedResourcesSection() {
     if (loading) {
         return (
             <section className="py-8 md:py-40 px-4 md:px-20 bg-white">
-                <div className="mx-auto">
-                    <div className="grid grid-cols-1 md:grid-cols-3 md:gap-8 items-stretch min-h-[520px]">
-                        <div className="col-span-2 flex flex-col h-full">
-                            <h2 className="text-4xl md:text-7xl font-bold text-primary mb-8 leading-normal">
-                                FEATURED <br /> RESOURCES
-                            </h2>
-                            <div className="flex gap-6 mt-auto mb-6 flex-wrap">
-                                {[1, 2].map((i) => (
-                                    <div key={i} className="space-y-2 w-full max-w-[340px]">
-                                        <div className="w-full aspect-3/2 bg-gray-200 rounded-lg animate-pulse" />
-                                        <div className="h-4 bg-gray-200 rounded animate-pulse" />
-                                        <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4" />
-                                    </div>
-                                ))}
-                            </div>
+                <h2 className="text-4xl md:text-7xl font-bold text-primary mb-8 leading-normal">
+                    FEATURED <br /> RESOURCES
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-12">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="space-y-2 w-full">
+                            <div className="w-full aspect-3/2 bg-gray-200 rounded-lg animate-pulse" />
+                            <div className="h-4 bg-gray-200 rounded animate-pulse" />
+                            <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4" />
                         </div>
-                        <div className="flex justify-center">
-                            <div className="w-full max-w-full md:max-w-md aspect-[3/4] relative">
-                                <Image
-                                    src="/landing-page/cover-featured.jpg"
-                                    alt="Featured Resources Cover"
-                                    fill
-                                    className="object-cover"
-                                />
-                            </div>
-                        </div>
-                    </div>
+                    ))}
                 </div>
             </section>
         );
@@ -275,77 +253,37 @@ export default function FeaturedResourcesSection() {
     if (error) {
         return (
             <section className="py-8 md:py-40 px-4 md:px-20 bg-white">
-                <div className="mx-auto">
-                    <div className="grid grid-cols-1 md:grid-cols-3 md:gap-8 items-stretch min-h-[520px]">
-                        <div className="col-span-2 flex flex-col h-full">
-                            <h2 className="text-4xl md:text-7xl font-bold text-primary mb-8 leading-normal">
-                                FEATURED <br /> RESOURCES
-                            </h2>
-                            <div className="mt-auto mb-6">
-                                <p className="text-red-600 text-sm">
-                                    Unable to load featured resources. Please try again later.
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex justify-center">
-                            <div className="w-full max-w-full md:max-w-md aspect-[3/4] relative">
-                                <Image
-                                    src="/landing-page/cover-featured.jpg"
-                                    alt="Featured Resources Cover"
-                                    fill
-                                    className="object-cover"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <h2 className="text-4xl md:text-7xl font-bold text-primary mb-8 leading-normal">
+                    FEATURED <br /> RESOURCES
+                </h2>
+                <p className="text-red-600 text-sm">Unable to load featured resources. Please try again later.</p>
             </section>
         );
     }
 
+    // gabungkan HANYA UNTUK PENATAAN GRID (bukan penggabungan data/logic)
+    const cardsInOrder: Resource[] = [...best, ...news];
+
     return (
         <section className="py-8 md:py-40 px-4 md:px-20 bg-white">
-            <div className="mx-auto">
-                <div className="grid grid-cols-1 md:grid-cols-3 md:gap-8 items-stretch min-h-[520px]">
-                    <div className="col-span-2 flex flex-col h-full">
-                        <h2 className="text-4xl md:text-7xl font-bold text-primary mb-30 leading-normal">
-                            FEATURED <br /> RESOURCES
-                        </h2>
-                        <div className="flex gap-12 mt-auto mb-6 flex-wrap">
-                            {featured.length > 0 ? (
-                                featured.map((item) => (
-                                    <ResourceCard
-                                        key={item.id}
-                                        id={item.id}
-                                        img={item.imageUrl ?? undefined}
-                                        title={item.title}
-                                        subtitle={getCleanDescription(item.description, 80)}
-                                        badge={item.source === 'best' ? 'Best Seller' : 'New Lesson'}
-                                        badgeColor={item.source === 'best' ? 'bg-green-active' : 'bg-green-active'}
-                                        tags={item.tags}
-                                    />
-                                ))
-                            ) : (
-                                <div className="text-gray-600">
-                                    <p>No featured resources available at the moment.</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+            <h2 className="text-4xl md:text-7xl font-bold text-primary mb-8 leading-normal">
+                FEATURED <br /> RESOURCES
+            </h2>
 
-                    <div className="flex justify-center">
-                        <div className="w-full max-w-full md:max-w-md">
-                            <div className="aspect-[2/3] relative w-full">
-                                <Image
-                                    src="/landing-page/cover-featured.jpg"
-                                    alt="Featured Resources Cover"
-                                    fill
-                                    className="object-cover"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            {/* Grid 3 kolom sejajar */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-12">
+                {cardsInOrder.map((item, idx) => (
+                    <ResourceCard
+                        key={`${item.id}-${item.source}-${idx}`} // unik meski id sama di 2 blok
+                        id={item.id}
+                        img={item.imageUrl ?? undefined}
+                        title={item.title}
+                        subtitle={getCleanDescription(item.description, 80)}
+                        badge={item.source === 'best' ? 'Best Seller' : 'New Lesson'}
+                        badgeColor="bg-green-active"
+                        tags={item.tags}
+                    />
+                ))}
             </div>
         </section>
     );

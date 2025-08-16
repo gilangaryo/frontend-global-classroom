@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import DashedFrame from './DashedFrame';
 
 interface BundleItem {
     id: string;
@@ -42,45 +43,61 @@ export default function LessonBundleSection({ lessonId }: { lessonId: string }) 
                 {bundles.map(bundle => {
                     let href = '';
                     if (bundle.type === 'UNIT') {
-                        // Use parentId (which should be courseId) or courseId as fallback
                         const courseId = bundle.parentId || bundle.courseId;
                         href = `/courses/${courseId}/unit/${bundle.id}`;
                     } else if (bundle.type === 'COURSE') {
                         href = `/courses/${bundle.id}`;
                     } else if (bundle.type === 'SUBUNIT') {
-                        // For subunit, you might need different logic
                         href = `/subunit/${bundle.id}`;
                     }
 
+                    const isCourse = bundle.type === 'COURSE';
+
                     return (
+
                         <Link
                             key={bundle.id}
                             href={href}
-                            className=" bg-primary border-dashed border-2 p-4 flex items-center gap-4  rounded-2xl hover:shadow-lg hover:bg-gray-50 transition"
+                            className="block"
                             style={{ textDecoration: 'none' }}
                         >
-                            <div className="w-16 h-16 relative flex-shrink-0">
-                                <Image
-                                    src={bundle.imageUrl ?? '/dummy/default.jpg'}
-                                    alt={bundle.title}
-                                    fill
-                                    className="object-cover rounded-md grayscale"
-                                />
-                            </div>
-                            <div className="flex-grow text-alt">
-                                <h2 className="text-sm font-semibold  uppercase tracking-wide">
-                                    Purchase the entire {bundle.type.toLowerCase()}
-                                </h2>
-                                <p className="text-xs  line-clamp-2 mt-1 max-w-xl">
-                                    {bundle.description}
-                                </p>
-                                <p className="text-lg mt-2 font-bold ">
-                                    ${parseFloat(bundle.price).toFixed(0)}
-                                </p>
-                            </div>
+                            <DashedFrame
+                                className={`
+                                p-4 flex items-center gap-4 rounded-2xl px-6
+                                transition
+                                group
+                            `}
+                                stroke="#9ca3af"
+                                strokeWidth={1}
+                                dash={8}
+                                gap={10}
+                                radius={20}
+                            >
+                                <div className="w-21 h-21 relative flex-shrink-0">
+                                    <Image
+                                        src={bundle.imageUrl ?? '/dummy/default.jpg'}
+                                        alt={bundle.title}
+                                        fill
+                                        className={`object-cover transition ${!isCourse ? 'grayscale ' : ''
+                                            }`}
+                                    />
+                                </div>
+
+                                <div className="flex-grow">
+                                    <h2 className="text-sm font-semibold uppercase tracking-wide">
+                                        Purchase the entire {bundle.type.toLowerCase()}
+                                    </h2>
+                                    <p className="text-xs line-clamp-2 mt-1 max-w-xl">{bundle.description}</p>
+                                    <p className="text-lg mt-2 font-bold">
+                                        ${parseFloat(bundle.price).toFixed(0)}
+                                    </p>
+                                </div>
+                            </DashedFrame>
                         </Link>
                     );
                 })}
+
+
             </div>
         </div>
     );

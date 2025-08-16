@@ -75,3 +75,62 @@ button {
   margin-bottom: 0.5rem;
   @apply list-disc pl-5 leading-relaxed space-y-2;
 }
+
+/* Ordered Lists (Numbered) */
+.tiptap-content ol.tiptap-ordered-list,
+ol.tiptap-ordered-list {
+  list-style-type: decimal !important;
+  list-style-position: outside !important;
+  padding-left: 1.5rem !important;
+  margin: 1rem 0 !important;
+}
+
+/* Bullet Lists */
+.tiptap-content ul.tiptap-bullet-list,
+ul.tiptap-bullet-list {
+  list-style-type: disc !important;
+  list-style-position: outside !important;
+  padding-left: 1.5rem !important;
+  margin: 1rem 0 !important;
+}
+
+/* List Items */
+.tiptap-content .tiptap-list-item,
+.tiptap-list-item {
+  display: list-item !important;
+  margin-bottom: 1rem !important;
+}
+
+/* Paragraphs dalam list items */
+.tiptap-content .tiptap-list-item p,
+.tiptap-list-item p {
+  margin: 0.5rem 0 !important;
+}
+
+.tiptap-content .tiptap-list-item p:first-child,
+.tiptap-list-item p:first-child {
+  margin-top: 0 !important;
+}
+
+.tiptap-content .tiptap-list-item p:last-child,
+.tiptap-list-item p:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* Nested lists styling */
+.tiptap-content ol ol,
+ol.tiptap-ordered-list ol {
+  list-style-type: lower-alpha !important;
+  margin: 0.5rem 0 !important;
+}
+
+.tiptap-content ul ul,
+ul.tiptap-bullet-list ul {
+  list-style-type: circle !important;
+  margin: 0.5rem 0 !important;
+}
+
+.tiptap-content ol ol ol,
+ol.tiptap-ordered-list ol ol {
+  list-style-type: lower-roman !important;
+}

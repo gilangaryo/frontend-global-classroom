@@ -97,6 +97,7 @@ export default function LessonCard({
                                     title={t}
                                 >
                                     {t}
+                                    ,
                                 </button>
                             ))}
                             {moreCount > 0 && (
@@ -112,13 +113,13 @@ export default function LessonCard({
                 )}
 
                 <Link href={`/lessons/${lesson.id}`} aria-label={`Open lesson ${lesson.title}`}>
-                    <h3 className="font-semibold text-black mb-2 text-lg leading-normal hover:underline cursor-pointer min-h-20">
+                    <h3 className="font-semibold text-black mb-2 text-lg leading-normal hover:underline cursor-pointer min-h-18">
                         {lesson.title}
                     </h3>
                 </Link>
 
                 {lesson.description && (
-                    <p className="text-sm text-gray-500 mb-4 line-clamp-3">{lesson.description}</p>
+                    <p className="text-sm text-gray-500 mb-4 line-clamp-3 leading-relaxed">{lesson.description}</p>
                 )}
 
                 <div className="text-lg font-bold text-primary mb-4">${priceNumber.toFixed(2)}</div>
@@ -144,7 +145,7 @@ export default function LessonCard({
                             productId={lesson.id}
                             productType="LESSON"
                             itemTitle={lesson.title}
-                            itemImg={imgSrc || '/dummy/sample-product.png'}
+                            itemImg={imgSrc}
                             itemDesc={lesson.description ?? ''}
                             itemPrice={priceNumber}
                             colorButton={colorClass}
